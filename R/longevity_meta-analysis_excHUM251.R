@@ -30,7 +30,7 @@ library(orchaRd)
 #--------------#
 
 ### Read in effect size data
-effectdata <- read.csv("Survival project all pairwise.es.csv")
+effectdata <- read.csv("./data/Survival project all pairwise.es.csv")
 longdata_warm <- subset(effectdata, Trait.category == "Longevity" & warm.cool == "Warm" )
 longdata_cool <- subset(effectdata, Trait.category == "Longevity" & warm.cool == "Cool" )
 
@@ -43,7 +43,7 @@ rdata <- subset(rdata, Paper.code != "HUM251")
 
 
 ########### change species names in survival data ####################################
-classes <- read.csv("Species_classifications.CSV") ## read in species classifications from map
+classes <- read.csv("./data/Species_classifications.CSV") ## read in species classifications from map
 
 rdata$Species.latin[which(rdata$Species.latin == "Marasmia exigua")]                <- "Cnaphalocrocis exigua"
 rdata$Species.latin[which(rdata$Species.latin == "Matsumuratettix hieroglyphicus")] <- "Matsumuratettix hiroglyphicus"
@@ -84,7 +84,7 @@ nlevels(rdata$study_code) # Check number of studies
 #### Import Tree #############
 
 ## import tree from map
-tree1 <- read.nexus("all_long_excHUM251_tree.nex")
+tree1 <- read.nexus("./phylogeny/all_long_excHUM251_tree.nex")
 tree_grafen = compute.brlen(tree1, method="Grafen", power=1)
 phylo_matrix <- vcv(tree_grafen, cor=TRUE, model="Brownian") # Make phylogenetic matrix
 
