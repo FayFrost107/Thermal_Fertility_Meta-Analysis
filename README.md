@@ -8,8 +8,17 @@ This folder contains everything needed to perform three seperate meta-analysis o
 
 NB: We have removed the study HUM251 in this uploaded analysis, hence the _excHUM251 extensions to many named files. 
 
-  The code for each analysis initially loads the datafile "Survival pproject all pairwise.es.csv" containing the effect sizes. 
+  The code for each analysis initially loads the datafile containing the effect sizes:
+  
+"Survival pproject all pairwise.es.csv" 
+  
   Then a specific subset of the data is taken depending which analysis you are performing i.e. only reproduction effect sizes are taken in the "reproduction_meta-analysis_excHUM251.r" file.
+
+  The datafile 
+
+"Species_Classifications.csv"
+
+is called to enure that all species classifications are accurate.
 
   Depending on which analysis you are performing the specific phylogentic tree is loaded. This will be one of the three trees
    - all_long_excHUM251_tree.nex
