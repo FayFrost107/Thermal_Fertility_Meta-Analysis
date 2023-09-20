@@ -26,3 +26,10 @@ is called to enure that all species classifications are accurate.
    - all_surv_excHUM251_tree.nex
 
    The code explores many models using combinations of random and fixed effects. 
+
+   Since the meta-analysis is quite large and takes around 15minutes to compute each of the many models, the Rdata file for each analysis is uploaded containing the results. These files are named:
+
+   - reproduction_meta-analysis_excHUM251.RData
+   - longevity_meta-analysis.RData
+
+     The Rdata fil for the survival meta-analysis is not provided as the number of effect sizes is quite small and the models can be run quickly on the fly.  
