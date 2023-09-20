@@ -10,7 +10,7 @@ NB: We have removed the study HUM251 in this uploaded analysis, hence the _excHU
 
   The code for each analysis initially loads the datafile containing the effect sizes:
   
-"Survival pproject all pairwise.es.csv" 
+"Survival project all pairwise.es.csv" 
   
   Then a specific subset of the data is taken depending which analysis you are performing i.e. only reproduction effect sizes are taken in the "reproduction_meta-analysis_excHUM251.r" file.
 
