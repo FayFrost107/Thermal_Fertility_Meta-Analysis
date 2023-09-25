@@ -112,24 +112,7 @@ i2_ml(meta2, method=c("ratio")) # Heterogeneity at each random factor level
 # Accounting for non-independence of data points from the same experiment
 # Assumes a correlation of 0.5 between effect sizes from the same experiment 
 rdata$shared_control <- factor(rdata$Effect.size.code)
-VCV_shared <- matrix(0, nrow = dim(rdata)[1], ncol = dim(rdata)[1])
-rownames(VCV_shared) <- rdata[, "es"]
-colnames(VCV_shared) <- rdata[, "es"]
-shared_coord <- which(rdata[, "shared_control"] %in% rdata[duplicated(rdata[, "shared_control"]), "shared_control"] == TRUE) 
-
-#new_vcv <- impute_covariance_matrix(vi=rdata$v, cluster = rdata$study_code, r=0.5)
-
-
-# Finds effect sizes that share a control group
-combinations <- do.call("rbind", tapply(shared_coord, rdata[shared_coord,  "shared_control"], function(x) t(utils::combn(x, 2)))) 
-for (i in 1:dim(combinations)[1]) {
-  p1 <- combinations[i, 1]
-  p2 <- combinations[i, 2]
-  p1_p2_cov <- 0.5 * sqrt(rdata[p1, "v"]) * sqrt(rdata[p2, "v"])
-  VCV_shared[p1, p2] <- p1_p2_cov
-  VCV_shared[p2, p1] <- p1_p2_cov
-} # Calculates the covariance between effect sizes and enters them in each combination of coordinates
-diag(VCV_shared) <- rdata[, "v"] # Enters recalculated effect size sampling variances into diagonals
+VCV_shared <- impute_covariance_matrix(vi=rdata$v, cluster = rdata$shared_control, r=0.5)
 
 
 # Add new variance matrix into the mixed-effects meta-analysis model
