@@ -1,0 +1,12 @@
+The folders contain all papers with effect sizes in the top and bottom most extreme 2.5%.
+
+The 2.5% and 97.5% were calculated for reproduction and survival separately. 
+
+The threshold for including a paper for reproduction was an effect size es, such that 
+
+     es < -14.2  or es > 2.35
+
+
+wheras, for longevity it was
+
+    es < -6.9   or es >  6.43 
