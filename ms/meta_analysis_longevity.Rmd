@@ -7,7 +7,7 @@ output: pdf_document
 ```{r, global_options, include=FALSE}
 knitr::opts_chunk$set(message=FALSE, tidy.opts=list(width.cutoff=60), tidy=TRUE) 
 
-pacman::p_load(here, ape, phytools, metafor, orchaRd)
+pacman::p_load(here, ape, phytools, metafor, orchaRd, ggtree)
 
 ```
 
@@ -18,7 +18,7 @@ This document reports the process taken in the model fitting stage of the meta-a
 # 2. Setup
 We first read in our data and select all of the effect sizes related to longevity. We do this using the following code.
 
-```{r, eval=FALSE}
+```{r, eval=TRUE, include=FALSE}
 ### Read in effect size data
 effectdata <- read.csv(here::here("data", "Survival project all pairwise.es.csv"))
 longdata_warm <- subset(effectdata, Trait.category == "Longevity" & warm.cool == "Warm" )
@@ -34,7 +34,7 @@ rdata <- subset(rdata, Paper.code != "HUM251")
 
 Next we create new columns in our dataframe which will serve as random factors in our multi-level meta analysis models. The following initialises four new columns, namely "obs", "study_code", "Species.phylo" and "species". Lastly, we create a column name "precision" which is equal to the inverse standard error. 
 
-```{r, eval=FALSE}
+```{r, eval=TRUE, include=FALSE}
 ### Create random factors into data frame 
 rdata$obs <- factor(c(1:nrow(rdata)))                # Unique observation code
 rdata$study_code <- factor(rdata$Paper.code)         # Model requires column names study_code 
@@ -55,7 +55,7 @@ nlevels(rdata$study_code) # Check number of studies
 
 The final stage in the setup is to import a phylogentic tree of the data. Below is the code used to produce the tree and a plot of the tree itself. 
 
-```{r, eval=FALSE}
+```{r, eval=TRUE, include=FALSE}
 
 ## import tree from map
 tree1 <- read.nexus(here::here("phylogeny","all_long_excHUM251_tree.nex"))
