@@ -1,0 +1,69 @@
+#NEXUS
+[R-package APE, Fri Sep 15 11:39:17 2023]
+
+BEGIN TAXA;
+	DIMENSIONS NTAX = 28;
+	TAXLABELS
+		Agriphila aeneociliella
+		Drosophila robusta
+		Drosophila tripunctata
+		Drosophila suzukii
+		Drosophila pseudoobscura
+		Bactrocera dorsalis
+		Tribolium castaneum
+		Ophraella communa
+		Hippodamia variegata
+		Chrysoperla carnea
+		Encarsia formosa
+		Eretmocerus warrae
+		Lygus lineolaris
+		Nesidiocoris tenuis
+		Cimex lectularius
+		Nezara viridula
+		Sitobion avenae
+		Phenacoccus solenopsis
+		Trialeurodes vaporariorum
+		Bemisia tabaci
+		Daphnia magna
+		Artemia franciscana
+		Artemia persimilis
+		Phallocryptus spinosa
+		Arctodiaptomus salinus
+		Boeckella hamata
+		Penaeus merguiensis
+		Tetranychus urticae
+	;
+END;
+BEGIN TREES;
+	TRANSLATE
+		1	Agriphila aeneociliella,
+		2	Drosophila robusta,
+		3	Drosophila tripunctata,
+		4	Drosophila suzukii,
+		5	Drosophila pseudoobscura,
+		6	Bactrocera dorsalis,
+		7	Tribolium castaneum,
+		8	Ophraella communa,
+		9	Hippodamia variegata,
+		10	Chrysoperla carnea,
+		11	Encarsia formosa,
+		12	Eretmocerus warrae,
+		13	Lygus lineolaris,
+		14	Nesidiocoris tenuis,
+		15	Cimex lectularius,
+		16	Nezara viridula,
+		17	Sitobion avenae,
+		18	Phenacoccus solenopsis,
+		19	Trialeurodes vaporariorum,
+		20	Bemisia tabaci,
+		21	Daphnia magna,
+		22	Artemia franciscana,
+		23	Artemia persimilis,
+		24	Phallocryptus spinosa,
+		25	Arctodiaptomus salinus,
+		26	Boeckella hamata,
+		27	Penaeus merguiensis,
+		28	Tetranychus urticae
+	;
+	TREE * UNTITLED = [&R] (((((((1:0.1526271893,(((2:0.01668056714,3:0.01668056714):0.011676397,(4:0.00834028357,5:0.00834028357):0.02001668057):0.03002502085,6:0.05838198499):0.09424520434):0.0717264387,(((7:0.03669724771,8:0.03669724771):0.02001668057,9:0.05671392827):0.01417848207,10:0.07089241034):0.1534612177):0.1017514595,(11:0.04336947456,12:0.04336947456):0.282735613):0.1226021685,((((13:0.01000834028,14:0.01000834028):0.01000834028,15:0.02001668057):0.02001668057,16:0.04003336113):0.06672226856,((17:0.04587155963,18:0.04587155963):0.011676397,(19:0.004170141785,20:0.004170141785):0.05337781485):0.04920767306):0.3419516264):0.1025854879,((21:0.02585487907,((22:0.000834028357,23:0.000834028357):0.003336113428,24:0.004170141785):0.02168473728):0.05004170142,(25:0.01501251043,26:0.01501251043):0.06088407006):0.4753961635):0.03002502085,27:0.5813177648):0.06755629691,28:0.6488740617);
+END;
