@@ -6,6 +6,9 @@ output: pdf_document
   
 ```{r, global_options, include=FALSE}
 knitr::opts_chunk$set(message=FALSE, tidy.opts=list(width.cutoff=60), tidy=TRUE) 
+
+pacman::p_load(here, ape, phytools, metafor, orchaRd)
+
 ```
 
 # 1. Summary
@@ -17,7 +20,7 @@ We first read in our data and select all of the effect sizes related to longevit
 
 ```{r, eval=FALSE}
 ### Read in effect size data
-effectdata <- read.csv("Survival project all pairwise.es.csv")
+effectdata <- read.csv(here::here("data", "Survival project all pairwise.es.csv"))
 longdata_warm <- subset(effectdata, Trait.category == "Longevity" & warm.cool == "Warm" )
 longdata_cool <- subset(effectdata, Trait.category == "Longevity" & warm.cool == "Cool" )
 
@@ -55,7 +58,7 @@ The final stage in the setup is to import a phylogentic tree of the data. Below 
 ```{r, eval=FALSE}
 
 ## import tree from map
-tree1 <- read.nexus("all_longevity_excHUM251_tree.nex")
+tree1 <- read.nexus(here::here("phylogeny","all_long_excHUM251_tree.nex"))
 tree_grafen = compute.brlen(tree1, method="Grafen", power=1)
 phylo_matrix <- vcv(tree_grafen, cor=TRUE, model="Brownian") # Make phylogenetic matrix
 ```
@@ -124,7 +127,7 @@ vcv_shared <- impute_covariance_matrix(vi=rdata$v, cluster = rdata$shared_contro
 
 ```{r, eval=FALSE}
 # Add new variance matrix into the mixed-effects meta-analysis model
-meta3 <- rma.mv(es, vcv_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1|study_code, ~ 1|shared_control, ~1|obs), R= list(Species.phylo = phylo_matrix), data= rdata, method= "REML")
+meta3 <- rma.mv(es, vcv_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1|study_code,  ~1|obs), R= list(Species.phylo = phylo_matrix), data= rdata, method= "REML")
 
 ```
 
@@ -141,7 +144,7 @@ model fit and the phylogenetic signal was very weak.
 
 ```{r, eval=FALSE}
 ## without phylogeny but with shared control 
-meta5 <- rma.mv(es, VCV_shared, random= list(~ 1|species, ~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta5 <- rma.mv(es, VCV_shared, random= list(~ 1|species, ~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -154,7 +157,7 @@ i2_ml(meta5, method=c("ratio")) # Heterogeneity at each random factor level
 ## Model without phylogeny or species
 ```{r, eval=FALSE}
 ## without phylogeny or species
-meta4 <- rma.mv(es, VCV_shared, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta4 <- rma.mv(es, VCV_shared, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -167,7 +170,7 @@ i2_ml(meta4, method=c("ratio")) # Heterogeneity at each random factor level
 ## Model without phylogeny, species or study_code
 ```{r, eval=FALSE}
 ## without phylogeny, species or study_code 
-meta7 <- rma.mv(es, VCV_shared, random= list(~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta7 <- rma.mv(es, VCV_shared, random= list(~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -206,7 +209,7 @@ Starting with the best fitting random-effect model from Section 3, "meta4" we no
 
 ## Reference temperature 
 ```{r, eval=FALSE}
-meta_trait_ref <- rma.mv(es, VCV_shared, mod= ~reftemp, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_ref <- rma.mv(es, VCV_shared, mod= ~reftemp, random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -217,7 +220,7 @@ summary(meta_trait_ref)
 
 ## Treatment temperature
 ```{r, eval=FALSE}
-meta_trait_treattemp <- rma.mv(es, VCV_shared,  mod= ~treattemp, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_treattemp <- rma.mv(es, VCV_shared,  mod= ~treattemp, random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -228,7 +231,7 @@ summary(meta_trait_treattemp)
 
 ## Warm vs Cool
 ```{r, eval=FALSE}
-meta_trait_warm <- rma.mv(es, VCV_shared,  mod= ~warm.cool, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_warm <- rma.mv(es, VCV_shared,  mod= ~warm.cool, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -240,7 +243,7 @@ summary(meta_trait_warm)
 We model warm versus cool without and intercept so we can visualise the estimates easier. 
 
 ```{r, eval=FALSE}
-meta_trait_warm_nointer <- rma.mv(es, VCV_shared,  mod= ~warm.cool-1, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_warm_nointer <- rma.mv(es, VCV_shared,  mod= ~warm.cool-1, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -251,7 +254,7 @@ summary(meta_trait_warm_nointer)
 
 ## Difference
 ```{r, eval=FALSE}
-meta_trait_diff <- rma.mv(es, VCV_shared,  mod= ~diff, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_diff <- rma.mv(es, VCV_shared,  mod= ~diff, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -265,7 +268,7 @@ We expect that treatment temperature will have a non-linear effect on longevity.
 
 
 ```{r, eval=FALSE}
-meta_trait_treat3 <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_treat3 <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -275,7 +278,7 @@ summary(meta_trait_treat3)
 For completeness we also investigate treatment temperature as a quadratic effect. 
 
 ```{r, eval=FALSE}
-meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -321,7 +324,7 @@ ggplot(rdata, aes(x = bin.temp, y = es, fill = bin.temp)) +
 ```
 
 ```{r, eval=FALSE}
-meta_trait_bintemp <- rma.mv(es, VCV_shared,  mod= ~bin.temp-1,  random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_bintemp <- rma.mv(es, VCV_shared,  mod= ~bin.temp-1,  random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -342,7 +345,7 @@ plot+ coord_cartesian(ylim=c(-20,10))
 We fit meta-regression model with year as a moderator to see whether there is an publication bias. In other words, is effect size strongly correlated with publication year. We found now evidence to suggest that year has an effect on the report effect sizes. A summary of the model is given below. 
 
 ```{r, eval=FALSE}
-meta_year <- rma.mv(es, VCV_shared,  mod= ~Publication.year,  random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_year <- rma.mv(es, VCV_shared,  mod= ~Publication.year,  random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r, eval=TRUE}
@@ -395,7 +398,7 @@ VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_con
 ```
 
 ```{r, eval=FALSE, echo=TRUE}
-meta_sa_treat3 <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= sdata, method= "REML")
+meta_sa_treat3 <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
 ```
 
 ```{r}
@@ -424,7 +427,7 @@ table(sdata$bin.temp)
 
 
 ```{r, eval=FALSE}
-meta_sa_bintemp <- rma.mv(es, VCV_shared_sa,  mod= ~bin.temp-1,  random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= sdata, method= "REML")
+meta_sa_bintemp <- rma.mv(es, VCV_shared_sa,  mod= ~bin.temp-1,  random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
 ```
 
 ```{r, eval=TRUE}
@@ -442,7 +445,7 @@ plot+ coord_cartesian(ylim=c(-10,10))
 # Other fixed effects
 
 ```{r, eval=FALSE}
-meta_bintemp_habitat <- rma.mv(es, VCV_shared,  mod= ~bin.temp * Habitat,  random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_bintemp_habitat <- rma.mv(es, VCV_shared,  mod= ~bin.temp * Habitat,  random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
