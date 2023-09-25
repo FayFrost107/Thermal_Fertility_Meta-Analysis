@@ -2,7 +2,7 @@
 
 This folder contains everything needed to perform three seperate meta-analysis on how:
 
-  - Temperature affects reproduction     (FILE: reproduction_meta-analysis_excHUM251.r)
+  - Temperature affects reproduction     (FILE: reproduction_meta-analysis.r)
   - Temperaature affects longevity       (FILE: longevity_meta-analysis_excHUM251.r)
   - Tempertature affects survival        (FILE: survival_meta-analysis_excHUM251.r)
 
