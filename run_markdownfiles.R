@@ -1,13 +1,13 @@
 library(rmarkdown)
 library(ggtree)
+library(here)
 
 
-
-render("meta_analysis_reproduction.Rmd")
-
-
-render("meta_analysis_longevity.Rmd")
+render("ms/meta_analysis_reproduction.Rmd")
 
 
-render("meta-analysis_survival.Rmd")
+render("ms/meta_analysis_longevity.Rmd")
+
+
+render("ms/meta-analysis_survival.Rmd")
 
