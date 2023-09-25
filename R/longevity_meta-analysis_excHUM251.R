@@ -15,7 +15,7 @@ library(rotl)
 library(multcomp)
 library(dplyr)
 library(ggtree)
-
+pacman::p_load(ggtree)
 # To install the orchaRd package:
 #install.packages("pacman")
 #pacman::p_load(devtools, tidyverse, metafor, patchwork, R.rsp, emmeans)
