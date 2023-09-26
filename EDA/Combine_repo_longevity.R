@@ -2,7 +2,8 @@
 # 1. Packages  #
 #--------------#
 install.packages("pacman")
-pacman::p_load(tidyverse, here)
+pacman::p_load(tidyverse, here, dplyr, tidyr)
+
 
 #--------------#
 # 1. Setup     #
@@ -12,8 +13,6 @@ pacman::p_load(tidyverse, here)
 effectdata <- read.csv(here("Data", "Survival project all pairwise.es.csv"))
 effectdata <-  subset(effectdata, Paper.code != "HUM251") 
 
-
-wide_dat <- pivot_wider(effectdata, values_from = c(es, v), names_from = Trait.category)  %>% data.frame()
 
 repdata_warm <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Warm" )
 repdata_cool <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Cool" )
@@ -41,9 +40,6 @@ alllong <- subset(alllong, select = -es)
 alllong <- subset(alllong, select = -v)
 
 
-
-library(dplyr)
-library(tidyr)
 df <- merge(rdata, alllong, all=TRUE)
 df <- subset(df, select = -(Trait.category))
 df <- subset(df, select = -(Trait))
@@ -51,7 +47,7 @@ df <- df[,-1]
 df <- subset(df, select = -Effect.size.code)
 
 
-write.csv(df, "Data/Combined_effectsizes.csv")
+write.csv(df, here("Data", "Combined_effectsizes.csv"))
 
 
 
@@ -131,9 +127,15 @@ for(i in 1:nrow(unique_rows)){
 
 
 
+#--------------#
+# Long to wide #
+#--------------#
 
+# Unclear what the final long data should be from this code. You should be able to use pivot_wider if it has been set up correctly. If this doesn't work, another option is to: 1) subset the longevity; 2) subset the reproduction; 3) merge the two subsets together using left_join. You will first need to filter out the rows that are not in both subsets.
 
-
+wide_dat <- long_data %>% 
+              pivot_wider(values_from = c(es, v), names_from = Trait.category)   %>% 
+              data.frame()
 
 
 
