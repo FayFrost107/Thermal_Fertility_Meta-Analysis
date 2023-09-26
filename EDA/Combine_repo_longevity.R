@@ -1,13 +1,19 @@
-
+#--------------#
+# 1. Packages  #
+#--------------#
+install.packages("pacman")
+pacman::p_load(tidyverse, here)
 
 #--------------#
 # 1. Setup     #
 #--------------#
 
 ### Read in effect size data
-effectdata <- read.csv("Data/Survival project all pairwise.es.csv")
+effectdata <- read.csv(here("Data", "Survival project all pairwise.es.csv"))
 effectdata <-  subset(effectdata, Paper.code != "HUM251") 
 
+
+wide_dat <- pivot_wider(effectdata, values_from = c(es, v), names_from = Trait.category)  %>% data.frame()
 
 repdata_warm <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Warm" )
 repdata_cool <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Cool" )
