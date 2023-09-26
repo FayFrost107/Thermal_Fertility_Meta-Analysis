@@ -29,8 +29,8 @@ rdata <- subset(rdata, select = -es)
 rdata <- subset(rdata, select = -v)
 
 
-alllong$es_longevtiy <- alllong$es
-alllong$v_longevtiy <- alllong$v
+alllong$es_longevity <- alllong$es
+alllong$v_longevity <- alllong$v
 alllong <- subset(alllong, select = -es)
 alllong <- subset(alllong, select = -v)
 
@@ -61,7 +61,7 @@ repdata_cool <- subset(effectdata, Trait.category == "Reproduction" & warm.cool 
 
 allrep <- rbind(repdata_warm, repdata_cool)
 
-
+rdata <- allrep
 ### Read in effect size data
 longdata_warm <- subset(effectdata, Trait.category == "Longevity" & warm.cool == "Warm" )
 longdata_cool <- subset(effectdata, Trait.category == "Longevity" & warm.cool == "Cool" )
@@ -76,8 +76,8 @@ rdata <- subset(rdata, select = -es)
 rdata <- subset(rdata, select = -v)
 
 
-alllong$es_longevtiy <- alllong$es
-alllong$v_longevtiy <- alllong$v
+alllong$es_longevity <- alllong$es
+alllong$v_longevity <- alllong$v
 alllong <- subset(alllong, select = -es)
 alllong <- subset(alllong, select = -v)
 
@@ -95,6 +95,8 @@ allrows <- rbind(rdata[,1:35], alllong[,1:35])
 unique_rows <- allrows[!duplicated(allrows), ]
 
 combo_data <- unique_rows
+
+
 
 for(i in 1:nrow(unique_rows)){
 
@@ -116,8 +118,8 @@ for(i in 1:nrow(unique_rows)){
     combo_data$es.reproduction[i] <- rdata$es_reproduction[is.identical_r]
     combo_data$v.reproduction[i] <-  rdata$v_reproduction[is.identical_r]
     
-    combo_data$es.longevity[i] <- alllong$es_longevtiy[is.identical_l]
-    combo_data$v.longevity[i] <-  alllong$v_longevtiy[is.identical_l]
+    combo_data$es.longevity[i] <- alllong$es_longevity[is.identical_l]
+    combo_data$v.longevity[i] <-  alllong$v_longevity[is.identical_l]
 
 }
 
