@@ -151,7 +151,7 @@ for(i in 1:nrow(unique_rows)){
 ## Maybe i should do it for allrows then delete any duplicates at the end .....
  
 
-#### i think there are only 742 rows for which there is both longevity and repro
+#### i think there are only 653 rows for which there is both longevity and repro
 
 allrows <- rbind(rdata[,1:35], alllong[,1:35])
 
@@ -200,6 +200,14 @@ for (i in 1:nrow(combo_data)) {
   
 }
 
+u_combo <- unique(combo_data)
+
+### calculate number of rows which have entries in both reproduction and longevity
+
+df_cleaned <- u_combo[!is.na(u_combo$es.reproduction), ]
+df_cleaned <- df_cleaned[!is.na(df_cleaned$es.longevity), ]
+
+nrow(df_cleaned)
 #--------------#
 # Long to wide #
 #--------------#
