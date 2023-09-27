@@ -207,7 +207,10 @@ u_combo <- unique(combo_data)
 df_cleaned <- u_combo[!is.na(u_combo$es.reproduction), ]
 df_cleaned <- df_cleaned[!is.na(df_cleaned$es.longevity), ]
 
+
 nrow(df_cleaned)
+
+write.csv(df_cleaned, "Data/cleaned_unique_combo.csv")
 #--------------#
 # Long to wide #
 #--------------#
