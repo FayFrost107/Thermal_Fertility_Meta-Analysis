@@ -133,9 +133,10 @@ for(i in 1:nrow(unique_rows)){
 
 # Unclear what the final long data should be from this code. You should be able to use pivot_wider if it has been set up correctly. If this doesn't work, another option is to: 1) subset the longevity; 2) subset the reproduction; 3) merge the two subsets together using left_join. You will first need to filter out the rows that are not in both subsets.
 
-# Note that I am not sure what the final long_data file is, is it the "combined_effectsizes.csv"? Assuming it's called "long_data" you can use the code below to pivot_wider.
-wide_dat <- long_data %>% 
-              pivot_wider(values_from = c(es, v), names_from = Trait.category)   %>% 
+wide_dat <- read.csv(here("Data", "Combined_effectsizes.csv"))
+
+long_dat <- wide_dat %>% 
+              pivot_longer(cols = c(es_reproduction,  es_longevtiy), names_to = "es")   %>% 
               data.frame()
 
 
