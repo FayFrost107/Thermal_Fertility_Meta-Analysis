@@ -51,38 +51,43 @@ write.csv(df, here("Data", "Combined_effectsizes.csv"))
 
 
 
-#################### trying to combne repro and longevity below #### currently not working
+#################### trying to combine repro and longevity below #### currently not working
 
 ### Read in effect size data
 effectdata <- read.csv("Data/Survival project all pairwise.es.csv")
-effectdata <-  subset(effectdata, Paper.code != "HUM251") 
+effectdata <-  subset(effectdata, Paper.code != "HUM251") ## remove outlier paper
 
-
+## subset reproduction data
 repdata_warm <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Warm" )
 repdata_cool <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Cool" )
 
 allrep <- rbind(repdata_warm, repdata_cool)
 
 rdata <- allrep
-### Read in effect size data
+
+
+### subset longevity data
 longdata_warm <- subset(effectdata, Trait.category == "Longevity" & warm.cool == "Warm" )
 longdata_cool <- subset(effectdata, Trait.category == "Longevity" & warm.cool == "Cool" )
 
 alllong <- rbind(longdata_warm, longdata_cool)
 
-
+# make new variables
 rdata$es_reproduction <- rdata$es
 rdata$v_reproduction <- rdata$v
 
+# remove old variables
 rdata <- subset(rdata, select = -es)
 rdata <- subset(rdata, select = -v)
 
-
+# make new longevity variables and remove old
 alllong$es_longevity <- alllong$es
 alllong$v_longevity <- alllong$v
 alllong <- subset(alllong, select = -es)
 alllong <- subset(alllong, select = -v)
 
+
+# remove columns which are now redundant
 alllong <- subset(alllong, select = -(Trait.category))
 alllong <- subset(alllong, select = -(Trait))
 alllong <- alllong[,-1]
@@ -93,39 +98,107 @@ rdata <- subset(rdata, select = -(Trait))
 rdata <- rdata[,-1]
 rdata <- subset(rdata, select = -Effect.size.code)
 
+## put reproduction and longevity together
 allrows <- rbind(rdata[,1:35], alllong[,1:35])
+
+# find unique rows
 unique_rows <- allrows[!duplicated(allrows), ]
+
 
 combo_data <- unique_rows
 
-
+combo_data$es.reproduction <- NA
+combo_data$v.reproduction <- NA
+combo_data$es.longevity <- NA
+combo_data$v.longevity <- NA
 
 for(i in 1:nrow(unique_rows)){
-
+  
+  cat("Calculating row", i, "/2062", "\n")
+  
   is.identical_r <- c()
   is.identical_l <- c()
   
- for(j in 1:nrow(rdata)){
-       
-       result_r <- identical(rdata[j, 1:35], unique_rows[i,])
-       is.identical_r <- c(result_r, is.identical_r)
- }
+  for(j in 1:nrow(rdata)){
+    
+    result_r <- identical(rdata[j, 1:35], unique_rows[i,])
+    is.identical_r <- c(result_r, is.identical_r)
+  }
   
   for(j in 1:nrow(alllong)){
-       result_l <- identical(alllong[j, 1:35], unique_rows[i,])
-       is.identical_l <- c(result_l, is.identical_l)
+    result_l <- identical(alllong[j, 1:35], unique_rows[i,])
+    is.identical_l <- c(result_l, is.identical_l)
   }
-
- 
+  
+  if(any(is.identical_r == TRUE)){  ## if there is an true index then there are rep values
     combo_data$es.reproduction[i] <- rdata$es_reproduction[is.identical_r]
     combo_data$v.reproduction[i] <-  rdata$v_reproduction[is.identical_r]
-    
+  } 
+  
+  if(any(is.identical_l == TRUE)){ ## if there is an true index then there are long values
     combo_data$es.longevity[i] <- alllong$es_longevity[is.identical_l]
     combo_data$v.longevity[i] <-  alllong$v_longevity[is.identical_l]
+  } 
+  
+  }
 
+
+######################################################
+## I think the above is doing the wrong thing as I am just looking at the unique rows there. 
+## In other words, rows that just appear once in the data. 
+## These won't have a longevity AND rep component, they'll just have one. 
+## I need to keep exactly one of EVERY row, duplicated or not.  
+## Maybe i should do it for allrows then delete any duplicates at the end .....
+ 
+
+#### i think there are only 742 rows for which there is both longevity and repro
+
+allrows <- rbind(rdata[,1:35], alllong[,1:35])
+
+combo_data <- allrows
+
+combo_data$es.reproduction <- NA
+combo_data$v.reproduction <- NA
+combo_data$es.longevity <- NA
+combo_data$v.longevity <- NA
+
+
+for (i in 1:nrow(combo_data)) {
+  
+  cat("Calculating row", i, "/2804", "\n")
+  
+  is_matching_r <- rep(FALSE, nrow(rdata))
+  is_matching_l <- rep(FALSE, nrow(alllong))
+  
+  # for every row of allrows find matching row in rdata and alllong
+  
+  for (j in 1:nrow(rdata)) {
+    if (all(allrows[i, 1:35] == rdata[j, 1:35], na.rm=T)) {
+      is_matching_r[j] <- TRUE
+      break  # Break out of the loop once a match is found
+    }
+  }
+  
+  for (j in 1:nrow(alllong)) {
+    if (all(allrows[i, 1:35] == alllong[j, 1:35], na.rm=T)) {
+      is_matching_l[j] <- TRUE
+      break  # Break out of the loop once a match is found
+    }
+  }
+  
+  if (any(is_matching_r)) {  
+    # Extract values from rdata and assign to combo_data
+    combo_data$es.reproduction[i] <- rdata$es_reproduction[is_matching_r]
+    combo_data$v.reproduction[i] <- rdata$v_reproduction[is_matching_r]
+  } 
+  
+  if (any(is_matching_l)) { 
+    # Extract values from alllong and assign to combo_data
+    combo_data$es.longevity[i] <- alllong$es_longevity[is_matching_l]
+    combo_data$v.longevity[i] <- alllong$v_longevity[is_matching_l]
+  } 
+  
 }
-
-
 
 #--------------#
 # Long to wide #
