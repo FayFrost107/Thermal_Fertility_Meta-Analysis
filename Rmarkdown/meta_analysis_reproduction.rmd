@@ -117,28 +117,13 @@ The data has a nested structure. Each study (study_code) may have a number of ex
 ```{r, eval=FALSE}
 
 rdata$shared_control <- factor(rdata$Effect.size.code)
-VCV_shared <- matrix(0, nrow = dim(rdata)[1], ncol = dim(rdata)[1])
-rownames(VCV_shared) <- rdata[, "es"]
-colnames(VCV_shared) <- rdata[, "es"]
-shared_coord <- which(rdata[, "shared_control"] %in% rdata[duplicated(rdata[, "shared_control"]), "shared_control"] == TRUE) 
+VCV_shared <- impute_covariance_matrix(vi=rdata$v, cluster = rdata$shared_control, r=0.5)
 
-# Finds effect sizes that share a control group
-combinations <- do.call("rbind", tapply(shared_coord, rdata[shared_coord,  "shared_control"], function(x) t(utils::combn(x, 2)))) 
-for (i in 1:dim(combinations)[1]) {
-  p1 <- combinations[i, 1]
-  p2 <- combinations[i, 2]
-  p1_p2_cov <- 0.5 * sqrt(rdata[p1, "v"]) * sqrt(rdata[p2, "v"])
-  VCV_shared[p1, p2] <- p1_p2_cov
-  VCV_shared[p2, p1] <- p1_p2_cov
-} # Calculates the covariance between effect sizes and enters them in each 
-#combination of coordinates
-diag(VCV_shared) <- rdata[, "v"] 
-# Enters recalculated effect size sampling variances into diagonals
 ```
 
 ```{r, eval=FALSE}
 # Add new variance matrix into the mixed-effects meta-analysis model
-meta3 <- rma.mv(es, VCV_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1|study_code, ~ 1|shared_control, ~1|obs), 
+meta3 <- rma.mv(es, VCV_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1|study_code, ~1|obs), 
                 R= list(Species.phylo = phylo_matrix), data= rdata, method= "REML")
 ```
 
@@ -158,7 +143,7 @@ model fit and the phylogenetic signal was very weak.
 
 ```{r, eval=FALSE}
 ## without phylogeny but with shared control 
-meta5 <- rma.mv(es, VCV_shared, random= list(~ 1|species, ~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta5 <- rma.mv(es, VCV_shared, random= list(~ 1|species, ~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -171,7 +156,7 @@ i2_ml(meta5, method=c("ratio")) # Heterogeneity at each random factor level
 ## Model without phylogeny or species
 ```{r, eval=FALSE}
 ## without phylogeny or species
-meta4 <- rma.mv(es, VCV_shared, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta4 <- rma.mv(es, VCV_shared, random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -184,7 +169,7 @@ i2_ml(meta4, method=c("ratio")) # Heterogeneity at each random factor level
 ## Model without phylogeny, species or study_code
 ```{r, eval=FALSE}
 ## without phylogeny, species or study_code 
-meta7 <- rma.mv(es, VCV_shared, random= list(~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta7 <- rma.mv(es, VCV_shared, random= list(~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -192,20 +177,8 @@ summary(meta7)
 i2_ml(meta7, method=c("ratio")) # Heterogeneity at each random factor level
 ```
 
-\newpage
 
-## Model without phylogeny, species or shared_control 
-```{r, eval=FALSE}
-## without phylogeny, species or shared_control 
-meta8 <- rma.mv(es, VCV_shared, random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
-```
-
-```{r}
-summary(meta8)
-i2_ml(meta8, method=c("ratio")) # Heterogeneity at each random factor level
-```
-
-We can see from the above that the best fitting model according to AIC is "meta8" which includes only the study code and the unique effect size code, obs. However, since there is not a huge difference (< 2) between the AIC of this model and "meta4" which also includes shared_control, we choose to proceed with meta4. The thought being that 
+We can see from the above that the best fitting model according to AIC is "meta4" which includes only the study code and the unique effect size code, obs. There is a AIC difference of 4 between  the model meta4 and the next best model meta5 . We continue our analysis using meta4 as our base model.  
 
 \newpage
 
@@ -223,7 +196,7 @@ Starting with the best fitting random-effect model from Section 3, "meta8" we no
 
 ## Reference temperature 
 ```{r, eval=FALSE}
-meta_trait_ref <- rma.mv(es, VCV_shared, mod= ~reftemp, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_ref <- rma.mv(es, VCV_shared, mod= ~reftemp, random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -234,7 +207,7 @@ summary(meta_trait_ref)
 
 ## Treatment temperature
 ```{r, eval=FALSE}
-meta_trait_treattemp <- rma.mv(es, VCV_shared,  mod= ~treattemp, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_treattemp <- rma.mv(es, VCV_shared,  mod= ~treattemp, random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -245,7 +218,7 @@ summary(meta_trait_treattemp)
 
 ## Warm vs Cool
 ```{r, eval=FALSE}
-meta_trait_warm <- rma.mv(es, VCV_shared,  mod= ~warm.cool, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_warm <- rma.mv(es, VCV_shared,  mod= ~warm.cool, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -257,7 +230,7 @@ summary(meta_trait_warm)
 We model warm versus cool without and intercept so we can visualise the estimates easier. 
 
 ```{r, eval=FALSE}
-meta_trait_warm_nointer <- rma.mv(es, VCV_shared,  mod= ~warm.cool-1, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_warm_nointer <- rma.mv(es, VCV_shared,  mod= ~warm.cool-1, random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -268,7 +241,7 @@ summary(meta_trait_warm_nointer)
 
 ## Difference
 ```{r, eval=FALSE}
-meta_trait_diff <- rma.mv(es, VCV_shared,  mod= ~diff, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_diff <- rma.mv(es, VCV_shared,  mod= ~diff, random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -281,7 +254,7 @@ summary(meta_trait_diff)
 We expect that treatment temperature will have a quadratic effect on reproduction. In other words, we expect that reproduction will decrease either side of an optimum temperature for each species. We also assume that this optimum temperature will be close to the control temperature. That said, we investigate **treattemp** as a quadratic fixed effect. 
 
 ```{r, eval=FALSE}
-meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -343,7 +316,7 @@ ggplot(rdata, aes(x = bin.temp, y = es, fill = bin.temp)) +
 ```
 
 ```{r, eval=FALSE}
-meta_trait_bintemp <- rma.mv(es, VCV_shared,  mod= ~bin.temp-1,  random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_bintemp <- rma.mv(es, VCV_shared,  mod= ~bin.temp-1,  random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -364,7 +337,7 @@ plot+ coord_cartesian(ylim=c(-20,10))
 We fit meta-regression model with year as a moderator to see whether there is an publication bias. In other words, is effect size strongly correlated with publication year. We found now evidence to suggest that year has an effect on the report effect sizes. A summary of the model is given below. 
 
 ```{r, eval=FALSE}
-meta_year <- rma.mv(es, VCV_shared,  mod= ~Publication.year,  random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_year <- rma.mv(es, VCV_shared,  mod= ~Publication.year,  random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 ```
 
 ```{r, eval=TRUE}
@@ -413,7 +386,7 @@ VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_con
 ```
 
 ```{r, eval=FALSE, echo=TRUE}
-meta_sa_treat2 <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= sdata, method= "REML")
+meta_sa_treat2 <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code, ~1|obs), data= sdata, method= "REML")
 ```
 
 ```{r}
@@ -444,7 +417,7 @@ table(sdata$bin.temp)
 
 
 ```{r, eval=FALSE}
-meta_sa_bintemp <- rma.mv(es, VCV_shared_sa,  mod= ~bin.temp-1,  random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= sdata, method= "REML")
+meta_sa_bintemp <- rma.mv(es, VCV_shared_sa,  mod= ~bin.temp-1,  random= list(~ 1|study_code, ~1|obs), data= sdata, method= "REML")
 ```
 
 ```{r, eval=TRUE}
@@ -470,7 +443,7 @@ subdata <- rdata[!(rdata$Paper.code %in% remove), ]
 
 VCV_shared_subdata <- impute_covariance_matrix(vi=subdata$v, cluster = subdata$shared_control, r=0.5)
 
-meta_sub_bintemp <- rma.mv(es, VCV_shared_subdata,  mod= ~bin.temp-1,  random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= subdata, method= "REML")
+meta_sub_bintemp <- rma.mv(es, VCV_shared_subdata,  mod= ~bin.temp-1,  random= list(~ 1|study_code, ~1|obs), data= subdata, method= "REML")
 ```
 
 ```{r}

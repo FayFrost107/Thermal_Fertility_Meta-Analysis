@@ -114,35 +114,30 @@ rdata$shared_control <- factor(rdata$Effect.size.code)
 VCV_shared <- impute_covariance_matrix(vi=rdata$v, cluster = rdata$shared_control, r=0.5)
 
 
-# Add new variance matrix into the mixed-effects meta-analysis model
-meta3 <- rma.mv(es, VCV_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1|study_code, ~ 1|shared_control, ~1|obs), 
+# Add new shared_control variance matrix into the mixed-effects meta-analysis model
+meta3 <- rma.mv(es, VCV_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1|study_code, ~1|obs), 
                 R= list(Species.phylo = phylo_matrix), data= rdata, method= "REML")
 summary(meta3)
-i2_ml(meta3, method=c("ratio")) # Heterogeneity at each random factor level
+i2_ml(meta3, method=c("ratio")) 
 
 
 ## without phylogeny or species
-meta4 <- rma.mv(es, VCV_shared, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta4 <- rma.mv(es, VCV_shared, random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 summary(meta4)
-i2_ml(meta4, method=c("ratio")) # Heterogeneity at each random factor level
+i2_ml(meta4, method=c("ratio"))
 
 
-## without phylogeny but with shared control 
-meta5 <- rma.mv(es, VCV_shared, random= list(~ 1|species, ~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+## without phylogeny
+meta5 <- rma.mv(es, VCV_shared, random= list(~ 1|species, ~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 summary(meta5)
-i2_ml(meta5, method=c("ratio")) # Heterogeneity at each random factor level
+i2_ml(meta5, method=c("ratio"))
 
 
 ## without phylogeny, species or study_code 
-meta7 <- rma.mv(es, VCV_shared, random= list(~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta7 <- rma.mv(es, VCV_shared, random= list(~ 1|obs), data= rdata, method= "REML")
 summary(meta7)
-i2_ml(meta7, method=c("ratio")) # Heterogeneity at each random factor level
+i2_ml(meta7, method=c("ratio")) 
 
-
-## without phylogeny, species or shared_control 
-meta8 <- rma.mv(es, VCV_shared, random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
-summary(meta8)
-i2_ml(meta8, method=c("ratio")) # Heterogeneity at each random factor level
 
 ####
 #-----------------------#
@@ -153,38 +148,38 @@ i2_ml(meta8, method=c("ratio")) # Heterogeneity at each random factor level
 # Single categorical factor added as a fixed effect
 
 # warm/cool
-meta_trait_warm <- rma.mv(es, VCV_shared,  mod= ~warm.cool, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_warm <- rma.mv(es, VCV_shared,  mod= ~warm.cool, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_warm)
 
 
 # warm/cool -1
-meta_trait_warm_nointer <- rma.mv(es, VCV_shared,  mod= ~warm.cool-1, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_warm_nointer <- rma.mv(es, VCV_shared,  mod= ~warm.cool-1, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_warm_nointer)
 
 
 # ref temp
-meta_trait_ref <- rma.mv(es, VCV_shared,  mod= ~reftemp, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_ref <- rma.mv(es, VCV_shared,  mod= ~reftemp, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_ref)
 
 # treat temp
-meta_trait_treattemp <- rma.mv(es, VCV_shared,  mod= ~treattemp, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_treattemp <- rma.mv(es, VCV_shared,  mod= ~treattemp, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_treattemp)
 
 # treat temp^2
-meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_treat2)
 
 # treat temp^3
-meta_trait_treat3 <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_treat3 <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_treat3)
 
 
 # diff temp
-meta_trait_diff <- rma.mv(es, VCV_shared,  mod= ~diff, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_diff <- rma.mv(es, VCV_shared,  mod= ~diff, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_diff)
 
 # all fixed effects
-meta_trait_all <- rma.mv(es, VCV_shared,  mod= ~warm.cool + diff + treattemp + reftemp, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_all <- rma.mv(es, VCV_shared,  mod= ~warm.cool + diff + treattemp + reftemp, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_all)
 
 
@@ -205,7 +200,7 @@ levels(rdata$bin.temp)
 table(rdata$bin.temp)
 
 # binned temps
-meta_trait_bintemp <- rma.mv(es, VCV_shared,  mod= ~bin.temp-1,  random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta_trait_bintemp <- rma.mv(es, VCV_shared,  mod= ~bin.temp-1,  random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_bintemp)
 
 
@@ -214,7 +209,7 @@ summary(meta_trait_bintemp)
 ## Publication Bias.
 
 meta_year <- rma.mv(es, VCV_shared,  mod= ~Publication.year,  
-                    random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+                    random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_year)
 
 
@@ -235,13 +230,13 @@ VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_con
 
 # re-run cubic model
 meta_sa_treat3 <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(treattemp, degree=3, raw=TRUE), 
-                         random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= sdata, method= "REML")
+                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
 summary(meta_sa_treat3)
 
 
 # re-run binned temps model
 meta_sa_bintemp <- rma.mv(es, VCV_shared_sa,  mod= ~bin.temp-1,  
-                          random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= sdata, method= "REML")
+                          random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
 
 summary(meta_sa_bintemp)
 
@@ -249,7 +244,7 @@ summary(meta_sa_bintemp)
 # Other fixed effects
 
 meta_bintemp_habitat <- rma.mv(es, VCV_shared,  mod= ~bin.temp * Habitat,  
-                               random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+                               random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_bintemp_habitat)
 
 
