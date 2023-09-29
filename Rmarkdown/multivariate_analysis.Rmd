@@ -18,7 +18,7 @@ pacman::p_load(tidyverse, here, metafor)
 
 ```{r, check data, echo = FALSE, include=FALSE}
 
-# Looking more closely at these data they are organised wide, so that explains first check, but check 2 may still be problematic. Lets just orient the data length wise. 
+#  Let's just orient the data length wise as we need it in this format first.
   
   data_long <- data %>% pivot_longer(cols = c(es.reproduction, es.longevity, v.reproduction, v.longevity), names_to = "outcome", values_to = "es") %>% data.frame()
   
@@ -26,16 +26,20 @@ pacman::p_load(tidyverse, here, metafor)
   data_long_es <- data_long %>% filter(outcome %in% c("es.reproduction", "es.longevity"))
    data_long_v <- data_long %>% filter(outcome %in% c("v.reproduction", "v.longevity"))
   
-  # All information should now be ordered correctly and the dataframes the same dimenions. We can check
+  # All information should now be ordered correctly and the data frames the same dimensions. We can check
   dim(data_long_es)
   dim(data_long_v)
   
 # Now, bind these together
   data_long_final <- cbind(data_long_es, v = data_long_v$es)
   
-# Now, lets check that this data is set up correctly. If we group by Experiment.code and diff then we should have a maximum of 1 effect size for each study in each outcome category
-  data_long_final %>% group_by(Experiment.code, diff, outcome) %>% summarise(n=n()) %>% filter(n !=1)
+# Now, let's check that this data is set up correctly. If we group by Experiment.code, diff and outcome then we should have a maximum of 1 effect size for each study/diff in each outcome category
+  check <- data_long_final %>% group_by(Experiment.code, diff, outcome) %>% summarise(n=n()) %>% filter(n !=1)
 
-# OUTCOME: There still appear to be columns(~40) with more than 1 effect size for each longevity/reproduction effect size.
+# OUTCOME: There still appear to be columns(~40) with more than 1 effect size for each longevity/reproduction effect size. This is also not because we could have males and female effect sizes as including sex does not resolve this problem
+  
+# The Experiment code identifiers that are relevant are:
+  unique(check$Experiment.code)
+  
 ```
 
