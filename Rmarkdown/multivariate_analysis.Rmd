@@ -33,13 +33,29 @@ pacman::p_load(tidyverse, here, metafor)
 # Now, bind these together
   data_long_final <- cbind(data_long_es, v = data_long_v$es)
   
+# Create unique ID for clustered effects
+  data_long_final$trial <- with(data_long_final, interaction(Experiment.code, diff))
+  
 # Now, let's check that this data is set up correctly. If we group by Experiment.code, diff and outcome then we should have a maximum of 1 effect size for each study/diff in each outcome category
-  check <- data_long_final %>% group_by(Experiment.code, diff, outcome) %>% summarise(n=n()) %>% filter(n !=1)
+  check <- data_long_final %>% group_by(trial, outcome) %>% summarise(n=n()) %>% filter(n !=1)
 
 # OUTCOME: There still appear to be columns(~40) with more than 1 effect size for each longevity/reproduction effect size. This is also not because we could have males and female effect sizes as including sex does not resolve this problem
   
 # The Experiment code identifiers that are relevant are:
-  unique(check$Experiment.code)
+  unique(check$trial)
   
+```
+
+```{r, multivariatemodel}
+
+# VCV matrix. Let's set up the multivariate meta-analysis model. We first need to create the VCV sampling matrix. This is a block diagonal matrix with the sampling variance for each effect size on the diagonal and the sampling covariance between the two effect sizes on the off-diagonal.
+  
+  V <- vcalc(data_long$v, cluster =  data_long$trial)
+
+# Multivariate model. Using the VCV matrix we can set up the model. We'll keep it simple for now
+
+mv_mlma <- rma(es ~ outcome - 1, random = list(~outcome - 1 | trial), struc = "UN", data = data_long)
+
+
 ```
 
