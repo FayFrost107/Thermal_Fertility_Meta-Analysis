@@ -48,13 +48,13 @@ pacman::p_load(tidyverse, here, metafor)
 
 ```{r, multivariatemodel}
 
-# VCV matrix. Let's set up the multivariate meta-analysis model. We first need to create the VCV sampling matrix. This is a block diagonal matrix with the sampling variance for each effect size on the diagonal and the sampling covariance between the two effect sizes on the off-diagonal.
+# VCV matrix. Let's set up the multivariate meta-analysis model. We first need to create the VCV sampling matrix. This is a block diagonal matrix with the sampling variance for each effect size on the diagonal and the sampling covariance between the two effect sizes on the off-diagonal. We don't know the correlation, but we can assume 0.5. 
   
-  V <- vcalc(data_long$v, cluster =  data_long$trial)
+  V <- vcalc(vi=data_long_final$v, cluster =  data_long_final$trial, rho = 0.5)
 
 # Multivariate model. Using the VCV matrix we can set up the model. We'll keep it simple for now
 
-mv_mlma <- rma(es ~ outcome - 1, random = list(~outcome - 1 | trial), struc = "UN", data = data_long)
+mv_mlma <- rma(es ~ outcome - 1, V = V, random = list(~outcome - 1 | trial), struc = "UN", data = data_long)
 
 
 ```
