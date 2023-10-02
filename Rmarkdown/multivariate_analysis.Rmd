@@ -17,19 +17,8 @@ pacman::p_load(tidyverse, here, metafor)
 ```
 
 ```{r, check data, echo = FALSE, include=FALSE}
-# We should have a longevity AND reproduction effect size for each single experiment ID. This means we should have at least 2 values for each experiment ID. We should not have 1. 
 
-  data %>% group_by(Experiment.code) %>% summarise(n = n()) %>% filter(n < 2)
-
-# OUTCOME: We have at least 38 rows with a single effect size. That's not going to work.
-
-# Now we need to see if we have more than 2. If we have more than 2 then the coding has not been set up correctly because each logenvity and reproduction effect size shoud be paired.
-
-  data %>% group_by(Experiment.code) %>% summarise(n = n()) %>% filter(n >2)
- 
-# OUTCOME: We have 112 experiment codes where we have at least 4-5 effect sizes. For each Experiment code, assuming I understand what that is meant to mean (probably not) we should have 2 effect sizes. One longevity and one reproduction. So, we either 1) need to create a new combined column that gets us down to that level or 2) we need to add a trial column to the data that identified which two come from the same trial. 
-  
-# Looking more closely at these data they are organised wide, so that explains first check, but check 2 may still be problematic. Lets just orient the data length wise. 
+#  Let's just orient the data length wise as we need it in this format first.
   
   data_long <- data %>% pivot_longer(cols = c(es.reproduction, es.longevity, v.reproduction, v.longevity), names_to = "outcome", values_to = "es") %>% data.frame()
   
@@ -37,16 +26,36 @@ pacman::p_load(tidyverse, here, metafor)
   data_long_es <- data_long %>% filter(outcome %in% c("es.reproduction", "es.longevity"))
    data_long_v <- data_long %>% filter(outcome %in% c("v.reproduction", "v.longevity"))
   
-  # All information should now be ordered correctly and the dataframes the same dimenions. We can check
+  # All information should now be ordered correctly and the data frames the same dimensions. We can check
   dim(data_long_es)
   dim(data_long_v)
   
 # Now, bind these together
   data_long_final <- cbind(data_long_es, v = data_long_v$es)
   
-# Now, lets check that this data is set up correctly. If we group by Experiment.code and outcome then we should have a maximum of 1 effect size for each study in each outcome category
-  data_long_final %>% group_by(Experiment.code, outcome) %>% summarise(n=n())
+# Create unique ID for clustered effects
+  data_long_final$trial <- with(data_long_final, interaction(Experiment.code, diff))
+  
+# Now, let's check that this data is set up correctly. If we group by Experiment.code, diff and outcome then we should have a maximum of 1 effect size for each study/diff in each outcome category
+  check <- data_long_final %>% group_by(trial, outcome) %>% summarise(n=n()) %>% filter(n !=1)
 
-# OUTCOME: Nope. We do not have it set up like this so we need to be sure we can link each es.longevity to each es.reproduction.
+# OUTCOME: There still appear to be columns(~40) with more than 1 effect size for each longevity/reproduction effect size. This is also not because we could have males and female effect sizes as including sex does not resolve this problem
+  
+# The Experiment code identifiers that are relevant are:
+  unique(check$trial)
+  
+```
+
+```{r, multivariatemodel}
+
+# VCV matrix. Let's set up the multivariate meta-analysis model. We first need to create the VCV sampling matrix. This is a block diagonal matrix with the sampling variance for each effect size on the diagonal and the sampling covariance between the two effect sizes on the off-diagonal. We don't know the correlation, but we can assume 0.5. 
+  
+  V <- vcalc(vi=data_long_final$v, cluster =  data_long_final$trial, rho = 0.5)
+
+# Multivariate model. Using the VCV matrix we can set up the model. We'll keep it simple for now
+
+mv_mlma <- rma(es ~ outcome - 1, V = V, random = list(~outcome - 1 | trial), struc = "UN", data = data_long)
+
+
 ```
 
