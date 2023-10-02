@@ -17,8 +17,9 @@ effectdata <-  subset(effectdata, Paper.code != "HUM251")
 repdata_warm <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Warm" )
 repdata_cool <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Cool" )
 
-allrep <- rbind(repdata_warm, repdata_cool)
+rdata <- rbind(repdata_warm, repdata_cool)
 
+ 
 
 ### Read in effect size data
 longdata_warm <- subset(effectdata, Trait.category == "Longevity" & warm.cool == "Warm" )
@@ -29,141 +30,50 @@ alllong <- rbind(longdata_warm, longdata_cool)
 
 rdata$es_reproduction <- rdata$es
 rdata$v_reproduction <- rdata$v
-
 rdata <- subset(rdata, select = -es)
 rdata <- subset(rdata, select = -v)
+rdata <- subset(rdata, select = -(Trait.category))
+rdata <- subset(rdata, select = -(Trait))
+rdata <- subset(rdata, select = -Effect.size.code)
 
 
 alllong$es_longevity <- alllong$es
 alllong$v_longevity <- alllong$v
 alllong <- subset(alllong, select = -es)
 alllong <- subset(alllong, select = -v)
-
+alllong <- subset(alllong, select = -(Trait.category))
+alllong <- subset(alllong, select = -(Trait))
+alllong <- subset(alllong, select = -Effect.size.code)
 
 df <- merge(rdata, alllong, all=TRUE)
-df <- subset(df, select = -(Trait.category))
-df <- subset(df, select = -(Trait))
-df <- df[,-1]
-df <- subset(df, select = -Effect.size.code)
 
 
 write.csv(df, here("Data", "Combined_effectsizes.csv"))
 
 
-
-#################### trying to combine repro and longevity below #### currently not working
-
-### Read in effect size data
-effectdata <- read.csv("Data/Survival project all pairwise.es.csv")
-effectdata <-  subset(effectdata, Paper.code != "HUM251") ## remove outlier paper
-
-## subset reproduction data
-repdata_warm <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Warm" )
-repdata_cool <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Cool" )
-
-allrep <- rbind(repdata_warm, repdata_cool)
-
-rdata <- allrep
+df_cleaned <- df[!is.na(df$es_reproduction), ]
+df_cleaned <- df_cleaned[!is.na(df_cleaned$es_longevity), ]
 
 
-### subset longevity data
-longdata_warm <- subset(effectdata, Trait.category == "Longevity" & warm.cool == "Warm" )
-longdata_cool <- subset(effectdata, Trait.category == "Longevity" & warm.cool == "Cool" )
-
-alllong <- rbind(longdata_warm, longdata_cool)
-
-# make new variables
-rdata$es_reproduction <- rdata$es
-rdata$v_reproduction <- rdata$v
-
-# remove old variables
-rdata <- subset(rdata, select = -es)
-rdata <- subset(rdata, select = -v)
-
-# make new longevity variables and remove old
-alllong$es_longevity <- alllong$es
-alllong$v_longevity <- alllong$v
-alllong <- subset(alllong, select = -es)
-alllong <- subset(alllong, select = -v)
+write.csv(df_cleaned, "Data/cleaned_unique_combo.csv")
 
 
-# remove columns which are now redundant
-alllong <- subset(alllong, select = -(Trait.category))
-alllong <- subset(alllong, select = -(Trait))
-alllong <- alllong[,-1]
-alllong <- subset(alllong, select = -Effect.size.code)
 
-rdata <- subset(rdata, select = -(Trait.category))
-rdata <- subset(rdata, select = -(Trait))
-rdata <- rdata[,-1]
-rdata <- subset(rdata, select = -Effect.size.code)
-
-## put reproduction and longevity together
-allrows <- rbind(rdata[,1:35], alllong[,1:35])
-
-# find unique rows
-unique_rows <- allrows[!duplicated(allrows), ]
+########################## Find matching study info rows for reproduction and longevity dataframes and combine effect sizes #################
+##########################  code below redundant. Have done this with merge function above. #####################################
 
 
-combo_data <- unique_rows
+#allrows <- rbind(rdata[,1:36], alllong[,1:36])
 
-combo_data$es.reproduction <- NA
-combo_data$v.reproduction <- NA
-combo_data$es.longevity <- NA
-combo_data$v.longevity <- NA
+#combo_data <- allrows
 
-for(i in 1:nrow(unique_rows)){
-  
-  cat("Calculating row", i, "/2062", "\n")
-  
-  is.identical_r <- c()
-  is.identical_l <- c()
-  
-  for(j in 1:nrow(rdata)){
-    
-    result_r <- identical(rdata[j, 1:35], unique_rows[i,])
-    is.identical_r <- c(result_r, is.identical_r)
-  }
-  
-  for(j in 1:nrow(alllong)){
-    result_l <- identical(alllong[j, 1:35], unique_rows[i,])
-    is.identical_l <- c(result_l, is.identical_l)
-  }
-  
-  if(any(is.identical_r == TRUE)){  ## if there is an true index then there are rep values
-    combo_data$es.reproduction[i] <- rdata$es_reproduction[is.identical_r]
-    combo_data$v.reproduction[i] <-  rdata$v_reproduction[is.identical_r]
-  } 
-  
-  if(any(is.identical_l == TRUE)){ ## if there is an true index then there are long values
-    combo_data$es.longevity[i] <- alllong$es_longevity[is.identical_l]
-    combo_data$v.longevity[i] <-  alllong$v_longevity[is.identical_l]
-  } 
-  
-  }
+#combo_data$es.reproduction <- NA
+#combo_data$v.reproduction <- NA
+#combo_data$es.longevity <- NA
+#combo_data$v.longevity <- NA
 
 
-######################################################
-## I think the above is doing the wrong thing as I am just looking at the unique rows there. 
-## In other words, rows that just appear once in the data. 
-## These won't have a longevity AND rep component, they'll just have one. 
-## I need to keep exactly one of EVERY row, duplicated or not.  
-## Maybe i should do it for allrows then delete any duplicates at the end .....
- 
-
-#### i think there are only 653 rows for which there is both longevity and repro
-
-allrows <- rbind(rdata[,1:35], alllong[,1:35])
-
-combo_data <- allrows
-
-combo_data$es.reproduction <- NA
-combo_data$v.reproduction <- NA
-combo_data$es.longevity <- NA
-combo_data$v.longevity <- NA
-
-
-for (i in 1:nrow(combo_data)) {
+#for (i in 1:nrow(combo_data)) {
   
   cat("Calculating row", i, "/2804", "\n")
   
@@ -198,19 +108,15 @@ for (i in 1:nrow(combo_data)) {
     combo_data$v.longevity[i] <- alllong$v_longevity[is_matching_l]
   } 
   
-}
+#}
 
-u_combo <- unique(combo_data)
+#u_combo <- unique(combo_data)
 
 ### calculate number of rows which have entries in both reproduction and longevity
 
-df_cleaned <- u_combo[!is.na(u_combo$es.reproduction), ]
-df_cleaned <- df_cleaned[!is.na(df_cleaned$es.longevity), ]
 
 
-nrow(df_cleaned)
 
-write.csv(df_cleaned, "Data/cleaned_unique_combo.csv")
 #--------------#
 # Long to wide #
 #--------------#

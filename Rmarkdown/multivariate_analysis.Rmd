@@ -20,11 +20,11 @@ pacman::p_load(tidyverse, here, metafor)
 
 #  Let's just orient the data length wise as we need it in this format first.
   
-  data_long <- data %>% pivot_longer(cols = c(es.reproduction, es.longevity, v.reproduction, v.longevity), names_to = "outcome", values_to = "es") %>% data.frame()
+  data_long <- data %>% pivot_longer(cols = c(es_reproduction, es_longevity, v_reproduction, v_longevity), names_to = "outcome", values_to = "es") %>% data.frame()
   
   # Not quite where we need it, so lets filter out v and then cbind together
-  data_long_es <- data_long %>% filter(outcome %in% c("es.reproduction", "es.longevity"))
-   data_long_v <- data_long %>% filter(outcome %in% c("v.reproduction", "v.longevity"))
+  data_long_es <- data_long %>% filter(outcome %in% c("es_reproduction", "es_longevity"))
+   data_long_v <- data_long %>% filter(outcome %in% c("v_reproduction", "v_longevity"))
   
   # All information should now be ordered correctly and the data frames the same dimensions. We can check
   dim(data_long_es)
