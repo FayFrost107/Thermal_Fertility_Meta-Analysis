@@ -1,61 +1,61 @@
-Duplicated Exp Code,Fixed?,Reason
-HUM316_A.-4,,
-HUM316_A.4,,
-HUM316_A.8,,
-OSM149A.-6,,
-OSM149A.3,,
-TEMP1456A.-10,,
-TEMP1456A.-5,,
-TEMP1456A.5,,
-TEMP159A.2.5,,
-TEMP159A.5,,
-TEMP159A.7.5,,
-TEMP1690A.-10,,
-TEMP1690A.-5,,
-TEMP1690A.5,,
-TEMP1713A.-13,,
-TEMP1713A.-17,,
-TEMP1713A.-5,,
-TEMP1713A.-9,,
-TEMP1713A.5,,
-TEMP1713A.7,,
-TEMP1713B.-13,,
-TEMP1713B.-17,,
-TEMP1713B.-5,,
-TEMP1713B.-9,,
-TEMP1713B.5,,
-TEMP1713B.7,,
-TEMP194A.10,,
-TEMP194B.10,,
-TEMP2115_A.10,,
-TEMP2115_A.5,,
-TEMP2149_A.-10,,
-TEMP2149_A.-15,,
-TEMP2149_A.-5,,
-TEMP2149_A.5,,
-TEMP240_A.-5,,
-TEMP240_A.10,,
-TEMP240_A.5,,
-TEMP56_A.-8,,
-TEMP56_A.6,,
-TEMP575A.-2,,
-TEMP575A.-7,,
-TEMP575A.13,,
-TEMP575A.3,,
-TEMP575A.8,,
-TEMP575B.-2,,
-TEMP575B.-7,,
-TEMP575B.13,,
-TEMP575B.3,,
-TEMP575B.8,,
-TEMP793A.10,,
-TEMP961A.-5,,
-TEMP961A.10,,
-TEMP961A.15,,
-TEMP961A.5,,
-TEMP962A.10,,
-TEMP962A.12.5,,
-TEMP962A.15,,
-TEMP962A.2.5,,
-TEMP962A.5,,
-TEMP962A.7.5,,
+Duplicated Exp Code,Fixed?,Reason,Solution
+HUM316_A.-4,y,multiple reproduction traits,Remove
+HUM316_A.4,y,multiple reproduction traits,Remove
+HUM316_A.8,y,multiple reproduction traits,Remove
+OSM149A.-6,y,multiple reproduction traits,Remove
+OSM149A.3,y,multiple reproduction traits,Remove
+TEMP1456A.-10,y,Multiple Species ,New exp code given
+TEMP1456A.-5,y,Multiple Species ,New exp code given
+TEMP1456A.5,y,Multiple Species ,New exp code given
+TEMP159A.2.5,y,multiple reproduction traits,Remove
+TEMP159A.5,y,multiple reproduction traits,Remove
+TEMP159A.7.5,y,multiple reproduction traits,Remove
+TEMP1690A.-10,y,multiple reproduction traits,Remove
+TEMP1690A.-5,y,multiple reproduction traits,Remove
+TEMP1690A.5,y,multiple reproduction traits,Remove
+TEMP1713A.-13,y,multiple reproduction traits,Remove
+TEMP1713A.-17,y,multiple reproduction traits,Remove
+TEMP1713A.-5,y,multiple reproduction traits,Remove
+TEMP1713A.-9,y,multiple reproduction traits,Remove
+TEMP1713A.5,y,multiple reproduction traits,Remove
+TEMP1713A.7,y,multiple reproduction traits,Remove
+TEMP1713B.-13,y,multiple reproduction traits,Remove
+TEMP1713B.-17,y,multiple reproduction traits,Remove
+TEMP1713B.-5,y,multiple reproduction traits,Remove
+TEMP1713B.-9,y,multiple reproduction traits,Remove
+TEMP1713B.5,y,multiple reproduction traits,Remove
+TEMP1713B.7,y,multiple reproduction traits,Remove
+TEMP194A.10,y,multiple reproduction traits,Remove
+TEMP194B.10,y,multiple reproduction traits,Remove
+TEMP2115_A.10,y,multiple exp with same code,New exp code given
+TEMP2115_A.5,y,multiple exp with same code,New exp code given
+TEMP2149_A.-10,y,multiple reproduction traits,Remove
+TEMP2149_A.-15,y,multiple reproduction traits,Remove
+TEMP2149_A.-5,y,multiple reproduction traits,Remove
+TEMP2149_A.5,y,multiple reproduction traits,Remove
+TEMP240_A.-5,y,Multiple Species ,New exp code given
+TEMP240_A.10,y,Multiple Species ,New exp code given
+TEMP240_A.5,y,Multiple Species ,New exp code given
+TEMP56_A.-8,y,Multiple Species ,New exp code given
+TEMP56_A.6,y,Multiple Species ,New exp code given
+TEMP575A.-2,y,multiple exp with same code,New exp code given
+TEMP575A.-7,y,multiple exp with same code,New exp code given
+TEMP575A.13,y,multiple exp with same code,New exp code given
+TEMP575A.3,y,multiple exp with same code,New exp code given
+TEMP575A.8,y,multiple exp with same code,New exp code given
+TEMP575B.-2,y,multiple exp with same code,New exp code given
+TEMP575B.-7,y,multiple exp with same code,New exp code given
+TEMP575B.13,y,multiple exp with same code,New exp code given
+TEMP575B.3,y,multiple exp with same code,New exp code given
+TEMP575B.8,y,multiple exp with same code,New exp code given
+TEMP793A.10,y,multiple exp with same code,New exp code given
+TEMP961A.-5,y,Multiple Species ,New exp code given
+TEMP961A.10,y,Multiple Species ,New exp code given
+TEMP961A.15,y,Multiple Species ,New exp code given
+TEMP961A.5,y,Multiple Species ,New exp code given
+TEMP962A.10,y,Multiple Species ,New exp code given
+TEMP962A.12.5,y,Multiple Species ,New exp code given
+TEMP962A.15,y,Multiple Species ,New exp code given
+TEMP962A.2.5,y,Multiple Species ,New exp code given
+TEMP962A.5,y,Multiple Species ,New exp code given
+TEMP962A.7.5,y,Multiple Species ,New exp code given
