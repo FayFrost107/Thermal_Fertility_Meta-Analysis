@@ -50,7 +50,7 @@ pacman::p_load(tidyverse, here, metafor)
 
 # VCV matrix. Let's set up the multivariate meta-analysis model. We first need to create the VCV sampling matrix. This is a block diagonal matrix with the sampling variance for each effect size on the diagonal and the sampling covariance between the two effect sizes on the off-diagonal. We don't know the correlation, but we can assume 0.5. 
   
-  V <- metafor::vcalc(vi=v, cluster = trial, data = data_long_final, rho = 0.5, nearpd = TRUE)
+  V <- metafor::vcalc(vi=v, cluster = trial, type = outcome, data = data_long_final, rho = 0.5, nearpd = TRUE)
 
 # Check that this is set up correctly. Note that there are warnings about non-positive definite matrix. The matrix should be automatically. 
   V[1:6, 1:6]
