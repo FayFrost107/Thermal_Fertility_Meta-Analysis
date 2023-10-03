@@ -8,7 +8,10 @@ editor_options:
 
 ```{r, packages,echo = FALSE}
 install.packages("pacman")
-pacman::p_load(tidyverse, here, metafor)
+pacman::p_load(tidyverse, here, metafor, ape, phytools)
+
+# source functions
+  source(here("R", "func.R"))
 ```
 
 ```{r, load data, echo = FALSE}
@@ -62,6 +65,24 @@ mv_mlma <- rma.mv(es ~ outcome - 1, V = V,
                              ~outcome - 1 | Species.latin), 
                struc = "UN", data = data_long_final, test = "t", dfs = "contain")
 
+
+## Lets try a model with the random effects structure from the univariate case. Not the full structure is: "random= list(~ 1|Species.phylo, ~ 1|species, ~ 1|study_code, ~1|obs), R= list(Species.phylo = phylo_matrix)". We also don't know if these models can take a phylogenetic R matrix. So, lets have a look
+
+# Phylogeny. Use reproduction because it should match with longevity in terms of species
+       tree1 <- read.nexus(here("phylogeny", "all_reproduction_excHUM251_tree.nex"))
+       
+# Now we need to prune this tree to the species in this long data
+       tree_checks <- tree_checks(data_long_final, tree1, dataCol = "Species.latin", type = "check")
+
+# Now, use Fay's code to create R matrix. Not yet working because we need to sort out the species in the data before we can prune
+   #tree_grafen <- compute.brlen(tree1, method="Grafen", power=1)
+ # phylo_matrix <- vcv(tree_grafen, cor=TRUE, model="Brownian")
+
+mv_mlma2 <- rma.mv(es ~ outcome - 1, V = V, 
+               random = list(~outcome - 1 | trial,
+                             ~outcome - 1 | Species.phylo), 
+               R= list(Species.phylo = phylo_matrix),
+               struc = "UN", data = data_long_final, test = "t", dfs = "contain")
 
 ```
 
