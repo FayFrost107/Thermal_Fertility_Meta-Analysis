@@ -69,8 +69,61 @@ mv_mlma <- rma.mv(es ~ outcome - 1, V = V,
 ## Lets try a model with the random effects structure from the univariate case. Not the full structure is: "random= list(~ 1|Species.phylo, ~ 1|species, ~ 1|study_code, ~1|obs), R= list(Species.phylo = phylo_matrix)". We also don't know if these models can take a phylogenetic R matrix. So, lets have a look
 
 # Phylogeny. Use reproduction because it should match with longevity in terms of species
-       tree1 <- read.nexus(here("phylogeny", "all_reproduction_excHUM251_tree.nex"))
+   
        
+
+######################################### Fay added new code to update species names and prune tree  ##################################     
+
+# This code needs to be right at the start of our R script, ** before any analysis **  
+# as the correct species names and classifications come form this code !!!
+
+ tree1 <- read.nexus(here("phylogeny", "all_reproduction_excHUM251_tree.nex"))    
+ tree_grafen = compute.brlen(tree1, method="Grafen", power=1)
+
+classes <- read.csv(here("Data", "Species_classifications.CSV")) ## read in species classifications from map
+
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Marasmia exigua")]                <- "Cnaphalocrocis exigua"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Matsumuratettix hieroglyphicus")] <- "Matsumuratettix hiroglyphicus"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Mythimna roseilinea")]            <- "Mythimna albipuncta"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Apis craccivora")]                <- "Aphis craccivora"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Cryptoleamus montrouzieri")]      <- "Cryptolaemus montrouzieri"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Asplanchna brightwelli")]         <- "Asplanchna brightwellii"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Brennandania lambi")]             <- "Pygmephorus lambi"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Amblyseius alstoniae")]           <- "Euseius alstoniae"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Siphoninus phyllyreae")]          <- "Siphoninus phillyreae"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Proprioseiopsis asetus")]         <- "Amblyseius asetus"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Parabemisia myrica")]             <- "Parabemisia myricae"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Cirrospilus sp. near lyncus")]    <- "Cirrospilus lyncus"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Anagyrus sp. nov. nr. sinope" )]  <- "Anagyrus sinope"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Monochamus leuconotus")]          <- "Anthores leuconotus"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Ropalosiphum maidis")]            <- "Rhopalosiphum maidis"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Artemia fransiscana")]            <- "Artemia franciscana"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Blathyplectes curculionis")]      <- "Bathyplectes curculionis"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "Menochilus sexmaculatus")]        <- "Cheilomenes sexmaculata"
+data_long_final$Species.latin[which(data_long_final$Species.latin == "unknown (Tominic)")]              <- "Trichogramma" 
+
+
+### specify classifications from map
+data_long_final$Class <- classes$class[match(data_long_final$Species.latin, classes$species_latin)]
+
+
+## decide which species are in or out
+notin <- setdiff(tree1$tip.label, data_long_final$Species.latin)
+indata <- setdiff(tree1$tip.label, notin)
+
+## prune tree
+prune_tree <- drop.tip(tree_grafen, notin)
+phylo_matrix <- vcv(prune_tree, cor=TRUE, model="Brownian")
+
+## number of indata should equal # of unique data_long_final species. 
+setdiff(unique(data_long_final$Species.latin), indata)
+      
+       
+       
+ ############################################## End of Fay's amendments #####################################################      
+       
+
+
 # Now we need to prune this tree to the species in this long data
        tree_checks <- tree_checks(data_long_final, tree1, dataCol = "Species.latin", type = "check")
 

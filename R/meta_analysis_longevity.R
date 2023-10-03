@@ -120,23 +120,30 @@ meta3 <- rma.mv(es, VCV_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1
 summary(meta3)
 i2_ml(meta3, method=c("ratio")) 
 
+meta3_contain <-  rma.mv(es, VCV_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1|study_code, ~1|obs),     #gives same results
+                         R= list(Species.phylo = phylo_matrix), data= rdata, test="t", dfs="contain", method= "REML")
 
 ## without phylogeny or species
 meta4 <- rma.mv(es, VCV_shared, random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 summary(meta4)
 i2_ml(meta4, method=c("ratio"))
 
+meta4_contain <-  rma.mv(es, VCV_shared, random= list(~ 1|study_code, ~1|obs), data= rdata, test="t", dfs="contain", method= "REML") #gives same results
 
 ## without phylogeny
 meta5 <- rma.mv(es, VCV_shared, random= list(~ 1|species, ~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 summary(meta5)
 i2_ml(meta5, method=c("ratio"))
 
+meta5_contain <- rma.mv(es, VCV_shared, random= list(~ 1|species, ~ 1|study_code, ~1|obs), data= rdata, test="t", dfs="contain", method= "REML") #gives same results
+
 
 ## without phylogeny, species or study_code 
 meta7 <- rma.mv(es, VCV_shared, random= list(~ 1|obs), data= rdata, method= "REML")
 summary(meta7)
 i2_ml(meta7, method=c("ratio")) 
+
+meta7_contain <- rma.mv(es, VCV_shared, random= list(~ 1|obs), data= rdata, test="t", dfs="contain", method= "REML") #gives same results
 
 
 ####
@@ -173,7 +180,8 @@ summary(meta_trait_treat2)
 meta_trait_treat3 <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_treat3)
 
-
+meta_train_treat3_contain <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=3, raw=TRUE),   ## gives same results
+                                    random= list(~ 1|study_code,  ~1|obs), data= rdata, test="t", dfs = "contain", method= "REML")
 # diff temp
 meta_trait_diff <- rma.mv(es, VCV_shared,  mod= ~diff, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_diff)
