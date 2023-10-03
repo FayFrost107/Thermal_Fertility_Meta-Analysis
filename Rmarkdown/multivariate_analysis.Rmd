@@ -57,7 +57,10 @@ pacman::p_load(tidyverse, here, metafor)
 
 # Multivariate model. Using the VCV matrix we can set up the model. We'll keep it simple for now
 
-mv_mlma <- rma(es ~ outcome - 1, V = V, random = list(~outcome - 1 | trial), struc = "UN", data = data_long)
+mv_mlma <- rma.mv(es ~ outcome - 1, V = V, 
+               random = list(~outcome - 1 | trial,
+                             ~outcome - 1 | Species.latin), 
+               struc = "UN", data = data_long_final, test = "t", dfs = "contain")
 
 
 ```
