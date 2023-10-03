@@ -131,6 +131,10 @@ setdiff(unique(data_long_final$Species.latin), indata)
    #tree_grafen <- compute.brlen(tree1, method="Grafen", power=1)
  # phylo_matrix <- vcv(tree_grafen, cor=TRUE, model="Brownian")
 
+data_long_final$Species.phylo <- factor(data_long_final$Species.latin)   # Species names for phylo matrix
+data_long_final$species <- factor(data_long_final$Species.latin)  
+
+
 mv_mlma2 <- rma.mv(es ~ outcome - 1, V = V, 
                random = list(~outcome - 1 | trial,
                              ~outcome - 1 | Species.phylo), 
