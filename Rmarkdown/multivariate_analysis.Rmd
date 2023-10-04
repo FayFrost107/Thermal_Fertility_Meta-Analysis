@@ -120,19 +120,42 @@ mv_mlma2 <- rma.mv(es ~ outcome - 1, V = V,
 ```
 
 ```{r, multivariatemodelsfinal, echo = FALSE}
-## Univariate models were found to only need two random effects, obs and study. This greatly simplifies the multivarite model, which can only have two levels anyway. 
-
-mv_mlma_1 <- rma.mv(es ~ outcome - 1, V = V, 
-               random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
-                             ~outcome - 1 | Paper.code),  # This should estimate a study level random effect for each outcome.
-               struc = "UN", data = data_long_final, test = "t", dfs = "contain")  # struc = "UN" means we estimate the correlation between the two outcomes for each study and obs level random effect. Could also give it c("UN", "UN") to estimate the correlation for each outcome separately but this should take it as UN for both anyway.
-
+## Univariate models were found to only need two random effects, obs and study. This greatly simplifies the multivarite model, which can only have two levels anyway. We will save these models because they take quite some time to estimayte given how much data is available
+rerun = FALSE
+if(rerun){
+  mv_mlma_1 <- rma.mv(es ~ outcome - 1, V = V, 
+                random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
+                              ~outcome - 1 | Paper.code),  # This should estimate a study level random effect for each outcome.
+                struc = "UN", data = data_long_final, test = "t", dfs = "contain")  # struc = "UN" means we estimate the correlation between the two outcomes for each study and obs level random effect. Could also give it c("UN", "UN") to estimate the correlation for each outcome separately but this should take it as UN for both anyway.
+  saveRDS(mv_mlma_1, here("output", "models", "mv_mlma_1.rds"))
+} else {
+  mv_mlma_1 <- readRDS(here("output", "models", "mv_mlma_1.rds"))
+}
 
 # Now that we have the MLMA model we can start to estimate different fixed effects and ask if these fixed effects that impact ES for longevity and reproduction differ between the two. 
-mv_mlma_2 <- rma.mv(es ~ outcome*treattemp - 1, V = V,    # This should compare whether the linear effect of temperature differs between the two outcomes when we allow for intercept, but without intercept (as is here) it will test whether there is a linear effect of temperature on each outcome separately and estimate that effect
+if(rerun){
+mv_mlma_2 <- rma.mv(es ~ outcome*treattemp, V = V,    # This should compare whether the linear effect of temperature differs between the two outcomes when we allow for intercept, but without intercept  it will test whether there is a linear effect of temperature on each outcome separately and estimate that effect
                random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
                              ~outcome - 1 | Paper.code),  # This should estimate a study level random effect for each outcome.
                struc = "UN", data = data_long_final, test = "t", dfs = "contain")
+
+saveRDS(mv_mlma_2, here("output", "models", "mv_mlma_2.rds"))
+} else {
+  mv_mlma_2 <- readRDS(here("output", "models", "mv_mlma_2.rds"))
+}
+# Now lets tri supressing the intercept. This should now estimate the linear effect of temp on each outcome
+
+## OUTCOME: This modell tells us that: 1) the overall effects on reproduction vs longevity are significantly different from each other when controlling for treattemp; 2) that the treatment temp effect on longevity is significant and that 3) the treattemp effect on reproduction is signioficantly different than its effect on longevity.
+
+if(rerun){
+mv_mlma_3 <- rma.mv(es ~ -1 + outcome + outcome:treattemp, V = V,    # This should compare whether the linear effect of temperature differs between the two outcomes when we allow for intercept, but without intercept  it will test whether there is a linear effect of temperature on each outcome separately and estimate that effect
+               random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
+                             ~outcome - 1 | Paper.code),  # This should estimate a study level random effect for each outcome.
+               struc = "UN", data = data_long_final, test = "t", dfs = "contain")
+saveRDS(mv_mlma_3, here("output", "models", "mv_mlma_3.rds"))
+} else {
+  mv_mlma_3 <- readRDS(here("output", "models", "mv_mlma_3.rds"))
+}
 
 ```
 
