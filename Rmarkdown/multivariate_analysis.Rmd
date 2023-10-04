@@ -159,3 +159,17 @@ saveRDS(mv_mlma_3, here("output", "models", "mv_mlma_3.rds"))
 
 ```
 
+```{r, nonlin_multivariatefinal}
+# We'll now run the multivariate model with non-linear terms as was done in the univariate cases.
+rerun2=FALSE
+if(rerun2){
+  mv_mlma_4 <- rma.mv(es ~ -1 + outcome + outcome:poly(treattemp, degree=3, raw=TRUE), V = V,    
+               random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
+                             ~outcome - 1 | Paper.code),  # This should estimate a study level random effect for each outcome.
+               struc = "UN", data = data_long_final, test = "t", dfs = "contain")
+  saveRDS(mv_mlma_4, here("output", "models", "mv_mlma_4.rds"))
+} else {
+  mv_mlma_4 <- readRDS(here("output", "models", "mv_mlma_4.rds"))
+}
+
+```
