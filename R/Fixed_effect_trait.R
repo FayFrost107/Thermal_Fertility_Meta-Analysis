@@ -93,10 +93,21 @@ VCV_shared <- impute_covariance_matrix(vi=test$v, cluster = test$shared_control,
 
 
 
-## Random factors: obs, study_code. Fixed Factors: Trait and treatment temp
+## Random factors: obs, study_code. Fixed Factors: Trait and treatment temp 
+### using subsetted data, i.e. only data which has both longevity and reproduction es. 
 meta_trait_test <- rma.mv(es, VCV_shared, mod=~Trait.category*treattemp,
                      random= list(~ 1|study_code, ~1|obs), data= test, method= "REML")
-summary(meta_trait)
+
+
+
+
+## multivariate model using full data set
+VCV_full <- impute_covariance_matrix(vi=rdata$v, cluster = rdata$shared_control, r=0.5)
+
+meta_trait_full <- rma.mv(es, VCV_full, mod=~Trait.category*treattemp,
+                          random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
+
+
 
 
 

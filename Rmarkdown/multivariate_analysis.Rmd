@@ -135,3 +135,4 @@ mv_mlma_2 <- rma.mv(es ~ outcome*treattemp - 1, V = V,    # This should compare 
                struc = "UN", data = data_long_final, test = "t", dfs = "contain")
 
 ```
+
