@@ -7,7 +7,7 @@ editor_options:
 ---
 
 ```{r, packages,echo = FALSE}
-install.packages("pacman")
+#install.packages("pacman")
 pacman::p_load(tidyverse, here, metafor, ape, phytools)
 
 # source functions
@@ -42,10 +42,10 @@ pacman::p_load(tidyverse, here, metafor, ape, phytools)
 # Now, let's check that this data is set up correctly. If we group by Experiment.code, diff and outcome then we should have a maximum of 1 effect size for each study/diff in each outcome category
   check <- data_long_final %>% group_by(trial, outcome) %>% summarise(n=n()) %>% filter(n !=1)
 
-# OUTCOME: There still appear to be columns(~40) with more than 1 effect size for each longevity/reproduction effect size. This is also not because we could have males and female effect sizes as including sex does not resolve this problem
+# OUTCOME: All looks good.
   
 # The Experiment code identifiers that are relevant are:
-  unique(check$trial)
+  unique(check$trial) # 0
   
 ```
 
@@ -70,13 +70,6 @@ mv_mlma <- rma.mv(es ~ outcome - 1, V = V,
 
 # Phylogeny. Use reproduction because it should match with longevity in terms of species
    
-       
-
-######################################### Fay added new code to update species names and prune tree  ##################################     
-
-# This code needs to be right at the start of our R script, ** before any analysis **  
-# as the correct species names and classifications come form this code !!!
-
  tree1 <- read.nexus(here("phylogeny", "all_reproduction_excHUM251_tree.nex"))    
  tree_grafen = compute.brlen(tree1, method="Grafen", power=1)
 
@@ -102,44 +95,43 @@ data_long_final$Species.latin[which(data_long_final$Species.latin == "Blathyplec
 data_long_final$Species.latin[which(data_long_final$Species.latin == "Menochilus sexmaculatus")]        <- "Cheilomenes sexmaculata"
 data_long_final$Species.latin[which(data_long_final$Species.latin == "unknown (Tominic)")]              <- "Trichogramma" 
 
-
 ### specify classifications from map
 data_long_final$Class <- classes$class[match(data_long_final$Species.latin, classes$species_latin)]
-
-
-## decide which species are in or out
-notin <- setdiff(tree1$tip.label, data_long_final$Species.latin)
-indata <- setdiff(tree1$tip.label, notin)
-
-## prune tree
-prune_tree <- drop.tip(tree_grafen, notin)
-phylo_matrix <- vcv(prune_tree, cor=TRUE, model="Brownian")
-
-## number of indata should equal # of unique data_long_final species. 
-setdiff(unique(data_long_final$Species.latin), indata)
-      
-       
        
  ############################################## End of Fay's amendments #####################################################      
        
-
-
 # Now we need to prune this tree to the species in this long data
-       tree_checks <- tree_checks(data_long_final, tree1, dataCol = "Species.latin", type = "check")
+       tree_checks <- tree_checks(data_long_final, tree1, dataCol = "Species.latin", type = "check") # Looks good so we can prune tree
+
+# Prune tree
+        tree2 <- tree_checks(data_long_final, tree1, dataCol = "Species.latin", type = "prune") 
 
 # Now, use Fay's code to create R matrix. Not yet working because we need to sort out the species in the data before we can prune
-   #tree_grafen <- compute.brlen(tree1, method="Grafen", power=1)
- # phylo_matrix <- vcv(tree_grafen, cor=TRUE, model="Brownian")
+   tree_grafen <- compute.brlen(tree2, method="Grafen", power=1)
+ phylo_matrix <- vcv(tree_grafen, cor=TRUE, model="Brownian")
 
-data_long_final$Species.phylo <- factor(data_long_final$Species.latin)   # Species names for phylo matrix
-data_long_final$species <- factor(data_long_final$Species.latin)  
-
-
+# Now fit the model with phylogeny. That seems to work just fine!
 mv_mlma2 <- rma.mv(es ~ outcome - 1, V = V, 
                random = list(~outcome - 1 | trial,
-                             ~outcome - 1 | Species.phylo), 
-               R= list(Species.phylo = phylo_matrix),
+                             ~outcome - 1 | Species.latin), 
+               R= list(Species.latin = phylo_matrix),
                struc = "UN", data = data_long_final, test = "t", dfs = "contain")
 
 ```
 
+```{r, multivariatemodelsfinal, echo = FALSE}
+## Univariate models were found to only need two random effects, obs and study. This greatly simplifies the multivarite model, which can only have two levels anyway. 
+
+mv_mlma_1 <- rma.mv(es ~ outcome - 1, V = V, 
+               random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
+                             ~outcome - 1 | Paper.code),  # This should estimate a study level random effect for each outcome.
+               struc = "UN", data = data_long_final, test = "t", dfs = "contain")  # struc = "UN" means we estimate the correlation between the two outcomes for each study and obs level random effect. Could also give it c("UN", "UN") to estimate the correlation for each outcome separately but this should take it as UN for both anyway.
+
+
+# Now that we have the MLMA model we can start to estimate different fixed effects and ask if these fixed effects that impact ES for longevity and reproduction differ between the two. 
+mv_mlma_2 <- rma.mv(es ~ outcome*treattemp - 1, V = V,    # This should compare whether the linear effect of temperature differs between the two outcomes when we allow for intercept, but without intercept (as is here) it will test whether there is a linear effect of temperature on each outcome separately and estimate that effect
+               random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
+                             ~outcome - 1 | Paper.code),  # This should estimate a study level random effect for each outcome.
+               struc = "UN", data = data_long_final, test = "t", dfs = "contain")
+
+```
