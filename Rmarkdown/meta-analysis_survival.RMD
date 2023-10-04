@@ -514,7 +514,7 @@ table(sdata$bin.temp)
 
 
 ```{r, eval=FALSE}
-meta_sa_bintemp <- rma.mv(es, VCV_shared_sa,  mod= ~bin.temp-1,  random= list(~ 1|study_code,  ~1|obs), data= sdata, test = "t", dfs = "contain",, method= "REML")
+meta_sa_bintemp <- rma.mv(es, VCV_shared_sa,  mod= ~bin.temp-1,  random= list(~ 1|study_code,  ~1|obs), data= sdata, test = "t", dfs = "contain", method= "REML")
 ```
 
 ```{r, eval=TRUE}

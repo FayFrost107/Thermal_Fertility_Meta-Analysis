@@ -58,7 +58,7 @@ pacman::p_load(tidyverse, here, metafor, ape, phytools)
 # Check that this is set up correctly. Note that there are warnings about non-positive definite matrix. The matrix should be automatically. 
   V[1:6, 1:6]
 
-# Multivariate model. Using the VCV matrix we can set up the model. We'll keep it simple for now
+ # Multivariate model. Using the VCV matrix we can set up the model. We'll keep it simple for now
 
 mv_mlma <- rma.mv(es ~ outcome - 1, V = V, 
                random = list(~outcome - 1 | trial,

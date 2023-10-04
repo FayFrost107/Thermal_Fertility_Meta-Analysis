@@ -108,26 +108,11 @@ write.csv(df_cleaned, "Data/cleaned_unique_combo.csv")
     combo_data$v.longevity[i] <- alllong$v_longevity[is_matching_l]
   } 
   
-#}
+}
 
 #u_combo <- unique(combo_data)
 
 ### calculate number of rows which have entries in both reproduction and longevity
-
-
-
-
-#--------------#
-# Long to wide #
-#--------------#
-
-# Unclear what the final long data should be from this code. You should be able to use pivot_wider if it has been set up correctly. If this doesn't work, another option is to: 1) subset the longevity; 2) subset the reproduction; 3) merge the two subsets together using left_join. You will first need to filter out the rows that are not in both subsets.
-
-wide_dat <- read.csv(here("Data", "Combined_effectsizes.csv"))
-
-long_dat <- wide_dat %>% 
-              pivot_longer(cols = c(es_reproduction,  es_longevtiy), names_to = "es")   %>% 
-              data.frame()
 
 
 
