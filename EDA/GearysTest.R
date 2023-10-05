@@ -87,3 +87,15 @@ total_count <- sum(result)
                         "Temp9", "Gtest9",
                         "Outlier")
  
+ outlier_temps <- NA
+ 
+ #### need to amend code as sometimes there are more than one treatments per row which have a gtest < 3
+ for(i in 1:nrow(gdata)){
+   if(gearys_test$new_column[i]){
+ ot <- which(gdata[i,] < 3)
+ outlier_temps[i] <- ot  
+   }
+  }
+ 
+ outlier_temps <- as.data.frame(outlier_temps)
+ 
