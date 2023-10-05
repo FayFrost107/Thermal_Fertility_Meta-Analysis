@@ -49,3 +49,41 @@ gdata <- as.data.frame(gdata)
 
 new_column <- apply(gdata, 1, function(row) any(!is.na(row) & row < 3))
 gearys_test <- cbind(warmdata$Paper.code, gdata, new_column)
+
+
+
+# Use apply to count how many values in total are < 3 i.e. how many effect sizes we'd end up removing
+result <- apply(gdata, 2, function(col) sum(!is.na(col) & col < 3))
+
+# Sum the results to get the total count = 256 .... worth removing. 
+total_count <- sum(result)
+
+
+
+
+#### Indentifying which effect sizes would be removed by importing treattemp
+
+ newdata <- cbind(warmdata$Paper.code, 
+                  column_sets[[1]][1], gearys_test$row,
+                  column_sets[[2]][1], gearys_test$V2,
+                  column_sets[[3]][1], gearys_test$V3,
+                  column_sets[[4]][1], gearys_test$V4,
+                  column_sets[[5]][1], gearys_test$V5,
+                  column_sets[[6]][1], gearys_test$V6,
+                  column_sets[[7]][1], gearys_test$V7,
+                  column_sets[[8]][1], gearys_test$V8,
+                  column_sets[[9]][1], gearys_test$V9,
+                  gearys_test$new_column)
+
+ colnames(newdata) <- c("Paper.code", 
+                        "Temp1", "Gtest1",
+                        "Temp2", "Gtest2",
+                        "Temp3", "Gtest3",
+                        "Temp4", "Gtest4",
+                        "Temp5", "Gtest5",
+                        "Temp6", "Gtest6",
+                        "Temp7", "Gtest7",
+                        "Temp8", "Gtest8",
+                        "Temp9", "Gtest9",
+                        "Outlier")
+ 
