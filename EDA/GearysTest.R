@@ -150,3 +150,37 @@ total_count <- sum(result)
    
  }
  
+ 
+ 
+ pairwise.test <- esdata
+ studydat <- warmdata[,1:34]
+ 
+ colnames(pairwise.test) <- c("es", "v", "diff", "reftemp", "treattemp", "gtest",
+                              "es", "v", "diff", "reftemp", "treattemp", "gtest",
+                              "es", "v", "diff", "reftemp", "treattemp", "gtest",
+                              "es", "v", "diff", "reftemp", "treattemp", "gtest",
+                              "es", "v", "diff", "reftemp", "treattemp", "gtest",
+                              "es", "v", "diff", "reftemp", "treattemp", "gtest",
+                              "es", "v", "diff", "reftemp", "treattemp", "gtest",
+                              "es", "v", "diff", "reftemp", "treattemp", "gtest",
+                              "es", "v", "diff", "reftemp", "treattemp", "gtest")
+ 
+ 
+ 
+ 
+ 
+ test.1 <- cbind(studydat, pairwise.test[,1:6])
+ test.2 <- cbind(studydat, pairwise.test[,7:12])
+ test.3 <- cbind(studydat, pairwise.test[,13:18])
+ test.4 <- cbind(studydat, pairwise.test[,19:24])
+ test.5 <- cbind(studydat, pairwise.test[,25:30])
+ test.6 <- cbind(studydat, pairwise.test[,31:36])
+ test.7 <- cbind(studydat, pairwise.test[,37:42])
+ test.8 <- cbind(studydat, pairwise.test[,43:48])
+ test.9 <- cbind(studydat, pairwise.test[,49:54])
+ 
+ 
+ 
+ total.test <- rbind(test.1, test.2, test.3, test.4, test.5, test.6, test.7, test.8, test.9)
+ 
+ cleaned_df <- total.test[!is.na(total.test$es),]
