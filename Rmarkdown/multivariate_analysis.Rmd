@@ -172,4 +172,7 @@ if(rerun2){
   mv_mlma_4 <- readRDS(here("output", "models", "mv_mlma_4.rds"))
 }
 
+# We can get confidence intervals by profiling the liklihood
+  cis <- confint(mv_mlma_4)
+
 ```
