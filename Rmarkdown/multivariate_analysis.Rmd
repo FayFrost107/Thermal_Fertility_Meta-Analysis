@@ -120,7 +120,7 @@ mv_mlma2 <- rma.mv(es ~ outcome - 1, V = V,
 ```
 
 ```{r, multivariatemodelsfinal, echo = FALSE}
-## Univariate models were found to only need two random effects, obs and study. This greatly simplifies the multivarite model, which can only have two levels anyway. We will save these models because they take quite some time to estimayte given how much data is available
+## Univariate models were found to only need two random effects, obs and study. This greatly simplifies the multivarite model, which can only have two levels anyway. We will save these models because they take quite some time to estimate given how much data is available
 rerun = FALSE
 if(rerun){
   mv_mlma_1 <- rma.mv(es ~ outcome - 1, V = V, 
