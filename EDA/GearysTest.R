@@ -51,7 +51,7 @@ gearys_test <- cbind(warmdata$Paper.code, gdata, new_column)
 
 
 
-# Use apply to count how many values in total are < 3 i.e. how many effect sizes we'd end up removing
+## Use apply to count how many values in total are < 3 i.e. how many effect sizes we'd end up removing
 result <- apply(gdata, 2, function(col) sum(!is.na(col) & col < 3))
 
 # Sum the results to get the total count = 256 .... worth removing. 
