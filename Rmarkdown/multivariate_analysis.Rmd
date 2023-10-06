@@ -177,3 +177,17 @@ if(rerun2){
   write.csv(cis, here("output", "tables", "mv_mlma_4_cis.csv"))
 
 ```
+
+
+
+
+```{r, eval=FALSE}
+# adding in centered treattemp (centered around 25) fixed effect 
+
+data <- cbind(data[,1:36], data$treattemp-25, data[,37:41])
+colnames(data) <- c(colnames(data[,1:36]), "scale.temp", colnames(data[,38:42]))
+
+### creating shared control ID
+
+
+```
