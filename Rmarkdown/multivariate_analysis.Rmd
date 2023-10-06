@@ -148,7 +148,7 @@ saveRDS(mv_mlma_2, here("output", "models", "mv_mlma_2.rds"))
 ## OUTCOME: This modell tells us that: 1) the overall effects on reproduction vs longevity are significantly different from each other when controlling for treattemp; 2) that the treatment temp effect on longevity is significant and that 3) the treattemp effect on reproduction is signioficantly different than its effect on longevity.
 
 if(rerun){
-mv_mlma_3 <- rma.mv(es ~ -1 + outcome + outcome:treattemp, V = V,    # This should compare whether the linear effect of temperature differs between the two outcomes when we allow for intercept, but without intercept  it will test whether there is a linear effect of temperature on each outcome separately and estimate that effect
+mv_mlma_3 <- rma.mv(es ~ -1 + outcome + outcome:scale(treattemp, scale = FALSE), V = V,    # This should compare whether the linear effect of temperature differs between the two outcomes when we allow for intercept, but without intercept  it will test whether there is a linear effect of temperature on each outcome separately and estimate that effect
                random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
                              ~outcome - 1 | Paper.code),  # This should estimate a study level random effect for each outcome.
                struc = "UN", data = data_long_final, test = "t", dfs = "contain")
@@ -174,5 +174,6 @@ if(rerun2){
 
 # We can get confidence intervals by profiling the liklihood
   cis <- confint(mv_mlma_4, rho = 1)
+  write.csv(cis, here("output", "tables", "mv_mlma_4_cis.csv"))
 
 ```
