@@ -1,6 +1,6 @@
 ## Geary's test (mean* sqrt(n) )/ SD
 
-warmdata <- read.csv("Survival project effect size reftemp FF warm.csv")
+warmdata <- read.csv("EDA/Survival project effect size reftemp FF warm.csv")
 
 
 # Create a list of column names for each treatment
@@ -28,78 +28,7 @@ calculate_g <- function(temp, mean, sd, n){
 }
 
 
-gdata <- c()
-for(i in 1:nrow(warmdata)){
-  row <- calculate_g(column_sets[[1]]$Temp1[i], column_sets[[1]]$Mean1[i], column_sets[[1]]$SD1[i], column_sets[[1]]$N1[i])
-  row <- cbind(row, calculate_g(column_sets[[2]]$Temp2[i], column_sets[[2]]$Mean2[i], column_sets[[2]]$SD2[i], column_sets[[2]]$N2[i]))
-  row <- cbind(row, calculate_g(column_sets[[3]]$Temp3[i], column_sets[[3]]$Mean3[i], column_sets[[3]]$SD3[i], column_sets[[3]]$N3[i]))
-  row <- cbind(row, calculate_g(column_sets[[4]]$Temp4[i], column_sets[[4]]$Mean4[i], column_sets[[4]]$SD4[i], column_sets[[4]]$N4[i]))
-  row <- cbind(row, calculate_g(column_sets[[5]]$Temp5[i], column_sets[[5]]$Mean5[i], column_sets[[5]]$SD5[i], column_sets[[5]]$N5[i]))
-  row <- cbind(row, calculate_g(column_sets[[6]]$Temp6[i], column_sets[[6]]$Mean6[i], column_sets[[6]]$SD6[i], column_sets[[6]]$N6[i]))
-  row <- cbind(row, calculate_g(column_sets[[7]]$Temp7[i], column_sets[[7]]$Mean7[i], column_sets[[7]]$SD7[i], column_sets[[7]]$N7[i]))
-  row <- cbind(row, calculate_g(column_sets[[8]]$Temp8[i], column_sets[[8]]$Mean8[i], column_sets[[8]]$SD8[i], column_sets[[8]]$N8[i]))
-  row <- cbind(row, calculate_g(column_sets[[9]]$Temp9[i], column_sets[[9]]$Mean9[i], column_sets[[9]]$SD9[i], column_sets[[9]]$N9[i]))
-
-  gdata <- rbind(gdata, row)
-  
-}
-
-gdata <- as.data.frame(gdata)
-
-new_column <- apply(gdata, 1, function(row) any(!is.na(row) & row < 3))
-gearys_test <- cbind(warmdata$Paper.code, gdata, new_column)
-
-
-
-## Use apply to count how many values in total are < 3 i.e. how many effect sizes we'd end up removing
-result <- apply(gdata, 2, function(col) sum(!is.na(col) & col < 3))
-
-# Sum the results to get the total count = 256 .... worth removing. 
-total_count <- sum(result)
-
-
-
-
-#### Indentifying which effect sizes would be removed by importing treattemp
-
- newdata <- cbind(warmdata$Paper.code, 
-                  column_sets[[1]][1], gearys_test$row,
-                  column_sets[[2]][1], gearys_test$V2,
-                  column_sets[[3]][1], gearys_test$V3,
-                  column_sets[[4]][1], gearys_test$V4,
-                  column_sets[[5]][1], gearys_test$V5,
-                  column_sets[[6]][1], gearys_test$V6,
-                  column_sets[[7]][1], gearys_test$V7,
-                  column_sets[[8]][1], gearys_test$V8,
-                  column_sets[[9]][1], gearys_test$V9,
-                  gearys_test$new_column)
-
- colnames(newdata) <- c("Paper.code", 
-                        "Temp1", "Gtest1",
-                        "Temp2", "Gtest2",
-                        "Temp3", "Gtest3",
-                        "Temp4", "Gtest4",
-                        "Temp5", "Gtest5",
-                        "Temp6", "Gtest6",
-                        "Temp7", "Gtest7",
-                        "Temp8", "Gtest8",
-                        "Temp9", "Gtest9",
-                        "Outlier")
- 
- outlier_temps <- NA
- 
- #### need to amend code as sometimes there are more than one treatments per row which have a gtest < 3
- for(i in 1:nrow(gdata)){
-   if(gearys_test$new_column[i]){
- ot <- which(gdata[i,] < 3)
- outlier_temps[i] <- ot  
-   }
-  }
- 
- outlier_temps <- as.data.frame(outlier_temps)
- 
- 
- ############################### think i can combine this into the piarwise calc so I can easily remove specific es.
+ ################ I  can combine this into the paiwise calc so I can easily remove specific es.
  ref_temp <- warmdata$ref_temp
  ref_mean <- warmdata$ref_mean
  ref_sd <- warmdata$ref_sd
@@ -184,3 +113,11 @@ total_count <- sum(result)
  total.test <- rbind(test.1, test.2, test.3, test.4, test.5, test.6, test.7, test.8, test.9)
  
  cleaned_df <- total.test[!is.na(total.test$es),]
+ 
+ 
+ 
+ 
+ ##  Count how many values in total are < 3 i.e. how many effect sizes we'd end up removing
+table(cleaned_df$gtest < 3) #= 256
+ 
+ 
