@@ -8,7 +8,7 @@ editor_options:
 
 ```{r, packages,echo = FALSE}
 #install.packages("pacman")
-pacman::p_load(tidyverse, here, metafor, ape, phytools)
+pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot)
 
 # source functions
   source(here("R", "func.R"))
@@ -53,10 +53,11 @@ pacman::p_load(tidyverse, here, metafor, ape, phytools)
 
 # VCV matrix. Let's set up the multivariate meta-analysis model. We first need to create the VCV sampling matrix. This is a block diagonal matrix with the sampling variance for each effect size on the diagonal and the sampling covariance between the two effect sizes on the off-diagonal. We don't know the correlation, but we can assume 0.5. 
   
-  V <- metafor::vcalc(vi=v, cluster = trial, type = outcome, data = data_long_final, rho = 0.5, nearpd = TRUE)
+  V <- metafor::vcalc(vi=v, cluster = trial, subgroup = Experiment.code, type = outcome, data = data_long_final, rho = 0.5, nearpd = TRUE)
 
 # Check that this is set up correctly. Note that there are warnings about non-positive definite matrix. The matrix should be automatically. 
-  V[1:6, 1:6]
+  V[1:10, 1:10]
+  #corrplot(V, is.corr = FALSE) # Takes a while so no need to run all the time
 
  # Multivariate model. Using the VCV matrix we can set up the model. We'll keep it simple for now
 
