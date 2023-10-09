@@ -214,16 +214,10 @@ if(rerun2){
 
 ```
 
+```{r, correation}
 
-
-
-```{r, eval=FALSE}
-# adding in centered treattemp (centered around 25) fixed effect 
-
-data <- cbind(data[,1:36], data$treattemp-25, data[,37:41])
-colnames(data) <- c(colnames(data[,1:36]), "scale.temp", colnames(data[,38:42]))
-
-### creating shared control ID
-
+# Lets explore the among study correlation. 
+data  %>%  group_by(Experiment.code)  %>% summarise(es_repro = mean(es_reproduction), es_long = mean(es_longevity), mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + geom_point() + labs(x = "SMD (Reproduction)", y = "SMD (Longevity)", size =  "Sampling Variance") + theme_bw() + geom_text(aes(label = Experiment.code), size = 3, nudge_x = 0.8, nudge_y = 0.8)
 
 ```
+
