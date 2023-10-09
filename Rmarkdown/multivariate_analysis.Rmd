@@ -71,13 +71,22 @@ pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR)
 # First, lets capture the outcome covariance  
    V_1 <- make_VCV_matrix(data = data_long_final, cluster = "trial",  V = "v", rho = 0.5)
 
-# Using this matrix, we can now capture the shared control. here, we now just feed in the V matrix we just created and the shared control column. This will then create a new V matrix with the shared control column as the cluster.
+# Using this matrix, we can now capture the shared control. here, we now just feed in the V matrix we just created and the shared control column. This will then create a new V matrix with the shared control column as the cluster.Note that, as we make this matrix more complex the chance of it being PD goes up...so we need to check this.
    V <- make_VCV_matrix(data = data_long_final, matrix = V_1, cluster = "shared_control",  V = "v", rho = 0.5)
 
 # Check that this is set up correctly. Note that there are warnings about non-positive definite matrix. The matrix should be automatically. 
   V[1:15, 1:15]
 
   #corrplot(cov2cor(V)) # Takes a while so no need to run all the time
+
+# Check of PD
+  corpcor::is.positive.definite(V) # FALSE
+
+# Can bend it to make it PD
+  V <- Matrix::nearPD(V)$mat
+
+# Check of PD
+  corpcor::is.positive.definite(V) # TRUE
 
 # Ok, but this doesn't quite get us there the whole way because we need to try and capture this shared refence temperture control. vcalc doesn't seem to be able to so two seperate groupings at once. Thought we could do this with "type" and "obs" arguments specified but for some reason it still calculates the covariance between logenvity and reproduction and we really only want the covariance between like outcomes. So, we'll have to do this manually.
 
@@ -164,7 +173,7 @@ if(rerun){
 mv_mlma_2 <- rma.mv(es ~ outcome*c_treattemp, V = V,    # This should compare whether the linear effect of temperature differs between the two outcomes when we allow for intercept, but without intercept  it will test whether there is a linear effect of temperature on each outcome separately and estimate that effect
                random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
                              ~outcome - 1 | Paper.code),  # This should estimate a study level random effect for each outcome.
-               struc = "UN", data = data_long_final, test = "t", dfs = "contain")
+               struc = "UN", data = data_long_final, test = "t", dfs = "contain")  
 
 saveRDS(mv_mlma_2, here("output", "models", "mv_mlma_2.rds"))
 } else {
