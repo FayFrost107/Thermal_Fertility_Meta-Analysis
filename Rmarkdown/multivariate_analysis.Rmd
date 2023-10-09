@@ -75,7 +75,7 @@ pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR)
    V <- make_VCV_matrix(data = data_long_final, matrix = V_1, cluster = "shared_control",  V = "v", rho = 0.5)
 
 # Check that this is set up correctly. Note that there are warnings about non-positive definite matrix. The matrix should be automatically. 
-  V[1:10, 1:10]
+  V[1:15, 1:15]
 
   #corrplot(cov2cor(V)) # Takes a while so no need to run all the time
 
