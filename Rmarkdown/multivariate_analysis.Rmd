@@ -8,7 +8,7 @@ editor_options:
 
 ```{r, packages,echo = FALSE}
 #install.packages("pacman")
-#devtools::install_github("daniel1noble/metaAidR")
+#devtools::install_github("daniel1noble/metaAidR", force=TRUE)
 pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR)
 
 # source functions
@@ -72,7 +72,10 @@ pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR)
    V_1 <- make_VCV_matrix(data = data_long_final, cluster = "trial",  V = "v", rho = 0.5)
 
 # Using this matrix, we can now capture the shared control. here, we now just feed in the V matrix we just created and the shared control column. This will then create a new V matrix with the shared control column as the cluster.Note that, as we make this matrix more complex the chance of it being PD goes up...so we need to check this.
-   V <- make_VCV_matrix(data = data_long_final, matrix = V_1, cluster = "shared_control",  V = "v", rho = 0.5)
+   V <- metaAidR::make_VCV_matrix(data = data_long_final, matrix = V_1, cluster = "shared_control",  V = "v", rho = 0.5)
+
+# Export V matrix for checking
+  write.csv(V, here("Output", "tables", "V.csv"))
 
 # Check that this is set up correctly. Note that there are warnings about non-positive definite matrix. The matrix should be automatically. 
   V[1:15, 1:15]
