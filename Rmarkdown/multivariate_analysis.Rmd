@@ -10,7 +10,6 @@ editor_options:
 #install.packages("pacman")
 #devtools::install_github("daniel1noble/metaAidR")
 pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR)
-
 # source functions
   source(here("R", "func.R"))
 ```
@@ -67,6 +66,8 @@ pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR)
 ```{r, multivariatemodel}
 
 # VCV matrix. Let's set up the multivariate meta-analysis model. We first need to create the VCV sampling matrix. This is a block diagonal matrix with the sampling variance for each effect size on the diagonal and the sampling covariance between the two effect sizes on the off-diagonal. We don't know the correlation, but we can assume 0.5. 
+ 
+# V <- metafor::vcalc(vi=v, cluster = trial, subgroup = Experiment.code, type = outcome, data = data_long_final, rho = 0.5, nearpd = TRUE)
 
 # First, lets capture the outcome covariance  
    V_1 <- make_VCV_matrix(data = data_long_final, cluster = "trial",  V = "v", rho = 0.5)
