@@ -6,8 +6,8 @@ library(ggtree)
 render("Rmarkdown/meta_analysis_reproduction.rmd")
 
 
-render("meta_analysis_longevity.Rmd")
+render("Rmarkdown/meta_analysis_longevity.Rmd")
 
 
-render("meta-analysis_survival.Rmd")
+render("Rmarkdown/meta-analysis_survival.Rmd")
 
