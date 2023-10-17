@@ -63,7 +63,7 @@ pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR)
          data_long_final  %>% select(Experiment.code, reftemp, treattemp, outcome, shared_control, trial)  %>%  head(., 30)          
 ```
 
-```{r, multivariatemodel}
+```{r, v}
 
 # VCV matrix. Let's set up the multivariate meta-analysis model. We first need to create the VCV sampling matrix. This is a block diagonal matrix with the sampling variance for each effect size on the diagonal and the sampling covariance between the two effect sizes on the off-diagonal. We don't know the correlation, but we can assume 0.5. 
  
@@ -91,12 +91,9 @@ pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR)
 
 # Check of PD
   corpcor::is.positive.definite(V) # TRUE
+```
 
-# Ok, but this doesn't quite get us there the whole way because we need to try and capture this shared refence temperture control. vcalc doesn't seem to be able to so two seperate groupings at once. Thought we could do this with "type" and "obs" arguments specified but for some reason it still calculates the covariance between logenvity and reproduction and we really only want the covariance between like outcomes. So, we'll have to do this manually.
-
- # Find the rows in teh shared control column that match
-test <- data_long_final  %>% filter(Experiment.code == "HUM148A")
-
+```{r, multivariatemodel, eval = FALSE}
 
  # Multivariate model. Using the VCV matrix we can set up the model. We'll keep it simple for now
 
