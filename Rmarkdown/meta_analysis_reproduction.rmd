@@ -17,7 +17,7 @@ We first read in our data and select all of the effect sizes related to reproduc
 
 ```{r, eval=FALSE}
 ### Read in effect size data
-effectdata <- read.csv("Survival project all pairwise.es.csv")
+effectdata <- read.csv("Data/Survival project all pairwise.es.csv")
 repdata_warm <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Warm" )
 repdata_cool <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Cool" )
 
@@ -449,3 +449,13 @@ meta_sub_bintemp <- rma.mv(es, VCV_shared_subdata,  mod= ~bin.temp-1,  random= l
 ```{r}
 summary(meta_sub_bintemp)
 ```
+
+# Geary;'s Test
+
+Here we use Geary's test to determine which effect sizes to remove. According to Hedges et al 1999, effect sizes are deemed valid and accurate when the standardized mean of either the control or the treatment group is $\geq$ 3. In other words, if $$ \frac{\bar{X}}{SD} \sqrt{N} \geq 3$$.
+
+As a sensitivity analysis we will determine which of our effect sizes do not meet this threshold i.e. are $<3$. We then rerun our best fitting models with these effect sizes removed. 
+
+
+
+

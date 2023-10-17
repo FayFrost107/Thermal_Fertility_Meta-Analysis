@@ -3,7 +3,7 @@ library(ggtree)
 
 
 
-render("meta_analysis_reproduction.Rmd")
+render("Rmarkdown/meta_analysis_reproduction.rmd")
 
 
 render("meta_analysis_longevity.Rmd")
