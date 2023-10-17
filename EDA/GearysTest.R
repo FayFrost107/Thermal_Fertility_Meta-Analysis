@@ -115,9 +115,13 @@ calculate_g <- function(temp, mean, sd, n){
  cleaned_df <- total.test[!is.na(total.test$es),]
  
  
- 
+ cleaned_df$warm.cool <- NA
+
+ cleaned_df$warm.cool[which(cleaned_df$diff < 0)] <- "Cool" 
+ cleaned_df$warm.cool[which(cleaned_df$diff == 0)] <- "Reference"
+ cleaned_df$warm.cool[which(cleaned_df$diff > 0)] <- "Warm"
  
  ##  Count how many values in total are < 3 i.e. how many effect sizes we'd end up removing
 table(cleaned_df$gtest < 3) #= 256
  
- 
+write.csv(cleaned_df, "Data/Gearys_test_data.csv")

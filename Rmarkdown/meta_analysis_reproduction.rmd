@@ -17,7 +17,7 @@ We first read in our data and select all of the effect sizes related to reproduc
 
 ```{r, eval=FALSE}
 ### Read in effect size data
-effectdata <- read.csv("Survival project all pairwise.es.csv")
+effectdata <- read.csv("Data/Survival project all pairwise.es.csv")
 repdata_warm <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Warm" )
 repdata_cool <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Cool" )
 
@@ -448,4 +448,70 @@ meta_sub_bintemp <- rma.mv(es, VCV_shared_subdata,  mod= ~bin.temp-1,  random= l
 
 ```{r}
 summary(meta_sub_bintemp)
+```
+
+# Geary;'s Test
+
+Here we use Geary's test to determine which effect sizes to remove. According to Hedges et al 1999, effect sizes are deemed valid and accurate when the standardized mean of either the control or the treatment group is $\geq$ 3. In other words, if $$ \frac{\bar{X}}{SD} \sqrt{N} \geq 3$$.
+
+As a sensitivity analysis we will determine which of our effect sizes do not meet this threshold i.e. are $<3$. We then rerun our best fitting models with these effect sizes removed. 
+
+```{r, eval=FALSE, echo=TRUE}
+# Read in data with calculated standardised mean
+gearydata <- read.csv("Data/Gearys_test_data.csv")
+
+# view the first fews rows of selected columns
+gearydata  %>% dplyr::select(Experiment.code, Trait.category, reftemp, treattemp, es, v, gtest)  %>%  head(., 30) 
+
+# How many effect sozes have a standardised mean < 3 ?
+outliers_lon <-  subset(gearydata, Trait.category == "Longevity" & gtest < 3) #82
+outliers_sur <-  subset(gearydata, Trait.category == "Survival" & gtest < 3) # 171 
+outliers_rep <-  subset(gearydata, Trait.category == "Reproduction" & gtest < 3) # 3
+```
+
+There are 256 effect sizes in total that have a gtest < 3. 82 of these are longevity effect sizes, 3 are survival and 171 are reproduction.  
+
+We remove these effect sizes and rerun the best fitting model from earlier which is the model meta_trait_treat2, where temperature is modelled as a quadratic effect on reproduction. 
+
+## Treatment temperature as a quadratic effect with Geary's outliers removed.
+
+```{r, eval=FALSE, echo=TRUE}
+# Remove outliers
+s.gearydata <- gearydata %>% subset(gtest > 3)
+
+# Resubset reproduction dat
+gdata_rep_warm <- subset(s.gearydata, Trait.category == "Reproduction" & warm.cool == "Warm" )
+gdata_rep_cool <- subset(s.gearydata, Trait.category == "Reproduction" & warm.cool == "Cool" )
+
+all_gdata <- rbind(gdata_rep_warm, gdata_rep_cool)
+
+### Create random factors into data frame 
+all_gdata$obs <- factor(c(1:nrow(all_gdata)))                # Unique observation code
+all_gdata$study_code <- factor(all_gdata$Paper.code)         # Model requires column names study_code 
+all_gdata$Species.phylo <- factor(all_gdata$Species.latin)   # Species names for phylo matrix
+all_gdata$species <- factor(all_gdata$Species.latin)         # Another species column for random factor 
+
+precision <- sqrt(1/all_gdata$v)                         # inverse standard error 
+all_gdata[,"precision"] <- precision
+
+# recalculate v matrix
+all_gdata$shared_control <- factor(all_gdata$Effect.size.code)
+VCV_shared_ga <- impute_covariance_matrix(vi=all_gdata$v, cluster = all_gdata$shared_control, r=0.5)
+```
+
+```{r, eval=FALSE, echo=FALSE}
+meta_ga_treat2 <- rma.mv(es, VCV_shared_ga,  mod= ~ poly(treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code, ~1|obs), test = "t", dfs = "contain", data= all_gdata, method= "REML")
+```
+
+```{r, eval=TRUE}
+summary(meta_ga_treat2)
+```
+
+\newpage
+
+Below is a bubble plot of the fitted quadratic model. 
+
+```{r, eval=TRUE, echo=FALSE}
+p <- bubble_plot(meta_ga_treat2, mod = "treattemp", group="study_code")
+p+coord_cartesian(ylim=c(-10,10))
 ```
