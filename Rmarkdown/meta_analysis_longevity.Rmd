@@ -455,8 +455,8 @@ gearydata  %>% dplyr::select(Experiment.code, Trait.category, reftemp, treattemp
 
 # How many effect sozes have a standardised mean < 3 ?
 outliers_lon <-  subset(gearydata, Trait.category == "Longevity" & gtest < 3) #82
-outliers_sur <-  subset(gearydata, Trait.category == "Survival" & gtest < 3) # 171 
-outliers_rep <-  subset(gearydata, Trait.category == "Reproduction" & gtest < 3) # 3
+outliers_sur <-  subset(gearydata, Trait.category == "Survival" & gtest < 3) # 3 
+outliers_rep <-  subset(gearydata, Trait.category == "Reproduction" & gtest < 3) # 171
 ```
 
 There are 256 effect sizes in total that have a gtest < 3. 82 of these are longevity effect sizes, 3 are survival and 171 are reproduction.  
