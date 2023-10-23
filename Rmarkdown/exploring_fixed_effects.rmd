@@ -1,0 +1,144 @@
+---
+title: "Exploring Fixed effects"
+author: "Fay Frost"
+output: pdf_document
+---
+  
+```{r, global_options, include=FALSE}
+knitr::opts_chunk$set(message=FALSE, tidy.opts=list(width.cutoff=60), tidy=TRUE) 
+```
+
+# Longevity 
+
+Here we table the categorical fixed effect variables in the longevtiy data.
+
+```{r, echo=FALSE, eval=TRUE}
+effectdata <- read.csv("../Data/Survival project all pairwise.es.csv")
+longdata_warm <- subset(effectdata, Trait.category == "Longevity" & warm.cool == "Warm" )
+longdata_cool <- subset(effectdata, Trait.category == "Longevity" & warm.cool == "Cool" )
+
+alllong <- rbind(longdata_warm, longdata_cool)
+
+### select data for analysis
+rdata <- alllong
+
+rdata <- subset(rdata, Paper.code != "HUM251")
+
+rdata <- rdata %>% mutate(c_treattemp = treattemp - 25)
+
+
+########### change species names in survival data ####################################
+classes <- read.csv("../Data/Species_classifications.CSV") ## read in species classifications from map
+
+rdata$Species.latin[which(rdata$Species.latin == "Marasmia exigua")]                <- "Cnaphalocrocis exigua"
+rdata$Species.latin[which(rdata$Species.latin == "Matsumuratettix hieroglyphicus")] <- "Matsumuratettix hiroglyphicus"
+rdata$Species.latin[which(rdata$Species.latin == "Mythimna roseilinea")]            <- "Mythimna albipuncta"
+rdata$Species.latin[which(rdata$Species.latin == "Apis craccivora")]                <- "Aphis craccivora"
+rdata$Species.latin[which(rdata$Species.latin == "Cryptoleamus montrouzieri")]      <- "Cryptolaemus montrouzieri"
+rdata$Species.latin[which(rdata$Species.latin == "Asplanchna brightwelli")]         <- "Asplanchna brightwellii"
+rdata$Species.latin[which(rdata$Species.latin == "Brennandania lambi")]             <- "Pygmephorus lambi"
+rdata$Species.latin[which(rdata$Species.latin == "Amblyseius alstoniae")]           <- "Euseius alstoniae"
+rdata$Species.latin[which(rdata$Species.latin == "Siphoninus phyllyreae")]          <- "Siphoninus phillyreae"
+rdata$Species.latin[which(rdata$Species.latin == "Proprioseiopsis asetus")]         <- "Amblyseius asetus"
+rdata$Species.latin[which(rdata$Species.latin == "Parabemisia myrica")]             <- "Parabemisia myricae"
+rdata$Species.latin[which(rdata$Species.latin == "Cirrospilus sp. near lyncus")]    <- "Cirrospilus lyncus"
+rdata$Species.latin[which(rdata$Species.latin == "Anagyrus sp. nov. nr. sinope" )]  <- "Anagyrus sinope"
+rdata$Species.latin[which(rdata$Species.latin == "Monochamus leuconotus")]          <- "Anthores leuconotus"
+rdata$Species.latin[which(rdata$Species.latin == "Ropalosiphum maidis")]            <- "Rhopalosiphum maidis"
+
+rdata$Species.latin[which(rdata$Species.latin == "Artemia fransiscana")]            <- "Artemia franciscana"
+rdata$Species.latin[which(rdata$Species.latin == "Blathyplectes curculionis")]      <- "Bathyplectes curculionis"
+rdata$Species.latin[which(rdata$Species.latin == "Menochilus sexmaculatus")]        <- "Cheilomenes sexmaculata"
+rdata$Species.latin[which(rdata$Species.latin == "unknown (Tominic)")]              <- "Trichogramma" 
+### specify classifications from map
+rdata$Class <- classes$class[match(rdata$Species.latin, classes$species_latin)]
+
+### Create random factors into data frame 
+rdata$obs <- factor(c(1:nrow(rdata)))                # Unique observation code
+rdata$study_code <- factor(rdata$Paper.code)         # Model requires column names study_code (this is biggest level of nested code structure)
+rdata$Species.phylo <- factor(rdata$Species.latin)   # Species names for phylo matrix
+rdata$species <- factor(rdata$Species.latin)         # Another species column for ranom factor 
+
+precision <- sqrt(1/rdata$v)                         # inverse standard error 
+rdata[,"precision"] <- precision
+```
+
+
+```{r,eval=T,}
+table(rdata$Class)
+table(rdata$Habitat)
+table(rdata$Sex.exposed)
+table(rdata$Fertilisation.mode)
+table(rdata$Agricultural.importance)
+table(rdata$Lab.or.field)
+table(rdata$Exposure.duration)
+table(rdata$Life.stage.of.animal)
+```
+
+
+# Reproduction 
+
+Here we table the categorical fixed effect variables in the reproduction data.
+
+```{r, echo=FALSE, eval=TRUE}
+### Read in effect size data
+effectdata <- read.csv("../Data/Survival project all pairwise.es.csv")
+repdata_warm <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Warm" )
+repdata_cool <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Cool" )
+
+allrep <- rbind(repdata_warm, repdata_cool)
+
+### select data for analysis
+rdata <- allrep
+
+rdata <- subset(rdata, Paper.code != "HUM251")
+
+### center the data around 25C
+rdata <- rdata %>% mutate(c_treattemp = treattemp - 25)
+
+########### change species names in survival data ####################################
+classes <- read.csv("../Data/Species_classifications.CSV") ## read in species classifications from map
+
+rdata$Species.latin[which(rdata$Species.latin == "Marasmia exigua")]                <- "Cnaphalocrocis exigua"
+rdata$Species.latin[which(rdata$Species.latin == "Matsumuratettix hieroglyphicus")] <- "Matsumuratettix hiroglyphicus"
+rdata$Species.latin[which(rdata$Species.latin == "Mythimna roseilinea")]            <- "Mythimna albipuncta"
+rdata$Species.latin[which(rdata$Species.latin == "Apis craccivora")]                <- "Aphis craccivora"
+rdata$Species.latin[which(rdata$Species.latin == "Cryptoleamus montrouzieri")]      <- "Cryptolaemus montrouzieri"
+rdata$Species.latin[which(rdata$Species.latin == "Asplanchna brightwelli")]         <- "Asplanchna brightwellii"
+rdata$Species.latin[which(rdata$Species.latin == "Brennandania lambi")]             <- "Pygmephorus lambi"
+rdata$Species.latin[which(rdata$Species.latin == "Amblyseius alstoniae")]           <- "Euseius alstoniae"
+rdata$Species.latin[which(rdata$Species.latin == "Siphoninus phyllyreae")]          <- "Siphoninus phillyreae"
+rdata$Species.latin[which(rdata$Species.latin == "Proprioseiopsis asetus")]         <- "Amblyseius asetus"
+rdata$Species.latin[which(rdata$Species.latin == "Parabemisia myrica")]             <- "Parabemisia myricae"
+rdata$Species.latin[which(rdata$Species.latin == "Cirrospilus sp. near lyncus")]    <- "Cirrospilus lyncus"
+rdata$Species.latin[which(rdata$Species.latin == "Anagyrus sp. nov. nr. sinope" )]  <- "Anagyrus sinope"
+rdata$Species.latin[which(rdata$Species.latin == "Monochamus leuconotus")]          <- "Anthores leuconotus"
+rdata$Species.latin[which(rdata$Species.latin == "Ropalosiphum maidis")]            <- "Rhopalosiphum maidis"
+
+rdata$Species.latin[which(rdata$Species.latin == "Artemia fransiscana")]            <- "Artemia franciscana"
+rdata$Species.latin[which(rdata$Species.latin == "Blathyplectes curculionis")]      <- "Bathyplectes curculionis"
+rdata$Species.latin[which(rdata$Species.latin == "Menochilus sexmaculatus")]        <- "Cheilomenes sexmaculata"
+rdata$Species.latin[which(rdata$Species.latin == "unknown (Tominic)")]              <- "Trichogramma" 
+### specify classifications from map
+rdata$Class <- classes$class[match(rdata$Species.latin, classes$species_latin)]
+
+### Create random factors into data frame 
+rdata$obs <- factor(c(1:nrow(rdata)))                # Unique observation code
+rdata$study_code <- factor(rdata$Paper.code)         # Model requires column names study_code (this is biggest level of nested code structure)
+rdata$Species.phylo <- factor(rdata$Species.latin)   # Species names for phylo matrix
+rdata$species <- factor(rdata$Species.latin)         # Another species column for ranom factor 
+
+precision <- sqrt(1/rdata$v)                         # inverse standard error 
+rdata[,"precision"] <- precision
+```
+
+```{r,eval=T,}
+table(rdata$Class)
+table(rdata$Habitat)
+table(rdata$Sex.exposed)
+table(rdata$Fertilisation.mode)
+table(rdata$Agricultural.importance)
+table(rdata$Lab.or.field)
+table(rdata$Exposure.duration)
+table(rdata$Life.stage.of.animal)
+```

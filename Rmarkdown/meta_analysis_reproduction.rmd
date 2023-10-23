@@ -207,7 +207,7 @@ summary(meta_trait_ref)
 
 ## Treatment temperature
 ```{r, eval=FALSE}
-meta_trait_treattemp <- rma.mv(es, VCV_shared,  mod= ~treattemp, random= list(~ 1|study_code, ~1|obs), test = "t", dfs = "contain", data= rdata, method= "REML")
+meta_trait_treattemp <- rma.mv(es, VCV_shared,  mod= ~c_treattemp, random= list(~ 1|study_code, ~1|obs), test = "t", dfs = "contain", data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -254,7 +254,7 @@ summary(meta_trait_diff)
 We expect that treatment temperature will have a quadratic effect on reproduction. In other words, we expect that reproduction will decrease either side of an optimum temperature for each species. We also assume that this optimum temperature will be close to the control temperature. That said, we investigate **treattemp** as a quadratic fixed effect. 
 
 ```{r, eval=FALSE}
-meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code, ~1|obs), test = "t", dfs = "contain", data= rdata, method= "REML")
+meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~ poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code, ~1|obs), test = "t", dfs = "contain", data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -266,7 +266,7 @@ summary(meta_trait_treat2)
 Below is a bubble plot of the fitted quadratic model. 
 
 ```{r, eval=TRUE, echo=FALSE}
-p <- bubble_plot(meta_trait_treat2, mod = "treattemp", group="study_code")
+p <- bubble_plot(meta_trait_treat2, mod = "c_treattemp", group="study_code")
 p+coord_cartesian(ylim=c(-10,10))
 ```
 
@@ -386,7 +386,7 @@ VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_con
 ```
 
 ```{r, eval=FALSE, echo=TRUE}
-meta_sa_treat2 <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code, ~1|obs), test = "t", dfs = "contain", data= sdata, method= "REML")
+meta_sa_treat2 <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code, ~1|obs), test = "t", dfs = "contain", data= sdata, method= "REML")
 ```
 
 ```{r}
@@ -399,7 +399,7 @@ summary(meta_sa_treat2)
 Below is a bubble plot of the fitted quadratic model to the subsetted data. 
 
 ```{r, eval=TRUE, echo=FALSE}
-p <- bubble_plot(meta_sa_treat2, mod = "treattemp", group="study_code")
+p <- bubble_plot(meta_sa_treat2, mod = "c_treattemp", group="study_code")
 p+coord_cartesian(ylim=c(-10,10))
 ```
 
@@ -485,6 +485,8 @@ gdata_rep_cool <- subset(s.gearydata, Trait.category == "Reproduction" & warm.co
 
 all_gdata <- rbind(gdata_rep_warm, gdata_rep_cool)
 
+all_gdata <- all_gdata %>% mutate(c_treattemp = treattemp - 25)
+
 ### Create random factors into data frame 
 all_gdata$obs <- factor(c(1:nrow(all_gdata)))                # Unique observation code
 all_gdata$study_code <- factor(all_gdata$Paper.code)         # Model requires column names study_code 
@@ -497,10 +499,12 @@ all_gdata[,"precision"] <- precision
 # recalculate v matrix
 all_gdata$shared_control <- factor(all_gdata$Effect.size.code)
 VCV_shared_ga <- impute_covariance_matrix(vi=all_gdata$v, cluster = all_gdata$shared_control, r=0.5)
+
+
 ```
 
 ```{r, eval=FALSE, echo=FALSE}
-meta_ga_treat2 <- rma.mv(es, VCV_shared_ga,  mod= ~ poly(treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code, ~1|obs), test = "t", dfs = "contain", data= all_gdata, method= "REML")
+meta_ga_treat2 <- rma.mv(es, VCV_shared_ga,  mod= ~ poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code, ~1|obs), test = "t", dfs = "contain", data= all_gdata, method= "REML")
 ```
 
 ```{r, eval=TRUE}
@@ -512,6 +516,6 @@ summary(meta_ga_treat2)
 Below is a bubble plot of the fitted quadratic model. 
 
 ```{r, eval=TRUE, echo=FALSE}
-p <- bubble_plot(meta_ga_treat2, mod = "treattemp", group="study_code")
+p <- bubble_plot(meta_ga_treat2, mod = "c_treattemp", group="study_code")
 p+coord_cartesian(ylim=c(-10,10))
 ```

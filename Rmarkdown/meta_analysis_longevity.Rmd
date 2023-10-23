@@ -27,6 +27,8 @@ alllong <- rbind(longdata_warm, longdata_cool)
 rdata <- alllong
 
 rdata <- subset(rdata, Paper.code != "HUM251")
+
+rdata <- rdata %>% mutate(c_treattemp = treattemp - 25)
 ```
 
 Next we create new columns in our dataframe which will serve as random factors in our multi-level meta analysis models. The following initialises four new columns, namely "obs", "study_code", "Species.phylo" and "species". Lastly, we create a column name "precision" which is equal to the inverse standard error. 
@@ -204,7 +206,7 @@ summary(meta_trait_ref)
 
 ## Treatment temperature
 ```{r, eval=FALSE}
-meta_trait_treattemp <- rma.mv(es, VCV_shared,  mod= ~treattemp, random= list(~ 1|study_code,  ~1|obs), test = "t", dfs = "contain", data= rdata, method= "REML")
+meta_trait_treattemp <- rma.mv(es, VCV_shared,  mod= ~c_treattemp, random= list(~ 1|study_code,  ~1|obs), test = "t", dfs = "contain", data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -252,7 +254,7 @@ We expect that treatment temperature will have a non-linear effect on longevity.
 
 
 ```{r, eval=FALSE}
-meta_trait_treat3 <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), test = "t", dfs = "contain", data= rdata, method= "REML")
+meta_trait_treat3 <- rma.mv(es, VCV_shared,  mod= ~ poly(c_treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), test = "t", dfs = "contain", data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -262,7 +264,7 @@ summary(meta_trait_treat3)
 For completeness we also investigate treatment temperature as a quadratic effect. 
 
 ```{r, eval=FALSE}
-meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), test = "t", dfs = "contain", data= rdata, method= "REML")
+meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~ poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), test = "t", dfs = "contain", data= rdata, method= "REML")
 ```
 
 ```{r}
@@ -274,7 +276,7 @@ summary(meta_trait_treat2)
 Below is a bubble plot of the fitted cubic model. 
 
 ```{r, eval=TRUE, echo=FALSE}
-p <- bubble_plot(meta_trait_treat3, mod = "treattemp", group="study_code")
+p <- bubble_plot(meta_trait_treat3, mod = "c_treattemp", group="study_code")
 p+coord_cartesian(ylim=c(-10,10))
 ```
 
@@ -382,7 +384,7 @@ VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_con
 ```
 
 ```{r, eval=FALSE, echo=TRUE}
-meta_sa_treat3 <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), test = "t", dfs = "contain", data= sdata, method= "REML")
+meta_sa_treat3 <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(c_treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), test = "t", dfs = "contain", data= sdata, method= "REML")
 ```
 
 ```{r}
@@ -395,7 +397,7 @@ summary(meta_sa_treat3)
 Below is a bubble plot of the fitted cubic model to the subsetted data. 
 
 ```{r, eval=TRUE, echo=FALSE}
-p <- bubble_plot(meta_sa_treat3, mod = "treattemp", group="study_code")
+p <- bubble_plot(meta_sa_treat3, mod = "c_treattemp", group="study_code")
 p+coord_cartesian(ylim=c(-10,10))
 ```
 
@@ -475,6 +477,9 @@ gdata_lon_cool <- subset(s.gearydata, Trait.category == "Longevity" & warm.cool 
 
 all_gdata <- rbind(gdata_lon_warm, gdata_lon_cool)
 
+all_gdata <- all_gdata %>% mutate(c_treattemp = treattemp - 25)
+
+
 ### Create random factors into data frame 
 all_gdata$obs <- factor(c(1:nrow(all_gdata)))                # Unique observation code
 all_gdata$study_code <- factor(all_gdata$Paper.code)         # Model requires column names study_code 
@@ -490,7 +495,7 @@ VCV_shared_ga <- impute_covariance_matrix(vi=all_gdata$v, cluster = all_gdata$sh
 ```
 
 ```{r, eval=FALSE}
-meta_ga_treat3 <- rma.mv(es, VCV_shared_ga,  mod= ~ poly(treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code, ~1|obs), test = "t", dfs = "contain", data= all_gdata, method= "REML")
+meta_ga_treat3 <- rma.mv(es, VCV_shared_ga,  mod= ~ poly(c_treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code, ~1|obs), test = "t", dfs = "contain", data= all_gdata, method= "REML")
 ```
 
 ```{r}

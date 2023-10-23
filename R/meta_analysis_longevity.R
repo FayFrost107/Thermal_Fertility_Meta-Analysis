@@ -42,6 +42,8 @@ rdata <- alllong
 
 rdata <- subset(rdata, Paper.code != "HUM251")
 
+rdata <- rdata %>% mutate(c_treattemp = treattemp - 25)
+
 
 ########### change species names in survival data ####################################
 classes <- read.csv("Data/Species_classifications.CSV") ## read in species classifications from map
@@ -169,18 +171,18 @@ meta_trait_ref <- rma.mv(es, VCV_shared,  mod= ~reftemp, random= list(~ 1|study_
 summary(meta_trait_ref)
 
 # treat temp
-meta_trait_treattemp <- rma.mv(es, VCV_shared,  mod= ~treattemp, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+meta_trait_treattemp <- rma.mv(es, VCV_shared,  mod= ~c_treattemp, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_treattemp)
 
 # treat temp^2
-meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~ poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_treat2)
 
 # treat temp^3
-meta_trait_treat3 <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+meta_trait_treat3 <- rma.mv(es, VCV_shared,  mod= ~ poly(c_treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_treat3)
 
-meta_train_treat3_contain <- rma.mv(es, VCV_shared,  mod= ~ poly(treattemp, degree=3, raw=TRUE),   ## gives same results
+meta_train_treat3_contain <- rma.mv(es, VCV_shared,  mod= ~ poly(c_treattemp, degree=3, raw=TRUE),   ## gives same results
                                     random= list(~ 1|study_code,  ~1|obs), data= rdata, test="t", dfs = "contain", method= "REML")
 # diff temp
 meta_trait_diff <- rma.mv(es, VCV_shared,  mod= ~diff, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
@@ -237,7 +239,7 @@ VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_con
 
 
 # re-run cubic model
-meta_sa_treat3 <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(treattemp, degree=3, raw=TRUE), 
+meta_sa_treat3 <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(c_treattemp, degree=3, raw=TRUE), 
                          random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
 summary(meta_sa_treat3)
 
@@ -256,6 +258,7 @@ meta_bintemp_habitat <- rma.mv(es, VCV_shared,  mod= ~bin.temp * Habitat,
 summary(meta_bintemp_habitat)
 
 
-
+meta_treat_habitat <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp * Habitat, degree=3, raw=TRUE), 
+                         random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 
 
