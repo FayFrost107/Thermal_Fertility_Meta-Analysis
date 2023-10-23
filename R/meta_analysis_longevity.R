@@ -174,6 +174,15 @@ summary(meta_trait_ref)
 meta_trait_treattemp <- rma.mv(es, VCV_shared,  mod= ~c_treattemp, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_treattemp)
 
+####### Predicting from model --------------############
+
+# First, create some new data for moderators, this will create a sequence for c_treattemp based on the min and max values. if we had other moderators then we would need to be sure that they are named exactly as in the model and added here. Of course, we also do not need to have a full sequence, we could just pick certain values (e.g., 25, 30 or 40) and make predcitions of the mean at thos temps. 
+newdata <- as.matrix(data.frame(c_treattemp = seq(min(rdata$c_treattemp), max(rdata$c_treattemp), length.out = 100)))  
+
+# Then make predictions using the model of interest.
+	preds <- data.frame(predict(meta_trait_treattemp, newmods = newdata, digits = 2, addx=TRUE))
+
+#######   --------------############
 # treat temp^2
 meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~ poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_treat2)
