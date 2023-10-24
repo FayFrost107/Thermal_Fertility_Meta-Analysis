@@ -255,13 +255,55 @@ meta_sub_bintemp <- rma.mv(es, VCV_shared_subdata,  mod= ~bin.temp-1,
 summary(meta_sub_bintemp)
 
 ###########################################################################################################
-# Other fixed effects
-
-meta_bintemp_habitat <- rma.mv(es, VCV_shared,  mod= ~bin.temp * Habitat,  
-                               random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
-summary(meta_bintemp_habitat)
+#Other fixed effects
 
 
+## Sex exposed
+# We could lump categories so that we have cases where males are included (Both, Male), versus cases with just females (Female, Parthenogenetic), 
+# with Unsure removed. I would predict that the 'Both' category would show the biggest drop for reproduction, but there will be no difference for lifespan
+
+new_data <- rdata
+
+new_data$Sex.exposed[which(new_data$Sex.exposed == "Male")] <- "Both"
+new_data$Sex.exposed[which(new_data$Sex.exposed == "Parthenogenetic")] <- "Female"
+
+new_data <- subset(new_data, Sex.exposed != "Unsure")
+
+VCV_shared_sex <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$shared_control, r=0.5)
+
+meta_treat_sex <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed, 
+                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML")
+
+
+## Life-stage
+# We could lump categories so that we have cases where only adults were exposed (Adult), 
+# versus cases where immature stages were exposed (Juvenile, Larvae, Pupae, Mix)- perhaps after excluding 'Egg' and 'Embryo' because these categories are a bit weird
 
 
 
+
+ls_data <- rdata
+
+ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Juvenile")] <- "Immature"
+ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Larvae")] <- "Immature"
+ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Mix")] <- "Immature"
+ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Pupae")] <- "Immature"
+
+
+
+ls_data <- subset(ls_data, Life.stage.of.animal != "Egg")
+ls_data <- subset(ls_data, Life.stage.of.animal != "Embryo")
+
+VCV_shared_life <- impute_covariance_matrix(vi=ls_data$v, cluster = ls_data$shared_control, r=0.5)
+
+meta_treat_ls <- rma.mv(es, VCV_shared_life,  mod= ~poly(c_treattemp, degree=3, raw=TRUE)*Life.stage.of.animal,
+                        random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML")
+
+### pest
+pest_data <- subset(rdata, Agricultural.importance == "Pest")
+
+
+VCV_shared_pest <- impute_covariance_matrix(vi=pest_data$v, cluster = pest_data$shared_control, r=0.5)
+
+meta_pest <- rma.mv(es, VCV_shared_pest,  mod= ~poly(c_treattemp, degree=2, raw=TRUE),
+                        random= list(~ 1|study_code,  ~1|obs), data= pest_data, method= "REML")
