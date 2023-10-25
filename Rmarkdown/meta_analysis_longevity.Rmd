@@ -326,6 +326,118 @@ plot+ coord_cartesian(ylim=c(-20,10))
 
 \newpage
 
+
+# Other fixed effects
+
+Here are tabled number of counts for each level of our moderators.
+
+```{r,eval=T,}
+table(rdata$Class)
+table(rdata$Habitat)
+table(rdata$Sex.exposed)
+table(rdata$Fertilisation.mode)
+table(rdata$Agricultural.importance)
+table(rdata$Lab.or.field)
+table(rdata$Exposure.duration)
+table(rdata$Life.stage.of.animal)
+```
+
+Given the imbalance in number of effect sizes in each level, taxonomic class and habitat moderators do not seem like they are going to be useful.
+
+The moderators with the good spreads are (providing we do some recategorisation) are:
+1.	Sex exposed.
+
+2.	Life stage. 
+
+
+## Sex exposed
+
+We could lump categories so that we have cases where males are included (Both, Male), versus cases with just females (Female, Parthenogenetic), with Unsure removed. I would predict that the 'Both' category would show the biggest drop for reproduction, but there will be no difference for lifespan
+ 
+```{r, echo=FALSE, eval=FALSE}
+new_data <- rdata
+
+new_data$Sex.exposed[which(new_data$Sex.exposed == "Male")] <- "Both"
+new_data$Sex.exposed[which(new_data$Sex.exposed == "Parthenogenetic")] <- "Female"
+
+new_data <- subset(new_data, Sex.exposed != "Unsure")
+
+VCV_shared_sex <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$shared_control, r=0.5)
+
+```
+
+```{r, echo=TRUE, eval=TRUE}
+table(new_data$Sex.exposed)
+```
+
+```{r, eval=FALSE, echo=TRUE}
+meta_treat_sex <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed, 
+                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML")
+```
+
+```{r, eval=TRUE}
+summary(meta_treat_sex)
+```
+
+
+## Life-stage
+
+We could lump categories so that we have cases where only adults were exposed (Adult), versus cases where immature stages were exposed (Juvenile, Larvae, Pupae, Mix)- perhaps after excluding 'Egg' and 'Embryo' because these categories are a bit weird. I would predict that exposure of juveniles is worse than just exposure of adults
+
+```{r, echo=FALSE, eval=TRUE}
+ls_data <- rdata
+
+ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Juvenile")] <- "Immature"
+ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Larvae")] <- "Immature"
+ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Mix")] <- "Immature"
+ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Pupae")] <- "Immature"
+
+
+
+ls_data <- subset(ls_data, Life.stage.of.animal != "Egg")
+ls_data <- subset(ls_data, Life.stage.of.animal != "Embryo")
+
+VCV_shared_life <- impute_covariance_matrix(vi=ls_data$v, cluster = ls_data$shared_control, r=0.5)
+```
+
+```{r, echo=TRUE, eval=TRUE}
+table(ls_data$Life.stage.of.animal)
+```
+
+```{r, echo=TRUE, eval=FALSE}
+meta_treat_ls <- rma.mv(es, VCV_shared_life,  mod= ~poly(c_treattemp, degree=3, raw=TRUE)*Life.stage.of.animal,
+                        random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML")
+```
+
+```{r, eval=TRUE}
+summary(meta_treat_ls)
+```
+
+
+\newpage 
+
+
+# Sub-analysis on pest species
+
+```{r, echo=TRUE, eval=FALSE }
+pest_data <- subset(rdata, Agricultural.importance == "Pest")
+
+ 
+
+VCV_shared_pest <- impute_covariance_matrix(vi=pest_data$v, cluster = pest_data$shared_control, r=0.5)
+
+meta_pest <- rma.mv(es, VCV_shared_pest,  mod= ~poly(c_treattemp, degree=2, raw=TRUE),
+                        random= list(~ 1|study_code,  ~1|obs), data= pest_data, method= "REML")
+```
+
+```{r, echo=TRUE, eval=T}
+summary(meta_pest)
+```
+
+\newpage
+
+
+
 # Publication Bias.
 
 We fit meta-regression model with year as a moderator to see whether there is an publication bias. In other words, is effect size strongly correlated with publication year. We found now evidence to suggest that year has an effect on the report effect sizes. A summary of the model is given below. 
@@ -507,6 +619,6 @@ summary(meta_ga_treat3)
 Below is a bubble plot of the fitted quadratic model. 
 
 ```{r, eval=TRUE, echo=FALSE}
-p <- bubble_plot(meta_ga_treat3, mod = "treattemp", group="study_code")
+p <- bubble_plot(meta_ga_treat3, mod = "c_treattemp", group="study_code")
 p+coord_cartesian(ylim=c(-10,10))
 ```
