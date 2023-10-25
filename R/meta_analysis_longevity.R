@@ -89,6 +89,11 @@ nlevels(rdata$study_code) # Check number of studies
 ## import tree from map
 tree1 <- read.nexus("Phylogeny/all_long_excHUM251_tree.nex")
 tree_grafen = compute.brlen(tree1, method="Grafen", power=1)
+
+# use a randomization approach to deal with polytomies. Could this this approach or another detailed here: https://search.r-project.org/CRAN/refmans/RRphylo/html/fix.poly.html
+
+tree <- ape::multi2di(tree_grafen, random = TRUE) 
+
 phylo_matrix <- vcv(tree_grafen, cor=TRUE, model="Brownian") # Make phylogenetic matrix
 
 ########################################    Models   #### ######################################################
