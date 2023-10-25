@@ -38,3 +38,20 @@ final_plot <- plot_ldata +
   labs(title = "Confidence Interval Plot",
        x = "X-axis Label",
        y = "Y-axis Label")
+
+
+### Multivariate models
+mv_mlma_4 <- readRDS(here("output", "models", "mv_mlma_4.rds"))
+preds.mv <- predict(mv_mlma_4, addx=TRUE)
+
+
+mvs_data <- readRDS(here("output", "Output data", "mv_data.rds"))
+mvs_data$pred <- preds.mv$pred  
+mvs_data$pred.lb <- preds.mv$pi.lb
+mvs_data$pred.ub <- preds.mv$pi.ub
+
+ggplot(data = mvs_data, aes(x = c_treattemp, y = pred, col= outcome)) +
+  geom_ribbon(aes(ymin = pred.lb, ymax = pred.ub, fill=outcome), alpha=0.25) +
+  geom_line() +
+  geom_point() +
+  theme_bw()
