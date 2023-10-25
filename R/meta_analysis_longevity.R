@@ -175,24 +175,6 @@ meta_trait_treattemp <- rma.mv(es, VCV_shared,  mod= ~c_treattemp, random= list(
 summary(meta_trait_treattemp)
 
 
-
-####### Predicting from model --------------############
-
-# First, create some new data for moderators, this will create a sequence for c_treattemp based on the min and max values. 
-# if we had other moderators then we would need to be sure that they are named exactly as in the model and added here. #
-# Of course, we also do not need to have a full sequence, we could just pick certain values (e.g., 25, 30 or 40) and make predcitions of the mean at thos temps. 
-
-# Then make predictions using the model of interest.
-sampledata <- as.matrix(data.frame(c_treattemp = seq(min(rdata$c_treattemp), max(rdata$c_treattemp), length.out = 100)))  
-preds <- data.frame(predict(meta_trait_treat3, newmods = sampledata, digits = 2, addx=TRUE))
-
-
-## this only seems to work for linear meta-analyses and not for the cubic ones. 
-
-#######--------------############
-	
-	
-	
 # treat temp^2
 meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~ poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_treat2)
@@ -200,6 +182,8 @@ summary(meta_trait_treat2)
 # treat temp^3
 meta_trait_treat3 <- rma.mv(es, VCV_shared,  mod= ~ poly(c_treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_treat3)
+
+saveRDS(meta_trait_treat3, here("output", "models", "meta_longevity_3.rds"))
 
 meta_train_treat3_contain <- rma.mv(es, VCV_shared,  mod= ~ poly(c_treattemp, degree=3, raw=TRUE),   ## gives same results
                                     random= list(~ 1|study_code,  ~1|obs), data= rdata, test="t", dfs = "contain", method= "REML")

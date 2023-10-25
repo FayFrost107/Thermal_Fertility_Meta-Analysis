@@ -171,6 +171,8 @@ summary(meta_trait_treattemp)
 meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_treat2)
 
+saveRDS(meta_trait_treat2, here("output", "models", "meta_rep_2.rds"))
+
 # diff temp
 meta_trait_diff <- rma.mv(es, VCV_shared,  mod= ~diff, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_diff)
