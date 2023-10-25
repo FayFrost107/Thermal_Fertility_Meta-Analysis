@@ -179,15 +179,25 @@ summary(meta_trait_ref)
 meta_trait_treattemp <- rma.mv(es, VCV_shared,  mod= ~c_treattemp, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_treattemp)
 
+
+
 ####### Predicting from model --------------############
 
-# First, create some new data for moderators, this will create a sequence for c_treattemp based on the min and max values. if we had other moderators then we would need to be sure that they are named exactly as in the model and added here. Of course, we also do not need to have a full sequence, we could just pick certain values (e.g., 25, 30 or 40) and make predcitions of the mean at thos temps. 
-newdata <- as.matrix(data.frame(c_treattemp = seq(min(rdata$c_treattemp), max(rdata$c_treattemp), length.out = 100)))  
+# First, create some new data for moderators, this will create a sequence for c_treattemp based on the min and max values. 
+# if we had other moderators then we would need to be sure that they are named exactly as in the model and added here. #
+# Of course, we also do not need to have a full sequence, we could just pick certain values (e.g., 25, 30 or 40) and make predcitions of the mean at thos temps. 
 
 # Then make predictions using the model of interest.
-	preds <- data.frame(predict(meta_trait_treattemp, newmods = newdata, digits = 2, addx=TRUE))
+sampledata <- as.matrix(data.frame(c_treattemp = seq(min(rdata$c_treattemp), max(rdata$c_treattemp), length.out = 100)))  
+preds <- data.frame(predict(meta_trait_treat3, newmods = sampledata, digits = 2, addx=TRUE))
 
-#######   --------------############
+
+## this only seems to work for linear meta-analyses and not for the cubic ones. 
+
+#######--------------############
+	
+	
+	
 # treat temp^2
 meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~ poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta_trait_treat2)
@@ -267,12 +277,70 @@ summary(meta_sa_bintemp)
 ###########################################################################################################
 # Other fixed effects
 
-meta_bintemp_habitat <- rma.mv(es, VCV_shared,  mod= ~bin.temp * Habitat,  
-                               random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
-summary(meta_bintemp_habitat)
+
+## Sex exposed
+# We could lump categories so that we have cases where males are included (Both, Male), versus cases with just females (Female, Parthenogenetic), 
+# with Unsure removed. I would predict that the 'Both' category would show the biggest drop for reproduction, but there will be no difference for lifespan
+
+new_data <- rdata
+
+new_data$Sex.exposed[which(new_data$Sex.exposed == "Male")] <- "Both"
+new_data$Sex.exposed[which(new_data$Sex.exposed == "Parthenogenetic")] <- "Female"
+
+new_data <- subset(new_data, Sex.exposed != "Unsure")
+
+VCV_shared_sex <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$shared_control, r=0.5)
+
+meta_treat_sex <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=3, raw=TRUE)*Sex.exposed, 
+                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML")
 
 
-meta_treat_habitat <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp * Habitat, degree=3, raw=TRUE), 
-                         random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+## Life-stage
+# We could lump categories so that we have cases where only adults were exposed (Adult), 
+# versus cases where immature stages were exposed (Juvenile, Larvae, Pupae, Mix)- perhaps after excluding 'Egg' and 'Embryo' because these categories are a bit weird
+
+
+
+
+ls_data <- rdata
+
+ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Juvenile")] <- "Immature"
+ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Larvae")] <- "Immature"
+ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Mix")] <- "Immature"
+ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Pupae")] <- "Immature"
+
+
+
+ls_data <- subset(ls_data, Life.stage.of.animal != "Egg")
+ls_data <- subset(ls_data, Life.stage.of.animal != "Embryo")
+
+VCV_shared_life <- impute_covariance_matrix(vi=ls_data$v, cluster = ls_data$shared_control, r=0.5)
+
+meta_treat_ls <- rma.mv(es, VCV_shared_life,  mod= ~poly(c_treattemp, degree=3, raw=TRUE)*Life.stage.of.animal,
+                        random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML")
+
+
+### Pest species
+
+### pest
+pest_data <- subset(rdata, Agricultural.importance == "Pest")
+
+
+VCV_shared_pest <- impute_covariance_matrix(vi=pest_data$v, cluster = pest_data$shared_control, r=0.5)
+
+meta_pest <- rma.mv(es, VCV_shared_pest,  mod= ~poly(c_treattemp, degree=2, raw=TRUE),
+                    random= list(~ 1|study_code,  ~1|obs), data= pest_data, method= "REML")
+
+                         
+
+
+
+
+
+
+
+
+
+
 
 
