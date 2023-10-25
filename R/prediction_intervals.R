@@ -49,9 +49,23 @@ mvs_data <- readRDS(here("output", "Output data", "mv_data.rds"))
 mvs_data$pred <- preds.mv$pred  
 mvs_data$pred.lb <- preds.mv$pi.lb
 mvs_data$pred.ub <- preds.mv$pi.ub
+mvs_data$c.lb <- preds.mv$ci.lb
+mvs_data$c.ub <- preds.mv$ci.ub
 
 ggplot(data = mvs_data, aes(x = c_treattemp, y = pred, col= outcome)) +
   geom_ribbon(aes(ymin = pred.lb, ymax = pred.ub, fill=outcome), alpha=0.25) +
   geom_line() +
   geom_point() +
-  theme_bw()
+  theme_bw() + 
+  labs(title = "Prediciton Interval Plot",
+       x = "X-axis Label",
+       y = "Y-axis Label")
+
+ggplot(data = mvs_data, aes(x = c_treattemp, y = pred, col= outcome)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill=outcome), alpha=0.25) +
+  geom_line() +
+  geom_point() +
+  theme_bw() + 
+  labs(title = "Confidence Interval Plot",
+       x = "X-axis Label",
+       y = "Y-axis Label")
