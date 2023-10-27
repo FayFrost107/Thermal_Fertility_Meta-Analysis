@@ -49,6 +49,9 @@ species_counts <- unique_combinations %>%
   group_by(Species.latin) %>%
   summarize(UniqueStudies = n())
 
+# number of species
+length(unique(unique_combinations$Species.latin))
+
 
 # Terrestiral versus aquatic
 unique_habitat <- sub %>%

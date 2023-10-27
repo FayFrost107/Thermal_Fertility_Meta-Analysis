@@ -67,6 +67,10 @@ rdata$Class <- classes$class[match(rdata$Species.latin, classes$species_latin)]
 rdata$Fertilisation.mode <- classes$fertilisation_mode[match(rdata$Species.latin, classes$species_latin)]
 
 
+"Gonatocerus ashmeadi"    "Gonatocerus triguttatus"
+
+Cosmocomoidea_ashmeadi
+Cosmocomoidea_triguttata
 
 
 
