@@ -1,0 +1,625 @@
+#NEXUS
+[R-package APE, Mon Oct 30 11:18:56 2023]
+
+BEGIN TAXA;
+	DIMENSIONS NTAX = 306;
+	TAXLABELS
+		Brachionus caudatus
+		Brachionus havanaensis
+		Brachionus calyciflorus
+		Cephalodella acidophila
+		Asplanchna brightwellii
+		Ophryotrocha labronica
+		Lambdina fiscellaria
+		Ascotis selenaria
+		Pareuchaetes insulata
+		Mythimna loreyi
+		Mythimna albipuncta
+		Mythimna separata
+		Panolis flammea
+		Noctua atlantica
+		Athetis dissimilis
+		Sesamia calamistis
+		Spodoptera litura
+		Spodoptera frugiperda
+		Busseola fusca
+		Helicoverpa armigera
+		Chrysodeixis chalcites
+		Chrysodeixis includens
+		Copitarsia decolora
+		Diatraea lineolata
+		Agriphila aeneociliella
+		Chilo sacchariphagus
+		Parapoynx crisonalis
+		Ostrinia nubilalis
+		Cnaphalocrocis medinalis
+		Cnaphalocrocis exigua
+		Loxostege sticticalis
+		Euzopherodes vapidella
+		Eldana saccharina
+		Arimania komaroffi
+		Aphantopus hyperantus
+		Hipparchia semele
+		Coenonympha pamphilus
+		Pararge aegeria
+		Bicyclus anynana
+		Sitotroga cerealella
+		Aproaerema modicella
+		Tuta absoluta
+		Cydia pomonella
+		Grapholita lobarzewskii
+		Grapholita molesta
+		Epiphyas postvittana
+		Plutella xylostella
+		Phyllonorycter ringoniella
+		Dasyses rugosella
+		Limnephilus indivisus
+		Musca domestica
+		Drosophila buzzatii
+		Drosophila robusta
+		Drosophila tripunctata
+		Drosophila suzukii
+		Drosophila melanogaster
+		Drosophila simulans
+		Drosophila pseudoobscura
+		Liriomyza sativae
+		Ceratitis rosa
+		Bactrocera dorsalis
+		Bactrocera zonata
+		Piophila casei
+		Sepedon spinipes
+		Bradysia odoriphaga
+		Bradysia difformis
+		Culex pipiens
+		Aedes albopictus
+		Aedes krombeini
+		Aedes aegypti
+		Epicauta impressicornis
+		Tribolium castaneum
+		Hylobius transversovittatus
+		Sitophilus zeamais
+		Hypera postica
+		Agasicles hygrophila
+		Ophraella communa
+		Octodonta nipae
+		Callosobruchus maculatus
+		Callosobruchus chinensis
+		Phoracantha semipunctata
+		Phoracantha recurva
+		Anthores leuconotus
+		Oryzaephilus surinamensis
+		Scymnus subvillosus
+		Scymnus levaillanti
+		Axinoscymnus cardilobus
+		Axinoscymnus apioides
+		Clitostethus arcuatus
+		Stethorus gilvifrons
+		Hippodamia variegata
+		Illeis koebelei
+		Harmonia axyridis
+		Propylea quatuordecimpunctata
+		Propylea dissecta
+		Cheilomenes sexmaculata
+		Adalia bipunctata
+		Delphastus catalinae
+		Serangium japonicum
+		Anthrenus sarnicus
+		Trogoderma granarium
+		Chrysoperla carnea
+		Dichochrysa prasina
+		Chrysopa pallens
+		Venturia canescens
+		Diadegma mollipla
+		Campoletis chlorideae
+		Bathyplectes curculionis
+		Lysiphlebus testaceipes
+		Lysiphlebus confusus
+		Lysiphlebus fabarum
+		Aphidius ervi
+		Aphidius matricariae
+		Diaeretiella rapae
+		Praon volucre
+		Heterospilus prosopidis
+		Doryctobracon brasiliensis
+		Microplitis manilae
+		Pholetesor ornigis
+		Chelonus oculator
+		Cardiochiles nigriceps
+		Theocolax elegans
+		Encarsia guadeloupae
+		Encarsia inaron
+		Encarsia acaudaleyrodis
+		Encarsia citrina
+		Quadrastichus haitiensis
+		Tamarixia radiata
+		Oomyzus sokolowskii
+		Tetrastichus howardi
+		Cirrospilus lyncus
+		Oobius agrili
+		Anagyrus sinope
+		Anagyrus ananatis
+		Trichogramma brassicae
+		Trichogramma poliae
+		Trichogramma achaeae
+		Trichogramma chilonis
+		Trichogramma
+		Eretmocerus hayati
+		Eretmocerus warrae
+		Aphelinus varipes
+		Necremnus artynes
+		Gonatocerus ashmeadi
+		Gonatocerus triguttatus
+		Urolepis rufipes
+		Telenomus cyamophylax
+		Trissolcus semistriatus
+		Trissolcus oenone
+		Pilophorus typicus
+		Pilophorus gallicus
+		Deraeocoris brevis
+		Lygus lineolaris
+		Apolygus lucorum
+		Adelphocoris fasciaticollis
+		Adelphocoris suturalis
+		Adelphocoris lineolatus
+		Macrolophus pygmaeus
+		Nesidiocoris tenuis
+		Eccritotarsus catarinensis
+		Anthocoris minki
+		Orius laevigatus
+		Orius niger
+		Orius sauteri
+		Orius albidipennis
+		Orius thripoborus
+		Orius naivashae
+		Orius thyestes
+		Joppeicus paradoxus
+		Cimex lectularius
+		Corythucha ciliata
+		Corythucha gossypii
+		Stephanitis pyri
+		Eurygaster integriceps
+		Nezara viridula
+		Antestiopsis thunbergii
+		Podisus maculiventris
+		Geocoris punctipes
+		Nysius huttoni
+		Clavigralla tomentosicollis
+		Clavigralla shadabi
+		Riptortus pedestris
+		Cicadulina bipunctata
+		Matsumuratettix hiroglyphicus
+		Nilaparvata lugens
+		Saccharosydne procerus
+		Laodelphax striatellus
+		Aphis glycines
+		Aphis nasturtii
+		Aphis craccivora
+		Aphis rumicis
+		Aphis gossypii
+		Rhopalosiphum padi
+		Rhopalosiphum maidis
+		Acyrthosiphon gossypii
+		Macrosiphum rosae
+		Aulacorthum solani
+		Metopolophium dirhodum
+		Sitobion avenae
+		Myzus persicae
+		Diuraphis noxia
+		Toxoptera citricida
+		Lipaphis erysimi
+		Lipaphis pseudobrassicae
+		Melanaphis sacchari
+		Tinocallis kahawaluokalani
+		Tuberolachnus salignus
+		Eulachnus tuberculostemmatus
+		Tetraneura nigriabdominalis
+		Phenacoccus solenopsis
+		Ferrisia virgata
+		Paracoccus marginatus
+		Planococcus citri
+		Aonidiella aurantii
+		Trialeurodes vaporariorum
+		Bemisia tabaci
+		Singhiella simplex
+		Siphoninus phillyreae
+		Parabemisia myricae
+		Aleurotuberculatus takahashi
+		Arytinnis hakani
+		Blastopsylla occidentalis
+		Aphalara itadori
+		Agonoscena pistaciae
+		Lepinotus reticulatus
+		Frankliniella occidentalis
+		Frankliniella fusca
+		Thrips hawaiiensis
+		Thrips palmi
+		Scirtothrips dorsalis
+		Pezothrips kellyanus
+		Scolothrips takahashii
+		Anaphothrips obscurus
+		Euborellia annulipes
+		Ramulus irregulariterdentatus
+		Pycnoscelus surinamensis
+		Pycnoscelus indicus
+		Gryllus bimaculatus
+		Scapsipedus icipe
+		Schistocerca gregaria
+		Calliptamus italicus
+		Atractomorpha sinensis
+		Daphnia ambigua
+		Daphnia magna
+		Daphniopsis australis
+		Ceriodaphnia rigaudi
+		Bosmina longirostris
+		Moina micrura
+		Moina dubia
+		Artemia franciscana
+		Artemia persimilis
+		Phallocryptus spinosa
+		Arctodiaptomus salinus
+		Eodiaptomus japonicus
+		Pseudodiaptomus annandalei
+		Boeckella hamata
+		Pseudocyclops xiphophorus
+		Penaeus merguiensis
+		Heterocypris barbara
+		Euseius finlandicus
+		Euseius alstoniae
+		Euseius scutalis
+		Phytoseiulus fragariae
+		Amblyseius eharai
+		Amblyseius swirskii
+		Amblyseius asetus
+		Amblyseius womersleyi
+		Neoseiulus barkeri
+		Neoseiulus californicus
+		Neoseiulus longispinosus
+		Kampimodromus aberrans
+		Iphiseius degenerans
+		Typhlodromus pyri
+		Typhlodromus bagdasarjani
+		Typhlodromus recki
+		Cydnoseius negevi
+		Hypoaspis miles
+		Poecilochirus carabi
+		Sancassania polyphyllae
+		Acarus farris
+		Aleuroglyphus ovatus
+		Tyrophagus neiswanderi
+		Tyrophagus similis
+		Tyrophagus putrescentiae
+		Aculops lycopersici
+		Rhyncaphytoptus ficifoliae
+		Oligonychus mangiferus
+		Oligonychus litchii
+		Oligonychus punicae
+		Tetranychus ludeni
+		Tetranychus urticae
+		Tetranychus cinnabarinus
+		Tetranychus evansi
+		Tetranychus turkestani
+		Tetranychus piercei
+		Tetranychus truncatus
+		Tetranychus phaselus
+		Tetranychus palmarum
+		Eotetranychus carpini
+		Eutetranychus africanus
+		Bryobia rubrioculus
+		Bryobia praetiosa
+		Panonychus citri
+		Tetranycopsis horridus
+		Cheyletus malaccensis
+		Pygmephorus lambi
+	;
+END;
+BEGIN TREES;
+	TRANSLATE
+		1	Brachionus caudatus,
+		2	Brachionus havanaensis,
+		3	Brachionus calyciflorus,
+		4	Cephalodella acidophila,
+		5	Asplanchna brightwellii,
+		6	Ophryotrocha labronica,
+		7	Lambdina fiscellaria,
+		8	Ascotis selenaria,
+		9	Pareuchaetes insulata,
+		10	Mythimna loreyi,
+		11	Mythimna albipuncta,
+		12	Mythimna separata,
+		13	Panolis flammea,
+		14	Noctua atlantica,
+		15	Athetis dissimilis,
+		16	Sesamia calamistis,
+		17	Spodoptera litura,
+		18	Spodoptera frugiperda,
+		19	Busseola fusca,
+		20	Helicoverpa armigera,
+		21	Chrysodeixis chalcites,
+		22	Chrysodeixis includens,
+		23	Copitarsia decolora,
+		24	Diatraea lineolata,
+		25	Agriphila aeneociliella,
+		26	Chilo sacchariphagus,
+		27	Parapoynx crisonalis,
+		28	Ostrinia nubilalis,
+		29	Cnaphalocrocis medinalis,
+		30	Cnaphalocrocis exigua,
+		31	Loxostege sticticalis,
+		32	Euzopherodes vapidella,
+		33	Eldana saccharina,
+		34	Arimania komaroffi,
+		35	Aphantopus hyperantus,
+		36	Hipparchia semele,
+		37	Coenonympha pamphilus,
+		38	Pararge aegeria,
+		39	Bicyclus anynana,
+		40	Sitotroga cerealella,
+		41	Aproaerema modicella,
+		42	Tuta absoluta,
+		43	Cydia pomonella,
+		44	Grapholita lobarzewskii,
+		45	Grapholita molesta,
+		46	Epiphyas postvittana,
+		47	Plutella xylostella,
+		48	Phyllonorycter ringoniella,
+		49	Dasyses rugosella,
+		50	Limnephilus indivisus,
+		51	Musca domestica,
+		52	Drosophila buzzatii,
+		53	Drosophila robusta,
+		54	Drosophila tripunctata,
+		55	Drosophila suzukii,
+		56	Drosophila melanogaster,
+		57	Drosophila simulans,
+		58	Drosophila pseudoobscura,
+		59	Liriomyza sativae,
+		60	Ceratitis rosa,
+		61	Bactrocera dorsalis,
+		62	Bactrocera zonata,
+		63	Piophila casei,
+		64	Sepedon spinipes,
+		65	Bradysia odoriphaga,
+		66	Bradysia difformis,
+		67	Culex pipiens,
+		68	Aedes albopictus,
+		69	Aedes krombeini,
+		70	Aedes aegypti,
+		71	Epicauta impressicornis,
+		72	Tribolium castaneum,
+		73	Hylobius transversovittatus,
+		74	Sitophilus zeamais,
+		75	Hypera postica,
+		76	Agasicles hygrophila,
+		77	Ophraella communa,
+		78	Octodonta nipae,
+		79	Callosobruchus maculatus,
+		80	Callosobruchus chinensis,
+		81	Phoracantha semipunctata,
+		82	Phoracantha recurva,
+		83	Anthores leuconotus,
+		84	Oryzaephilus surinamensis,
+		85	Scymnus subvillosus,
+		86	Scymnus levaillanti,
+		87	Axinoscymnus cardilobus,
+		88	Axinoscymnus apioides,
+		89	Clitostethus arcuatus,
+		90	Stethorus gilvifrons,
+		91	Hippodamia variegata,
+		92	Illeis koebelei,
+		93	Harmonia axyridis,
+		94	Propylea quatuordecimpunctata,
+		95	Propylea dissecta,
+		96	Cheilomenes sexmaculata,
+		97	Adalia bipunctata,
+		98	Delphastus catalinae,
+		99	Serangium japonicum,
+		100	Anthrenus sarnicus,
+		101	Trogoderma granarium,
+		102	Chrysoperla carnea,
+		103	Dichochrysa prasina,
+		104	Chrysopa pallens,
+		105	Venturia canescens,
+		106	Diadegma mollipla,
+		107	Campoletis chlorideae,
+		108	Bathyplectes curculionis,
+		109	Lysiphlebus testaceipes,
+		110	Lysiphlebus confusus,
+		111	Lysiphlebus fabarum,
+		112	Aphidius ervi,
+		113	Aphidius matricariae,
+		114	Diaeretiella rapae,
+		115	Praon volucre,
+		116	Heterospilus prosopidis,
+		117	Doryctobracon brasiliensis,
+		118	Microplitis manilae,
+		119	Pholetesor ornigis,
+		120	Chelonus oculator,
+		121	Cardiochiles nigriceps,
+		122	Theocolax elegans,
+		123	Encarsia guadeloupae,
+		124	Encarsia inaron,
+		125	Encarsia acaudaleyrodis,
+		126	Encarsia citrina,
+		127	Quadrastichus haitiensis,
+		128	Tamarixia radiata,
+		129	Oomyzus sokolowskii,
+		130	Tetrastichus howardi,
+		131	Cirrospilus lyncus,
+		132	Oobius agrili,
+		133	Anagyrus sinope,
+		134	Anagyrus ananatis,
+		135	Trichogramma brassicae,
+		136	Trichogramma poliae,
+		137	Trichogramma achaeae,
+		138	Trichogramma chilonis,
+		139	Trichogramma,
+		140	Eretmocerus hayati,
+		141	Eretmocerus warrae,
+		142	Aphelinus varipes,
+		143	Necremnus artynes,
+		144	Gonatocerus ashmeadi,
+		145	Gonatocerus triguttatus,
+		146	Urolepis rufipes,
+		147	Telenomus cyamophylax,
+		148	Trissolcus semistriatus,
+		149	Trissolcus oenone,
+		150	Pilophorus typicus,
+		151	Pilophorus gallicus,
+		152	Deraeocoris brevis,
+		153	Lygus lineolaris,
+		154	Apolygus lucorum,
+		155	Adelphocoris fasciaticollis,
+		156	Adelphocoris suturalis,
+		157	Adelphocoris lineolatus,
+		158	Macrolophus pygmaeus,
+		159	Nesidiocoris tenuis,
+		160	Eccritotarsus catarinensis,
+		161	Anthocoris minki,
+		162	Orius laevigatus,
+		163	Orius niger,
+		164	Orius sauteri,
+		165	Orius albidipennis,
+		166	Orius thripoborus,
+		167	Orius naivashae,
+		168	Orius thyestes,
+		169	Joppeicus paradoxus,
+		170	Cimex lectularius,
+		171	Corythucha ciliata,
+		172	Corythucha gossypii,
+		173	Stephanitis pyri,
+		174	Eurygaster integriceps,
+		175	Nezara viridula,
+		176	Antestiopsis thunbergii,
+		177	Podisus maculiventris,
+		178	Geocoris punctipes,
+		179	Nysius huttoni,
+		180	Clavigralla tomentosicollis,
+		181	Clavigralla shadabi,
+		182	Riptortus pedestris,
+		183	Cicadulina bipunctata,
+		184	Matsumuratettix hiroglyphicus,
+		185	Nilaparvata lugens,
+		186	Saccharosydne procerus,
+		187	Laodelphax striatellus,
+		188	Aphis glycines,
+		189	Aphis nasturtii,
+		190	Aphis craccivora,
+		191	Aphis rumicis,
+		192	Aphis gossypii,
+		193	Rhopalosiphum padi,
+		194	Rhopalosiphum maidis,
+		195	Acyrthosiphon gossypii,
+		196	Macrosiphum rosae,
+		197	Aulacorthum solani,
+		198	Metopolophium dirhodum,
+		199	Sitobion avenae,
+		200	Myzus persicae,
+		201	Diuraphis noxia,
+		202	Toxoptera citricida,
+		203	Lipaphis erysimi,
+		204	Lipaphis pseudobrassicae,
+		205	Melanaphis sacchari,
+		206	Tinocallis kahawaluokalani,
+		207	Tuberolachnus salignus,
+		208	Eulachnus tuberculostemmatus,
+		209	Tetraneura nigriabdominalis,
+		210	Phenacoccus solenopsis,
+		211	Ferrisia virgata,
+		212	Paracoccus marginatus,
+		213	Planococcus citri,
+		214	Aonidiella aurantii,
+		215	Trialeurodes vaporariorum,
+		216	Bemisia tabaci,
+		217	Singhiella simplex,
+		218	Siphoninus phillyreae,
+		219	Parabemisia myricae,
+		220	Aleurotuberculatus takahashi,
+		221	Arytinnis hakani,
+		222	Blastopsylla occidentalis,
+		223	Aphalara itadori,
+		224	Agonoscena pistaciae,
+		225	Lepinotus reticulatus,
+		226	Frankliniella occidentalis,
+		227	Frankliniella fusca,
+		228	Thrips hawaiiensis,
+		229	Thrips palmi,
+		230	Scirtothrips dorsalis,
+		231	Pezothrips kellyanus,
+		232	Scolothrips takahashii,
+		233	Anaphothrips obscurus,
+		234	Euborellia annulipes,
+		235	Ramulus irregulariterdentatus,
+		236	Pycnoscelus surinamensis,
+		237	Pycnoscelus indicus,
+		238	Gryllus bimaculatus,
+		239	Scapsipedus icipe,
+		240	Schistocerca gregaria,
+		241	Calliptamus italicus,
+		242	Atractomorpha sinensis,
+		243	Daphnia ambigua,
+		244	Daphnia magna,
+		245	Daphniopsis australis,
+		246	Ceriodaphnia rigaudi,
+		247	Bosmina longirostris,
+		248	Moina micrura,
+		249	Moina dubia,
+		250	Artemia franciscana,
+		251	Artemia persimilis,
+		252	Phallocryptus spinosa,
+		253	Arctodiaptomus salinus,
+		254	Eodiaptomus japonicus,
+		255	Pseudodiaptomus annandalei,
+		256	Boeckella hamata,
+		257	Pseudocyclops xiphophorus,
+		258	Penaeus merguiensis,
+		259	Heterocypris barbara,
+		260	Euseius finlandicus,
+		261	Euseius alstoniae,
+		262	Euseius scutalis,
+		263	Phytoseiulus fragariae,
+		264	Amblyseius eharai,
+		265	Amblyseius swirskii,
+		266	Amblyseius asetus,
+		267	Amblyseius womersleyi,
+		268	Neoseiulus barkeri,
+		269	Neoseiulus californicus,
+		270	Neoseiulus longispinosus,
+		271	Kampimodromus aberrans,
+		272	Iphiseius degenerans,
+		273	Typhlodromus pyri,
+		274	Typhlodromus bagdasarjani,
+		275	Typhlodromus recki,
+		276	Cydnoseius negevi,
+		277	Hypoaspis miles,
+		278	Poecilochirus carabi,
+		279	Sancassania polyphyllae,
+		280	Acarus farris,
+		281	Aleuroglyphus ovatus,
+		282	Tyrophagus neiswanderi,
+		283	Tyrophagus similis,
+		284	Tyrophagus putrescentiae,
+		285	Aculops lycopersici,
+		286	Rhyncaphytoptus ficifoliae,
+		287	Oligonychus mangiferus,
+		288	Oligonychus litchii,
+		289	Oligonychus punicae,
+		290	Tetranychus ludeni,
+		291	Tetranychus urticae,
+		292	Tetranychus cinnabarinus,
+		293	Tetranychus evansi,
+		294	Tetranychus turkestani,
+		295	Tetranychus piercei,
+		296	Tetranychus truncatus,
+		297	Tetranychus phaselus,
+		298	Tetranychus palmarum,
+		299	Eotetranychus carpini,
+		300	Eutetranychus africanus,
+		301	Bryobia rubrioculus,
+		302	Bryobia praetiosa,
+		303	Panonychus citri,
+		304	Tetranycopsis horridus,
+		305	Cheyletus malaccensis,
+		306	Pygmephorus lambi
+	;
+	TREE * UNTITLED = [&R] ((((1:0.005004170142,2:0.005004170142,3:0.005004170142):0.005004170142,4:0.01000834028,5:0.01000834028):0.07005838198,6:0.08006672227):0.6605504587,(((((((((((((((((7:0.001668056714,8:0.001668056714):0.02502085071,(9:0.02168473728,(((((((10:0.002502085071,11:0.002502085071,12:0.002502085071):0.001668056714,13:0.004170141785):0.001668056714,14:0.005838198499):0.001668056714,15:0.007506255213):0.005004170142,(16:0.004170141785,(17:0.001668056714,18:0.001668056714):0.002502085071,19:0.004170141785):0.00834028357):0.002502085071,20:0.01501251043):0.002502085071,((21:0.000834028357,22:0.000834028357):0.000834028357,23:0.001668056714):0.01584653878):0.004170141785):0.005004170142):0.02001668057,((((24:0.003336113428,25:0.003336113428,26:0.003336113428):0.001668056714,27:0.005004170142):0.006672226856,28:0.011676397,(29:0.000834028357,30:0.000834028357):0.01084236864,31:0.011676397):0.007506255213,(32:0.006672226856,33:0.006672226856,34:0.006672226856):0.01251042535):0.02752293578):0.00834028357,(((35:0.000834028357,36:0.000834028357):0.000834028357,37:0.001668056714):0.001668056714,(38:0.000834028357,39:0.000834028357):0.002502085071):0.05170975813):0.007506255213,(40:0.005004170142,41:0.005004170142,42:0.005004170142):0.05754795663):0.01084236864,((43:0.003336113428,(44:0.000834028357,45:0.000834028357):0.002502085071):0.005004170142,46:0.00834028357):0.06505421184):0.002502085071,(47:0.001668056714,48:0.001668056714):0.07422852377):0.001668056714,49:0.0775646372):0.000834028357,50:0.07839866555):0.07422852377,(((((51:0.04170141785,(((52:0.011676397,53:0.011676397):0.005004170142,54:0.01668056714):0.011676397,((55:0.002502085071,(56:0.000834028357,57:0.000834028357):0.001668056714):0.005838198499,58:0.00834028357):0.02001668057):0.01334445371):0.002502085071,59:0.04420350292):0.01417848207,(((60:0.005838198499,(61:0.001668056714,62:0.001668056714):0.004170141785):0.003336113428,63:0.009174311927):0.004170141785,64:0.01334445371):0.04503753128):0.003336113428,(65:0.000834028357,66:0.000834028357):0.06088407006):0.01000834028,(67:0.004170141785,(68:0.001668056714,69:0.001668056714,70:0.001668056714):0.002502085071):0.06755629691):0.08090075063):0.0717264387,(((((71:0.004170141785,72:0.004170141785):0.03252710592,((((73:0.00834028357,74:0.00834028357):0.000834028357,75:0.009174311927):0.01918265221,((((76:0.005004170142,77:0.005004170142):0.003336113428,78:0.00834028357):0.006672226856,(79:0.001668056714,80:0.001668056714):0.01334445371):0.003336113428,((81:0.000834028357,82:0.000834028357):0.001668056714,83:0.002502085071):0.01584653878):0.01000834028):0.002502085071,84:0.03085904921):0.005838198499):0.02001668057,(((((85:0.000834028357,86:0.000834028357):0.005004170142,(87:0.000834028357,88:0.000834028357):0.005004170142,89:0.005838198499):0.000834028357,90:0.006672226856):0.01000834028,(91:0.006672226856,92:0.006672226856,93:0.006672226856,(94:0.000834028357,95:0.000834028357):0.005838198499,96:0.006672226856,97:0.006672226856):0.01000834028):0.002502085071,(98:0.001668056714,99:0.001668056714):0.0175145955):0.03753127606):0.007506255213,(100:0.005838198499,101:0.005838198499):0.05838198499):0.006672226856,(102:0.002502085071,103:0.002502085071,104:0.002502085071):0.06839032527):0.1534612177):0.1017514595,((((105:0.002502085071,106:0.002502085071,107:0.002502085071):0.000834028357,108:0.003336113428):0.02502085071,((((109:0.001668056714,110:0.001668056714,111:0.001668056714):0.005838198499,(112:0.002502085071,113:0.002502085071):0.005004170142,114:0.007506255213,115:0.007506255213):0.003336113428,116:0.01084236864):0.01334445371,117:0.02418682235,(118:0.005004170142,119:0.005004170142):0.01918265221,120:0.02418682235,121:0.02418682235):0.004170141785):0.06755629691,(((((122:0.01334445371,((123:0.003336113428,124:0.003336113428,125:0.003336113428,126:0.003336113428):0.007506255213,((127:0.005838198499,128:0.005838198499,129:0.005838198499,130:0.005838198499):0.000834028357,131:0.006672226856):0.004170141785):0.002502085071):0.03002502085,(132:0.003336113428,(133:0.000834028357,134:0.000834028357):0.002502085071):0.04003336113,(135:0.01584653878,136:0.01584653878,137:0.01584653878,138:0.01584653878,139:0.01584653878):0.02752293578,((140:0.001668056714,141:0.001668056714):0.002502085071,142:0.004170141785):0.03919933278):0.001668056714,143:0.04503753128):0.00834028357,(144:0.000834028357,145:0.000834028357):0.05254378649,146:0.05337781485):0.01334445371,(147:0.005004170142,(148:0.002502085071,149:0.002502085071):0.002502085071):0.06171809842):0.02919099249):0.2301918265):0.1226021685,((((((((150:0.000834028357,151:0.000834028357):0.009174311927,152:0.01000834028,(153:0.005004170142,154:0.005004170142,(155:0.001668056714,156:0.001668056714,157:0.001668056714):0.003336113428):0.005004170142,((158:0.000834028357,159:0.000834028357):0.000834028357,160:0.001668056714):0.00834028357):0.01000834028,(161:0.005838198499,(162:0.005004170142,163:0.005004170142,164:0.005004170142,165:0.005004170142,166:0.005004170142,167:0.005004170142,168:0.005004170142):0.000834028357):0.01417848207,169:0.02001668057,170:0.02001668057):0.007506255213,((171:0.000834028357,172:0.000834028357):0.001668056714,173:0.002502085071):0.02502085071):0.01251042535,((174:0.005838198499,((175:0.002502085071,176:0.002502085071):0.001668056714,177:0.004170141785):0.001668056714):0.005838198499,(178:0.000834028357,179:0.000834028357):0.01084236864,((180:0.000834028357,181:0.000834028357):0.001668056714,182:0.002502085071):0.009174311927):0.02835696414):0.00834028357,((183:0.001668056714,184:0.001668056714):0.005004170142,((185:0.001668056714,186:0.001668056714):0.001668056714,187:0.003336113428):0.003336113428):0.04170141785):0.05838198499,(((((((188:0.005004170142,189:0.005004170142,190:0.005004170142,191:0.005004170142,192:0.005004170142):0.003336113428,(193:0.001668056714,194:0.001668056714):0.006672226856):0.01584653878,((((195:0.004170141785,(196:0.000834028357,197:0.000834028357):0.003336113428):0.001668056714,(198:0.000834028357,199:0.000834028357):0.005004170142):0.005004170142,(200:0.001668056714,201:0.001668056714):0.009174311927):0.003336113428,202:0.01417848207,(203:0.000834028357,204:0.000834028357):0.01334445371):0.01000834028,205:0.02418682235):0.000834028357,206:0.02502085071):0.007506255213,(207:0.003336113428,208:0.003336113428):0.02919099249,209:0.03252710592):0.01334445371,((210:0.009174311927,211:0.009174311927,212:0.009174311927,213:0.009174311927):0.003336113428,214:0.01251042535):0.03336113428):0.011676397,(((215:0.004170141785,216:0.004170141785,217:0.004170141785,218:0.004170141785,219:0.004170141785):0.000834028357,220:0.005004170142):0.005838198499,(221:0.005004170142,(222:0.002502085071,223:0.002502085071,224:0.002502085071):0.002502085071):0.005838198499):0.04670558799):0.04920767306):0.01501251043,225:0.1217681401,((226:0.000834028357,227:0.000834028357):0.01084236864,(228:0.002502085071,229:0.002502085071):0.009174311927,230:0.011676397,231:0.011676397,232:0.011676397,233:0.011676397):0.1100917431):0.3269391159):0.0175145955,(234:0.01668056714,((235:0.004170141785,(236:0.000834028357,237:0.000834028357):0.003336113428):0.011676397,((238:0.003336113428,239:0.003336113428):0.007506255213,((240:0.005004170142,241:0.005004170142):0.000834028357,242:0.005838198499):0.005004170142):0.005004170142):0.000834028357):0.4495412844):0.08507089241,(((((243:0.00834028357,244:0.00834028357,245:0.00834028357):0.004170141785,246:0.01251042535):0.004170141785,247:0.01668056714,(248:0.002502085071,249:0.002502085071):0.01417848207):0.009174311927,((250:0.000834028357,251:0.000834028357):0.003336113428,252:0.004170141785):0.02168473728):0.05004170142,((((253:0.005838198499,254:0.005838198499):0.003336113428,255:0.009174311927):0.005838198499,256:0.01501251043):0.02001668057,257:0.03502919099):0.04086738949):0.4753961635):0.03002502085,(258:0.02919099249,259:0.02919099249):0.5521267723):0.06755629691,(((((260:0.002502085071,261:0.002502085071,262:0.002502085071):0.01584653878,263:0.01834862385,(264:0.004170141785,265:0.004170141785,266:0.004170141785,267:0.004170141785):0.01417848207,(268:0.004170141785,269:0.004170141785,270:0.004170141785):0.01417848207,271:0.01834862385,272:0.01834862385):0.005004170142,(273:0.002502085071,274:0.002502085071,275:0.002502085071):0.02085070892,276:0.02335279399):0.001668056714,277:0.02502085071,278:0.02502085071):0.03836530442,((279:0.005838198499,(280:0.000834028357,281:0.000834028357):0.005004170142,(282:0.001668056714,283:0.001668056714,284:0.001668056714):0.004170141785):0.02919099249,((285:0.001668056714,286:0.001668056714):0.02668890742,((((287:0.003336113428,288:0.003336113428,289:0.003336113428):0.01501251043,(290:0.007506255213,291:0.007506255213,292:0.007506255213,293:0.007506255213,294:0.007506255213,295:0.007506255213,296:0.007506255213,297:0.007506255213,298:0.007506255213):0.01084236864,299:0.01834862385,300:0.01834862385,(301:0.000834028357,302:0.000834028357):0.0175145955,303:0.01834862385,304:0.01834862385):0.003336113428,305:0.02168473728):0.003336113428,306:0.02502085071):0.003336113428):0.006672226856):0.02835696414):0.5854879066):0.09174311927);
+END;

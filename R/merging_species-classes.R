@@ -1,3 +1,7 @@
+###-----------------------------------------------------###
+############################################ Preamble ######################################################
+rm(list=ls()) # Clear R environment
+
 library(metafor)
 library(ggplot2)
 library(ape)
@@ -14,29 +18,27 @@ library(orchaRd)
 library(clubSandwich)
 library(rmarkdown)
 
-### Read in effect size data
-effectdata <- read.csv(here("Data", "Survival project all pairwise.es.csv"))
-effectdata <-  subset(effectdata, Paper.code != "HUM251") 
-
-
-repdata_warm <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Warm" )
-repdata_cool <- subset(effectdata, Trait.category == "Reproduction" & warm.cool == "Cool" )
-
-repdata <- rbind(repdata_warm, repdata_cool)
-
-
+#--------------#
+# 1. Setup     #
+#--------------#
 
 ### Read in effect size data
+effectdata <- read.csv("Data/Survival project all pairwise.es.csv")
 longdata_warm <- subset(effectdata, Trait.category == "Longevity" & warm.cool == "Warm" )
 longdata_cool <- subset(effectdata, Trait.category == "Longevity" & warm.cool == "Cool" )
 
 alllong <- rbind(longdata_warm, longdata_cool)
 
-rdata <- rbind(repdata, alllong)
+### select data for analysis
+rdata <- alllong
+
+rdata <- subset(rdata, Paper.code != "HUM251")
+
+rdata <- rdata %>% mutate(c_treattemp = treattemp - 25)
 
 
 ########### change species names in survival data ####################################
-classes <- read.csv("Data/Species_classifications.CSV") ## read in species classifications from map
+classes <- read.csv("Data/Systematic map species list.CSV") ## read in species classifications from map
 
 rdata$Species.latin[which(rdata$Species.latin == "Marasmia exigua")]                <- "Cnaphalocrocis exigua"
 rdata$Species.latin[which(rdata$Species.latin == "Matsumuratettix hieroglyphicus")] <- "Matsumuratettix hiroglyphicus"
@@ -58,54 +60,26 @@ rdata$Species.latin[which(rdata$Species.latin == "Artemia fransiscana")]        
 rdata$Species.latin[which(rdata$Species.latin == "Blathyplectes curculionis")]      <- "Bathyplectes curculionis"
 rdata$Species.latin[which(rdata$Species.latin == "Menochilus sexmaculatus")]        <- "Cheilomenes sexmaculata"
 rdata$Species.latin[which(rdata$Species.latin == "unknown (Tominic)")]              <- "Trichogramma" 
+
+
+
+### Problem species from systematic map to classes
+rdata$Species.latin[which(rdata$Species.latin == "Gonatocerus ashmeadi")]              <- 	"Cosmocomoidea ashmeadi"
+rdata$Species.latin[which(rdata$Species.latin == "Gonatocerus triguttatus")]   <- "Cosmocomoidea triguttata"
+rdata$Species.latin[which(rdata$Species.latin == "Mythimna albipuncta")]            <-  "Mythimna roseilinea"
+rdata$Species.latin[which(rdata$Species.latin == "Daphniopsis australis")]            <-  "Daphnia australis"
+
 ### specify classifications from map
+classes$species_latin <- gsub("_", " ", classes$species_latin)
 rdata$Class <- classes$class[match(rdata$Species.latin, classes$species_latin)]
+rdata$Fertilisation.mode <- classes$fertilisation_mode[match(rdata$Species.latin, classes$species_latin)]
+rdata$Habitat <- classes$habitat1[match(rdata$Species.latin, classes$species_latin)]
+rdata$Habitat2 <- classes$habitat2[match(rdata$Species.latin, classes$species_latin)]
+rdata$Thermoregulation <- classes$thermoregulation[match(rdata$Species.latin, classes$species_latin)]
+rdata$Mobility <- classes$mobility[match(rdata$Species.latin, classes$species_latin)]
+rdata$reprodctuive.mode <- classes$reproductive_mode[match(rdata$Species.latin, classes$species_latin)]
+rdata$Agricultural.importance <- classes$agricultural_importance[match(rdata$Species.latin, classes$species_latin)]
 
-### Create random factors into data frame 
-rdata$obs <- factor(c(1:nrow(rdata)))                # Unique observation code
-rdata$study_code <- factor(rdata$Paper.code)         # Model requires column names study_code (this is biggest level of nested code structure)
-rdata$Species.phylo <- factor(rdata$Species.latin)   # Species names for phylo matrix
-rdata$species <- factor(rdata$Species.latin)         # Another species column for ranom factor 
-
-precision <- sqrt(1/rdata$v)                         # inverse standard error 
-rdata[,"precision"] <- precision
-str(rdata)
-
-nlevels(rdata$species)    # Check number of species
-nlevels(rdata$study_code) # Check number of studies
-
-
-### setting covariance marix ###
-rdata$shared_control <- factor(rdata$Effect.size.code)
-VCV_shared <- impute_covariance_matrix(vi=rdata$v, cluster = rdata$shared_control, r=0.5)
-
-#### running models ####
-
-#### Subset main dataframe by experiments which have both longevity and reproduction
-###  (these are the experiments in the unique_combo data)
-
-uniquedata <- read.csv("Data/cleaned_unique_combo.csv")
-expcodes <- as.vector(unique(uniquedata$Experiment.code))
-
-test <- subset(rdata, Experiment.code %in% expcodes)
-
-VCV_shared <- impute_covariance_matrix(vi=test$v, cluster = test$shared_control, r=0.5)
-
-
-
-## Random factors: obs, study_code. Fixed Factors: Trait and treatment temp 
-### using subsetted data, i.e. only data which has both longevity and reproduction es. 
-meta_trait_test <- rma.mv(es, VCV_shared, mod=~Trait.category*treattemp,
-                     random= list(~ 1|study_code, ~1|obs), data= test, method= "REML")
-
-
-
-
-## multivariate model using full data set
-VCV_full <- impute_covariance_matrix(vi=rdata$v, cluster = rdata$shared_control, r=0.5)
-
-meta_trait_full <- rma.mv(es, VCV_full, mod=~Trait.category*treattemp,
-                          random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 
 
 
