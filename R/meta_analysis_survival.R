@@ -41,31 +41,11 @@ rdata <- allsurv
 rdata <- subset(rdata, Paper.code != "HUM251")
 rdata <- subset(rdata, Paper.code != "OSM205")
 
-########### change species names in survival data ####################################
-classes <- read.csv("Data/Species_classifications.CSV") ## read in species classifications from map
-
-rdata$Species.latin[which(rdata$Species.latin == "Marasmia exigua")]                <- "Cnaphalocrocis exigua"
-rdata$Species.latin[which(rdata$Species.latin == "Matsumuratettix hieroglyphicus")] <- "Matsumuratettix hiroglyphicus"
-rdata$Species.latin[which(rdata$Species.latin == "Mythimna roseilinea")]            <- "Mythimna albipuncta"
-rdata$Species.latin[which(rdata$Species.latin == "Apis craccivora")]                <- "Aphis craccivora"
-rdata$Species.latin[which(rdata$Species.latin == "Cryptoleamus montrouzieri")]      <- "Cryptolaemus montrouzieri"
-rdata$Species.latin[which(rdata$Species.latin == "Asplanchna brightwelli")]         <- "Asplanchna brightwellii"
-rdata$Species.latin[which(rdata$Species.latin == "Brennandania lambi")]             <- "Pygmephorus lambi"
-rdata$Species.latin[which(rdata$Species.latin == "Amblyseius alstoniae")]           <- "Euseius alstoniae"
-rdata$Species.latin[which(rdata$Species.latin == "Siphoninus phyllyreae")]          <- "Siphoninus phillyreae"
-rdata$Species.latin[which(rdata$Species.latin == "Proprioseiopsis asetus")]         <- "Amblyseius asetus"
-rdata$Species.latin[which(rdata$Species.latin == "Parabemisia myrica")]             <- "Parabemisia myricae"
-rdata$Species.latin[which(rdata$Species.latin == "Cirrospilus sp. near lyncus")]    <- "Cirrospilus lyncus"
-rdata$Species.latin[which(rdata$Species.latin == "Anagyrus sp. nov. nr. sinope" )]  <- "Anagyrus sinope"
-rdata$Species.latin[which(rdata$Species.latin == "Monochamus leuconotus")]          <- "Anthores leuconotus"
-rdata$Species.latin[which(rdata$Species.latin == "Ropalosiphum maidis")]            <- "Rhopalosiphum maidis"
-
-rdata$Species.latin[which(rdata$Species.latin == "Artemia fransiscana")]            <- "Artemia franciscana"
-rdata$Species.latin[which(rdata$Species.latin == "Blathyplectes curculionis")]      <- "Bathyplectes curculionis"
-rdata$Species.latin[which(rdata$Species.latin == "Menochilus sexmaculatus")]        <- "Cheilomenes sexmaculata"
-rdata$Species.latin[which(rdata$Species.latin == "unknown (Tominic)")]              <- "Trichogramma" 
-### specify classifications from map
-rdata$Class <- classes$class[match(rdata$Species.latin, classes$species_latin)]
+### Species names which need changing for phylogeny. 
+rdata$Species.latin[which(rdata$Species.latin == "Cosmocomoidea ashmeadi")]              <- "Gonatocerus ashmeadi"	
+rdata$Species.latin[which(rdata$Species.latin == "Cosmocomoidea triguttata")]   <- "Gonatocerus triguttatus"
+rdata$Species.latin[which(rdata$Species.latin == "Mythimna roseilinea")]            <-  "Mythimna albipuncta"
+rdata$Species.latin[which(rdata$Species.latin == "Daphnia australis")]            <-  "Daphniopsis australis"
 
 ### Create random factors into data frame 
 rdata$obs <- factor(c(1:nrow(rdata)))                # Unique observation code
@@ -81,11 +61,15 @@ nlevels(rdata$species)    # Check number of species
 nlevels(rdata$study_code) # Check number of studies
 
 #### Import Tree #############
-
-## import tree from map
 tree1 <- read.nexus("Phylogeny/all_surv_excHUM251_tree.nex")
 tree_grafen = compute.brlen(tree1, method="Grafen", power=1)
+tree <- ape::multi2di(tree_grafen, random = TRUE) 
 phylo_matrix <- vcv(tree_grafen, cor=TRUE, model="Brownian") # Make phylogenetic matrix
+
+# use a randomization approach to deal with polytomies. 
+# Could this this approach or another detailed here: https://search.r-project.org/CRAN/refmans/RRphylo/html/fix.poly.html
+
+
 
 ########################################    Models   #### ######################################################
 
