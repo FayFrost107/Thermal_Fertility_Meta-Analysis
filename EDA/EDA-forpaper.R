@@ -1,37 +1,16 @@
+library(tidyr)
+library(dplyr)
+
 # get effectsize data
 effectdata <- read.csv("Data/Survival project all pairwise.es.csv")
 sub <- subset(effectdata, warm.cool != "Reference")
 
+# How many papers in total
+nlevels(as.factor(sub$Paper.code))
 
-########### change species names in survival data ####################################
-classes <- read.csv("Data/Species_classifications.CSV") ## read in species classifications from map
+## percentage effect sizes of each class 
+table(sub$Class)/nrow(sub) * 100
 
-sub$Species.latin[which(sub$Species.latin == "Marasmia exigua")]                <- "Cnaphalocrocis exigua"
-sub$Species.latin[which(sub$Species.latin == "Matsumuratettix hieroglyphicus")] <- "Matsumuratettix hiroglyphicus"
-sub$Species.latin[which(sub$Species.latin == "Mythimna roseilinea")]            <- "Mythimna albipuncta"
-sub$Species.latin[which(sub$Species.latin == "Apis craccivora")]                <- "Aphis craccivora"
-sub$Species.latin[which(sub$Species.latin == "Cryptoleamus montrouzieri")]      <- "Cryptolaemus montrouzieri"
-sub$Species.latin[which(sub$Species.latin == "Asplanchna brightwelli")]         <- "Asplanchna brightwellii"
-sub$Species.latin[which(sub$Species.latin == "Brennandania lambi")]             <- "Pygmephorus lambi"
-sub$Species.latin[which(sub$Species.latin == "Amblyseius alstoniae")]           <- "Euseius alstoniae"
-sub$Species.latin[which(sub$Species.latin == "Siphoninus phyllyreae")]          <- "Siphoninus phillyreae"
-sub$Species.latin[which(sub$Species.latin == "Proprioseiopsis asetus")]         <- "Amblyseius asetus"
-sub$Species.latin[which(sub$Species.latin == "Parabemisia myrica")]             <- "Parabemisia myricae"
-sub$Species.latin[which(sub$Species.latin == "Cirrospilus sp. near lyncus")]    <- "Cirrospilus lyncus"
-sub$Species.latin[which(sub$Species.latin == "Anagyrus sp. nov. nr. sinope" )]  <- "Anagyrus sinope"
-sub$Species.latin[which(sub$Species.latin == "Monochamus leuconotus")]          <- "Anthores leuconotus"
-sub$Species.latin[which(sub$Species.latin == "Ropalosiphum maidis")]            <- "Rhopalosiphum maidis"
-
-sub$Species.latin[which(sub$Species.latin == "Artemia fransiscana")]            <- "Artemia franciscana"
-sub$Species.latin[which(sub$Species.latin == "Blathyplectes curculionis")]      <- "Bathyplectes curculionis"
-sub$Species.latin[which(sub$Species.latin == "Menochilus sexmaculatus")]        <- "Cheilomenes sexmaculata"
-sub$Species.latin[which(sub$Species.latin == "unknown (Tominic)")]              <- "Trichogramma" 
-### specify classifications from map
-sub$Class <- classes$class[match(sub$Species.latin, classes$species_latin)]
-
-
-## number of each class 
-table(sub$Class)
 
 insect <- subset(sub, Class == "Insecta")
 arach <- subset(sub, Class == "Arachnida")
@@ -39,6 +18,11 @@ crus <- subset(sub, Class == "Crustacea")
 rot <- subset(sub, Class == "Rotifera")
 ann <- subset(sub, Class == "Annelida")
 
+nlevels(as.factor(insect$Species.latin))
+nlevels(as.factor(arach$Species.latin))
+nlevels(as.factor(crus$Species.latin))
+nlevels(as.factor(rot$Species.latin))
+nlevels(as.factor(ann$Species.latin))
 
 # How many papers does each species occur in
 unique_combinations <- sub %>%
@@ -62,6 +46,17 @@ habitat_counts <- unique_habitat %>%
      group_by(Habitat) %>%
      summarize(UniqueStudies = n())
 
+habitat_counts
+
+unique_habitat2 <- sub %>%
+  distinct(Species.latin, Habitat2)
+
+# Count the number of unique studies for each species
+habitat2_counts <- unique_habitat2 %>%
+  group_by(Habitat2) %>%
+  summarize(UniqueStudies = n())
+
+habitat2_counts
 
 ### Fertiliarsation mode
 
@@ -74,7 +69,21 @@ fert_counts <- unique_fert %>%
   group_by(Fertilisation.mode) %>%
   summarize(UniqueStudies = n())
 
+fert_counts
 
+
+### reproduction mode
+
+# sex/asexual
+unique_sex <- sub %>%
+  distinct(Species.latin, reprodctuive.mode)
+
+# Count the number of unique studies for each species
+sex_counts <- unique_sex %>%
+  group_by(reprodctuive.mode) %>%
+  summarize(UniqueStudies = n())
+
+sex_counts
 
 ### lab per studies
 
@@ -87,7 +96,7 @@ lab_counts <- unique_lab %>%
   group_by(Lab.or.field) %>%
   summarize(UniqueStudies = n())
 
-
+lab_counts
 # exposure
 unique_exp <- sub %>%
   distinct(Experiment.code, Exposure.duration)
@@ -97,6 +106,6 @@ exp_counts <- unique_exp %>%
   group_by(Exposure.duration) %>%
   summarize(UniqueStudies = n())
 
-
+exp_counts
 
 

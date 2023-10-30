@@ -540,18 +540,6 @@ plot+ coord_cartesian(ylim=c(-10,10))
 ```
 
 
-# Other fixed effects
-
-## Habitat
-```{r, eval=FALSE}
-meta_bintemp_habitat <- rma.mv(es, VCV_shared,  mod= ~bin.temp * Habitat,  random= list(~ 1|study_code,  ~1|obs), test = "t", dfs = "contain", data= rdata, method= "REML")
-```
-
-```{r}
-summary(meta_bintemp_habitat)
-```
-
-
 
 
 # Geary;'s Test
@@ -562,7 +550,7 @@ As a sensitivity analysis we will determine which of our effect sizes do not mee
 
 ```{r, eval=FALSE}
 # Read in data with calculated standardised mean
-gearydata <- read.csv("Data/Gearys_test_data.csv")
+gearydata <- read.csv("../Data/Gearys_test_data.csv")
 
 # view the first fews rows of selected columns
 gearydata  %>% dplyr::select(Experiment.code, Trait.category, reftemp, treattemp, es, v, gtest)  %>%  head(., 30) 

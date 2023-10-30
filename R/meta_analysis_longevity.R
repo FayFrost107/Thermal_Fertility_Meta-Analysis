@@ -23,6 +23,10 @@ library(ggtree)
 library(orchaRd)
 library(clubSandwich)
 library(rmarkdown)
+
+pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR)
+# source functions
+source(here("R", "func.R"))
 ##########################################################################################################
 
 

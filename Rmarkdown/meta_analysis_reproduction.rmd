@@ -567,7 +567,7 @@ As a sensitivity analysis we will determine which of our effect sizes do not mee
 
 ```{r, eval=FALSE, echo=TRUE}
 # Read in data with calculated standardised mean
-gearydata <- read.csv("Data/Gearys_test_data.csv")
+gearydata <- read.csv("../Data/Gearys_test_data.csv")
 
 # view the first fews rows of selected columns
 gearydata  %>% dplyr::select(Experiment.code, Trait.category, reftemp, treattemp, es, v, gtest)  %>%  head(., 30) 
