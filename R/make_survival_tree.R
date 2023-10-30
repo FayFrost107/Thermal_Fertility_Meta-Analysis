@@ -34,7 +34,7 @@ rdata <- allsurv
 rdata <- subset(rdata, Paper.code != "HUM251")
 rdata <- subset(rdata, Paper.code != "OSM205")
 
-#rdata <- subset(effectdata, warm.cool != "Reference")   <<<<< select for all data
+#rdata <- subset(effectdata, warm.cool != "Reference")   #<<<<< select for all data
 ########### change species names in survival data
 
 rdata$Species.latin[which(rdata$Species.latin == "Marasmia exigua")]                <- "Cnaphalocrocis exigua"
