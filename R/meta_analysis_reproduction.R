@@ -277,7 +277,7 @@ ls_data <- subset(ls_data, Life.stage.of.animal != "Embryo")
 
 VCV_shared_life <- impute_covariance_matrix(vi=ls_data$v, cluster = ls_data$shared_control, r=0.5)
 
-meta_treat_ls <- rma.mv(es, VCV_shared_life,  mod= ~poly(c_treattemp, degree=3, raw=TRUE)*Life.stage.of.animal,
+meta_treat_ls <- rma.mv(es, VCV_shared_life,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Life.stage.of.animal,
                         random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML")
 
 ### pest
