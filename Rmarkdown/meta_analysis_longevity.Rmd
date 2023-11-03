@@ -567,7 +567,7 @@ We remove these effect sizes and rerun the best fitting model from earlier which
 
 ## Treatment temperature as a quadratic effect with Geary's outliers removed.
 
-```{r}
+```{r, eval=FALSE}
 # Remove outliers
 s.gearydata <- gearydata %>% subset(gtest > 3)
 
@@ -598,7 +598,7 @@ VCV_shared_ga <- impute_covariance_matrix(vi=all_gdata$v, cluster = all_gdata$sh
 meta_ga_treat3 <- rma.mv(es, VCV_shared_ga,  mod= ~ poly(c_treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code, ~1|obs), test = "t", dfs = "contain", data= all_gdata, method= "REML")
 ```
 
-```{r}
+```{r, eval=FALSE}
 summary(meta_ga_treat3)
 ```
 
@@ -606,7 +606,7 @@ summary(meta_ga_treat3)
 
 Below is a bubble plot of the fitted quadratic model. 
 
-```{r, eval=TRUE, echo=FALSE}
+```{r, eval=FALSE, echo=FALSE}
 p <- bubble_plot(meta_ga_treat3, mod = "c_treattemp", group="study_code")
 p+coord_cartesian(ylim=c(-10,10))
 ```
