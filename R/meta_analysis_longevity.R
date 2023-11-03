@@ -289,7 +289,7 @@ pest_data <- subset(rdata, Agricultural.importance == "Pest")
 
 VCV_shared_pest <- impute_covariance_matrix(vi=pest_data$v, cluster = pest_data$shared_control, r=0.5)
 
-meta_pest <- rma.mv(es, VCV_shared_pest,  mod= ~poly(c_treattemp, degree=2, raw=TRUE),
+meta_pest <- rma.mv(es, VCV_shared_pest,  mod= ~poly(c_treattemp, degree=3, raw=TRUE),
                     random= list(~ 1|study_code,  ~1|obs), data= pest_data, method= "REML")
 
                          
