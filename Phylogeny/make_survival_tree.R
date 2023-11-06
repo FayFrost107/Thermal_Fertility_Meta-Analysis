@@ -79,7 +79,7 @@ prune_tree <- drop.tip(tree_grafen, notin)
 
 
 
-write.nexus(prune_tree, file="all_metadata_tree.nex")
+write.nexus(prune_tree, file="Phylogeny/all_metadata_tree.nex")
 
 
 ##### create data frame and plot tree ###################
