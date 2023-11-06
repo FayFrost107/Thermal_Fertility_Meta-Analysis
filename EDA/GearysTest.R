@@ -124,6 +124,22 @@ calculate_g <- function(temp, mean, sd, n){
  ##  Count how many values in total are < 3 i.e. how many effect sizes we'd end up removing
 table(cleaned_df$gtest < 3) #= 256
  
-write.csv(cleaned_df, "Data/Gearys_test_data.csv")
+
+
+
+subg <- subset(cleaned_df, gtest < 3) ## need to remove all these effect sizes and all effectsizes from studies with controls/references with a gtest > 3
+subg.controlgroup <- unique(sort(subg$Experiment.code[which(subg$warm.cool == "Reference")]))  ### need to remove all effect sizes with these exp.codes
+
+geary_data <- subset(cleaned_df, gtest > 3) # remove all effect sizes <= 3
+
+## How many more would be removed as a result of removing the reference temp. 
+table(geary_data$Experiment.code %in% subg.controlgroup)
+
+#= 
+
+
+
+
+#write.csv(cleaned_df, "Data/Gearys_test_data.csv")
 
 #########################################################################################################################
