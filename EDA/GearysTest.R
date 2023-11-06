@@ -21,7 +21,7 @@ calculate_g <- function(temp, mean, sd, n){
   if (is.na(temp)){
     g <- NA  # Initialize as NA (numeric)
   } else {
-    g <- (mean*sqrt(n))/sd
+    g <- (mean/sd)*((4*(n^(3/2)))/(1+4*n))
   }
   
   return(g)
