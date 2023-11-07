@@ -114,26 +114,26 @@ diag(VCV_shared) <- rdata[, "v"] # Enters recalculated effect size sampling vari
 
 
 # Add new variance matrix into the mixed-effects meta-analysis model
-meta3 <- rma.mv(es, VCV_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1|study_code, ~ 1|shared_control, ~1|obs), 
+meta3 <- rma.mv(es, VCV_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1|study_code, ~1|obs), 
                 R= list(Species.phylo = phylo_matrix), data= rdata, method= "REML")
 summary(meta3)
 i2_ml(meta3, method=c("ratio")) # Heterogeneity at each random factor level
 
 
 ## without phylogeny or species
-meta4 <- rma.mv(es, VCV_shared, random= list(~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta4 <- rma.mv(es, VCV_shared, random= list(~ 1|study_code, ~1|obs), data= rdata, method= "REML")
 summary(meta4)
 i2_ml(meta4, method=c("ratio")) # Heterogeneity at each random factor level
 
 
 ## without phylogeny but with shared control 
-meta5 <- rma.mv(es, VCV_shared, random= list(~ 1|species, ~ 1|study_code, ~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta5 <- rma.mv(es, VCV_shared, random= list(~ 1|species, ~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 summary(meta5)
 i2_ml(meta5, method=c("ratio")) # Heterogeneity at each random factor level
 
 
 ## without phylogeny, species or study_code 
-meta7 <- rma.mv(es, VCV_shared, random= list(~ 1|shared_control, ~1|obs), data= rdata, method= "REML")
+meta7 <- rma.mv(es, VCV_shared, random= list(~1|obs), data= rdata, method= "REML")
 summary(meta7)
 i2_ml(meta7, method=c("ratio")) # Heterogeneity at each random factor level
 

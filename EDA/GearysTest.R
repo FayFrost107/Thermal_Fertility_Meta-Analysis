@@ -137,7 +137,8 @@ table(geary_data$Experiment.code %in% subg.controlgroup)
 
 #= 
 
-
+inf.data <- cleaned_df[which(cleaned_df$gtest == "Inf"),]
+nan.data <- cleaned_df[which(cleaned_df$gtest == "NaN"),]
 
 
 #write.csv(cleaned_df, "Data/Gearys_test_data.csv")

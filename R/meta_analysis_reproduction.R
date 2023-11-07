@@ -252,7 +252,7 @@ new_data <- subset(new_data, Sex.exposed != "Unsure")
 
 VCV_shared_sex <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$shared_control, r=0.5)
 
-meta_treat_sex <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed, 
+meta_treat_sex <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed-1, 
                          random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML")
 
 
