@@ -1,12 +1,23 @@
 ---
 title: "Multivariate Meta-Analysis for Longevity and Reproduction"
 author: "Daniel Noble & Fay Frost"
-output: pdf_document
-editor_options: 
-  chunk_output_type: console
+format: docx
+execute:
+  freeze: auto  # re-render only when source changes
+  cache: false
+  echo: false
+  warning: false
+  error: false
+  include: false
+crossref:
+  fig-title: 'Figure'
+  fig-labels: arabic
+  title-delim: "-"
+  fig-prefix: "Figure"
+  tbl-prefix: "Table"
 ---
 
-```{r, packages,echo = FALSE}
+```{r, packages, echo = FALSE}
 #install.packages("pacman")
 #devtools::install_github("daniel1noble/metaAidR", force=TRUE)
 pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR)
