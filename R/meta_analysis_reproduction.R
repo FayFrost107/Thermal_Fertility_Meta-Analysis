@@ -282,6 +282,12 @@ VCV_shared_life <- impute_covariance_matrix(vi=ls_data$v, cluster = ls_data$shar
 meta_treat_ls <- rma.mv(es, VCV_shared_life,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Life.stage.of.animal,
                         random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML")
 
+
+
+saveRDS(meta_treat_sex, here("output", "models", "meta_treat_rep_ls.rds"))
+saveRDS(new_data, here("output", "Output data", "data_rep_ls.rds"))
+
+
 ### pest
 pest_data <- subset(rdata, Agricultural.importance == "Pest")
 
