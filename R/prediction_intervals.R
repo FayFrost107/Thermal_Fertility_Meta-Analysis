@@ -20,6 +20,8 @@ long_data$pred.ub <- preds.long$pi.ub
 rep_data$pred <- preds.rep$pred  
 rep_data$pred.lb <- preds.rep$pi.lb
 rep_data$pred.ub <- preds.rep$pi.ub
+rep_data$c.lb <- preds.rep$ci.lb
+rep_data$c.ub <- preds.rep$ci.ub
 
 
 ### Plot curves and prediciton intervals
@@ -69,3 +71,34 @@ ggplot(data = mvs_data, aes(x = c_treattemp, y = pred, col= outcome)) +
   labs(title = "Confidence Interval Plot",
        x = "X-axis Label",
        y = "Y-axis Label")
+
+
+### prediciton intervals for sex exposed
+sex_rep_meta <- readRDS(here("output", "models", "meta_treat_rep_sex.rds")) 
+sex_rep_data <- readRDS(here("output", "Output data", "data_rep_sex.rds"))
+
+preds.rep.sex <- predict(sex_rep_meta, addx=TRUE)
+
+
+sex_rep_data$pred <- preds.rep.sex$pred  
+sex_rep_data$pred.lb <- preds.rep.sex$pi.lb
+sex_rep_data$pred.ub <- preds.rep.sex$pi.ub
+sex_rep_data$c.lb <- preds.rep.sex$ci.lb
+sex_rep_data$c.ub <- preds.rep.sex$ci.ub
+
+library(ggplot2)
+
+ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, linetype = Sex.exposed)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Sex.exposed), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  theme_bw() + 
+  labs(title = "Temperature effect on reproduciton",
+       x = "Temperature devaition from 25C",
+       y = "Effect size",
+       color = "Sex exposed",  # Set the title of the color legend
+       fill = "Sex exposed",
+       linetype = "Sex exposed")   # Set the title of the fill legend (for ribbons)
+

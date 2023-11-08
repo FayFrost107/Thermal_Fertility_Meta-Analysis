@@ -255,6 +255,8 @@ VCV_shared_sex <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$sha
 meta_treat_sex <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed-1, 
                          random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML")
 
+saveRDS(meta_treat_sex, here("output", "models", "meta_treat_rep_sex.rds"))
+saveRDS(new_data, here("output", "Output data", "data_rep_sex.rds"))
 
 ## Life-stage
 # We could lump categories so that we have cases where only adults were exposed (Adult), 
