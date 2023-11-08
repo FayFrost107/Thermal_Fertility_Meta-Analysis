@@ -201,3 +201,7 @@ pest <- subset(data_long_final, Agricultural.importance == "Pest")
  saveRDS(mv_mlma_pest, here("output", "models", "mv_mlma_pest.rds"))
 
 ```
+
+# Multivariate meta-analysis and meta-regression
+
+Reproductive traits were more strongly impacted by temperature changes than longevity at 25$^o$C (contrast = `r mv_mlma_2$b[2]`, 95% CI: `r mv_mlma_2$ci.lb[2]` to `r mv_mlma_2$ci.ub[2]`, df = `r mv_mlma_2$ddf[2]`, *p*-value = `r pvalue(mv_mlma_2$pval[2])`)
