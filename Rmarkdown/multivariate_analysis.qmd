@@ -104,69 +104,6 @@ pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR)
   corpcor::is.positive.definite(V) # TRUE
 ```
 
-```{r, multivariatemodel, eval = FALSE, echo = FALSE}
-
- # Multivariate model. Using the VCV matrix we can set up the model. We'll keep it simple for now
-
-mv_mlma <- rma.mv(es ~ outcome - 1, V = V, 
-               random = list(~outcome - 1 | trial,
-                             ~outcome - 1 | Species.latin), 
-               struc = "UN", data = data_long_final, test = "t", dfs = "contain")
-
-
-## Lets try a model with the random effects structure from the univariate case. Not the full structure is: "random= list(~ 1|Species.phylo, ~ 1|species, ~ 1|study_code, ~1|obs), R= list(Species.phylo = phylo_matrix)". We also don't know if these models can take a phylogenetic R matrix. So, lets have a look
-
-# Phylogeny. Use reproduction because it should match with longevity in terms of species
-   
- tree1 <- read.nexus(here("phylogeny", "all_reproduction_excHUM251_tree.nex"))    
- tree_grafen = compute.brlen(tree1, method="Grafen", power=1)
-
-classes <- read.csv(here("Data", "Species_classifications.CSV")) ## read in species classifications from map
-
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Marasmia exigua")]                <- "Cnaphalocrocis exigua"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Matsumuratettix hieroglyphicus")] <- "Matsumuratettix hiroglyphicus"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Mythimna roseilinea")]            <- "Mythimna albipuncta"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Apis craccivora")]                <- "Aphis craccivora"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Cryptoleamus montrouzieri")]      <- "Cryptolaemus montrouzieri"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Asplanchna brightwelli")]         <- "Asplanchna brightwellii"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Brennandania lambi")]             <- "Pygmephorus lambi"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Amblyseius alstoniae")]           <- "Euseius alstoniae"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Siphoninus phyllyreae")]          <- "Siphoninus phillyreae"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Proprioseiopsis asetus")]         <- "Amblyseius asetus"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Parabemisia myrica")]             <- "Parabemisia myricae"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Cirrospilus sp. near lyncus")]    <- "Cirrospilus lyncus"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Anagyrus sp. nov. nr. sinope" )]  <- "Anagyrus sinope"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Monochamus leuconotus")]          <- "Anthores leuconotus"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Ropalosiphum maidis")]            <- "Rhopalosiphum maidis"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Artemia fransiscana")]            <- "Artemia franciscana"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Blathyplectes curculionis")]      <- "Bathyplectes curculionis"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "Menochilus sexmaculatus")]        <- "Cheilomenes sexmaculata"
-data_long_final$Species.latin[which(data_long_final$Species.latin == "unknown (Tominic)")]              <- "Trichogramma" 
-
-### specify classifications from map
-data_long_final$Class <- classes$class[match(data_long_final$Species.latin, classes$species_latin)]
-       
- ############################################## End of Fay's amendments #####################################################      
-       
-# Now we need to prune this tree to the species in this long data
-       tree_checks <- tree_checks(data_long_final, tree1, dataCol = "Species.latin", type = "check") # Looks good so we can prune tree
-
-# Prune tree
-        tree2 <- tree_checks(data_long_final, tree1, dataCol = "Species.latin", type = "prune") 
-
-# Now, use Fay's code to create R matrix. Not yet working because we need to sort out the species in the data before we can prune
-   tree_grafen <- compute.brlen(tree2, method="Grafen", power=1)
- phylo_matrix <- vcv(tree_grafen, cor=TRUE, model="Brownian")
-
-# Now fit the model with phylogeny. That seems to work just fine!
-mv_mlma2 <- rma.mv(es ~ outcome - 1, V = V, 
-               random = list(~outcome - 1 | trial,
-                             ~outcome - 1 | Species.latin), 
-               R= list(Species.latin = phylo_matrix),
-               struc = "UN", data = data_long_final, test = "t", dfs = "contain")
-
-```
-
 ```{r, multivariatemodelsfinal, echo = FALSE}
 ## Univariate models were found to only need two random effects, obs and study. This greatly simplifies the multivarite model, which can only have two levels anyway. We will save these models because they take quite some time to estimate given how much data is available
 rerun = FALSE
@@ -233,16 +170,15 @@ if(rerun2){
 ```
 
 ```{r, correation}
-
+#| label: fig-fig1
+#| fig-cap: Between study correlation for reproduction and longevity
 # Lets explore the among study correlation. 
 data  %>%  group_by(Experiment.code)  %>% summarise(es_repro = mean(es_reproduction), es_long = mean(es_longevity), mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + geom_point() + labs(x = "SMD (Reproduction)", y = "SMD (Longevity)", size =  "Sampling Variance") + theme_bw() + geom_text(aes(label = Experiment.code), size = 3, nudge_x = 0.8, nudge_y = 0.8)
 
 ```
 
-
 ```{r, eval=FALSE, pest_sub_analysis}
 pest <- subset(data_long_final, Agricultural.importance == "Pest")
-
 
  V_2 <- make_VCV_matrix(data = pest, cluster = "trial",  V = "v", rho = 0.5)
 
@@ -256,7 +192,6 @@ pest <- subset(data_long_final, Agricultural.importance == "Pest")
 
 # Check of PD
   corpcor::is.positive.definite(V2) # TRUE
-   
    
  mv_mlma_pest <- rma.mv(es ~ -1 + outcome + outcome:poly(c_treattemp, degree=3, raw=TRUE), V = V2,    
                random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
