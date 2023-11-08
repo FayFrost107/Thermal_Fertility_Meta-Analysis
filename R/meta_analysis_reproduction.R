@@ -284,8 +284,8 @@ meta_treat_ls <- rma.mv(es, VCV_shared_life,  mod= ~poly(c_treattemp, degree=2, 
 
 
 
-saveRDS(meta_treat_sex, here("output", "models", "meta_treat_rep_ls.rds"))
-saveRDS(new_data, here("output", "Output data", "data_rep_ls.rds"))
+saveRDS(meta_treat_ls, here("output", "models", "meta_treat_rep_ls.rds"))
+saveRDS(ls_data, here("output", "Output data", "data_rep_ls.rds"))
 
 
 ### pest

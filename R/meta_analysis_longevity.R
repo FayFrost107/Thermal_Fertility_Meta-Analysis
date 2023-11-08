@@ -255,6 +255,9 @@ VCV_shared_sex <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$sha
 meta_treat_sex <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=3, raw=TRUE)*Sex.exposed, 
                          random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML")
 
+saveRDS(meta_treat_sex, here("output", "models", "meta_treat_long_sex.rds"))
+saveRDS(new_data, here("output", "Output data", "data_long_sex.rds"))
+
 
 ## Life-stage
 # We could lump categories so that we have cases where only adults were exposed (Adult), 
@@ -280,6 +283,8 @@ VCV_shared_life <- impute_covariance_matrix(vi=ls_data$v, cluster = ls_data$shar
 meta_treat_ls <- rma.mv(es, VCV_shared_life,  mod= ~poly(c_treattemp, degree=3, raw=TRUE)*Life.stage.of.animal,
                         random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML")
 
+saveRDS(meta_treat_ls, here("output", "models", "meta_treat_long_ls.rds"))
+saveRDS(ls_data, here("output", "Output data", "data_long_ls.rds"))
 
 ### Pest species
 
