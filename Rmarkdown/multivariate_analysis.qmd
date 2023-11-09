@@ -8,7 +8,7 @@ execute:
   echo: false
   warning: false
   error: false
-  include: false
+  include: true
 crossref:
   fig-title: 'Figure'
   fig-labels: arabic
@@ -17,15 +17,23 @@ crossref:
   tbl-prefix: "Table"
 ---
 
-```{r, packages, echo = FALSE}
+```{r, packages}
+#| echo: false
+#| warning: false
+#| include: false
 #install.packages("pacman")
 #devtools::install_github("daniel1noble/metaAidR", force=TRUE)
-pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR)
+pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR, orchaRd, latex2exp, flextable)
 # source functions
   source(here("R", "func.R"))
+
+  options(digits = 2)
 ```
 
-```{r, load data, echo = FALSE}
+```{r, load data}
+#| echo: false
+#| warning: false
+#| include: false
 ## Load in the finalised data
   data <- read.csv(here("data", "cleaned_unique_combo.csv"))
 
@@ -34,8 +42,10 @@ pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR)
 
 ```
 
-```{r, check data, echo = FALSE, include=FALSE}
-
+```{r, check data}
+#| echo: false
+#| warning: false
+#| include: false
 #  Let's just orient the data length wise as we need it in this format first.
   
   data_long <- data %>% pivot_longer(cols = c(es_reproduction, es_longevity, v_reproduction, v_longevity), names_to = "outcome", values_to = "es") %>% data.frame()
@@ -75,7 +85,9 @@ pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR)
 ```
 
 ```{r, v}
-
+#| echo: false
+#| warning: false
+#| include: false
 # VCV matrix. Let's set up the multivariate meta-analysis model. We first need to create the VCV sampling matrix. This is a block diagonal matrix with the sampling variance for each effect size on the diagonal and the sampling covariance between the two effect sizes on the off-diagonal. We don't know the correlation, but we can assume 0.5. 
  
 # V <- metafor::vcalc(vi=v, cluster = trial, subgroup = Experiment.code, type = outcome, data = data_long_final, rho = 0.5, nearpd = TRUE)
@@ -104,7 +116,10 @@ pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR)
   corpcor::is.positive.definite(V) # TRUE
 ```
 
-```{r, multivariatemodelsfinal, echo = FALSE}
+```{r, multivariatemodelsfinal}
+#| echo: false
+#| warning: false
+#| include: false
 ## Univariate models were found to only need two random effects, obs and study. This greatly simplifies the multivarite model, which can only have two levels anyway. We will save these models because they take quite some time to estimate given how much data is available
 rerun = FALSE
 if(rerun){
@@ -146,6 +161,9 @@ mv_mlma_3
 ```
 
 ```{r, nonlin_multivariatefinal}
+#| echo: false
+#| warning: false
+#| include: false
 # We'll now run the multivariate model with non-linear terms as was done in the univariate cases.
 rerun2=FALSE
 if(rerun2){
@@ -161,20 +179,15 @@ if(rerun2){
 
 # We can get confidence intervals by profiling the liklihood
   if(rerun2){
-  cis <- confint(mv_mlma_4, rho = 1)
+  cis_phi <- confint(mv_mlma_3, phi = 1)
+  cis_rho <- confint(mv_mlma_3, rho = 1)
   write.csv(cis, here("output", "tables", "mv_mlma_4_cis.csv"))
   } else {
     cis <- read.csv(here("output", "tables", "mv_mlma_4_cis.csv"))
   }
  cis
-```
 
-```{r, correation}
-#| label: fig-fig1
-#| fig-cap: Between study correlation for reproduction and longevity
-# Lets explore the among study correlation. 
-data  %>%  group_by(Experiment.code)  %>% summarise(es_repro = mean(es_reproduction), es_long = mean(es_longevity), mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + geom_point() + labs(x = "SMD (Reproduction)", y = "SMD (Longevity)", size =  "Sampling Variance") + theme_bw() + geom_text(aes(label = Experiment.code), size = 3, nudge_x = 0.8, nudge_y = 0.8)
-
+mv_pi <- mod_results(mv_mlma_3, mod = "outcome", group = "Paper.code")
 ```
 
 ```{r, eval=FALSE, pest_sub_analysis}
@@ -199,5 +212,45 @@ pest <- subset(data_long_final, Agricultural.importance == "Pest")
                struc = "UN", data = pest, test = "t", dfs = "contain")
  
  saveRDS(mv_mlma_pest, here("output", "models", "mv_mlma_pest.rds"))
+
+```
+
+# Multivariate meta-analysis and meta-regression
+
+Reproductive traits were more strongly impacted by temperature changes than longevity when controlling for temperature (contrast = `r mv_mlma_2$b[2]`, 95% CI: `r mv_mlma_2$ci.lb[2]` to `r mv_mlma_2$ci.ub[2]`, df = `r mv_mlma_2$ddf[2]`, *p*-value = `r p_value(mv_mlma_2$pval[2])`). At 25$^o$C, longevity was reduced by `r mv_mlma_3$b[1]` SD units relative to the control (95% CI: `r mv_mlma_3$ci.lb[1]` to `r mv_mlma_3$ci.ub[1]`, df = `r mv_mlma_3$ddf[1]`, *p*-value = `r p_value(mv_mlma_3$pval[1])`). In contrast, reproduction was significantly reduced by `r mv_mlma_3$b[2]` SD units relative to the control (95% CI: `r mv_mlma_3$ci.lb[2]` to `r mv_mlma_3$ci.ub[2]`, df = `r mv_mlma_3$ddf[2]`, *p*-value = `r p_value(mv_mlma_3$pval[2])`). However, there was high heterogeneity in both traits with prediction intervals spanning `r min(mv_pi$mod_table$lowerPR)` to `r max(mv_pi$mod_table$upperPR)` (@fig-fig1). 
+
+Mean effects changed in complicated ways with changes in temperaure, with significant non-linear patterns that depended on the effect outcome (@tbl-tbl1), with effect magnitude and direction changing non-linearly with temperature increases (FAY, MAYBE ADD FIG). Interestingly, studies that observed larger changes in reprodcution also observed correlated changes in longevity (between study correlation = `r mv_mlma_3$phi`), however, at the within study-level there was a much weaker correlation (within-study correlation = `r mv_mlma_3$rho`, @fig-fig2). 
+
+```{r, fig-fig1}
+#| label: fig-fig1
+#| fig-cap: Orchard plot with the overall meta-analytic mean (central dots) for reproduction and longevity traits. Thick bars are the 95 confidence intervals and thin bars are the 95 prediction intervals. Data are weighted by their precision (inverse sampling error). Plot is truncated for ease of visualisation. k is the number of effect sizes and n the number of studies. Given we limited our analysis to studies with both reproduction and longevity the samples sizes are the same for both trait types.
+
+samples <- mv_pi$data  %>% group_by(moderator)  %>% summarise(n = length(unique(stdy)), k = n())
+
+p <- orchard_plot(mv_mlma_3, mod = "outcome", group = "Paper.code", xlab = "SMD", angle = 45) + ylim(-6.5, 6.5) +
+      annotate("text", x = 1.5, y = 3, label = paste0("k = ", samples$k[1], " (", samples$n[1], ")"), size = 5) + 
+      annotate("text", x = 1.5, y = -3, label = TeX("Mean at 25$^o$C"), size = 5) + scale_x_discrete(labels=c("Es_reproduction"  ="Reproduction", "Es_longevity" = "Longevity")) + theme(axis.text = element_text(size = 12), axis.title = element_text(size = 18), legend.text = element_text(size = 12), legend.title = element_text(size = 14))
+ggsave(p, filename = "Output/Figures/fig_orchard.png", width = 6.617284, height = 5.851852)
+```
+
+
+```{r, tbl-tbl1}
+#| label: tbl-tbl1
+#| tbl-cap: Non-linear effects of temperature on mean effect size for longevity and reproduction
+table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction", "Quadratic Treatment Temperature (centered) - Longevity", "Quadratic Treatment Temperature (centered) - Reproduction", "Cubic Treatment Temperature (centered) - Longevity", "Cubic Treatment Temperature (centered) - Reproduction"),
+                    Est. = round(mv_mlma_4$b, 4),
+                    `L 95% CI` = round(mv_mlma_4$ci.lb, 4),
+                    `U 95% CI` = round(mv_mlma_4$ci.ub, 4),
+                    `df` = round(mv_mlma_4$ddf,2),
+                    `p-value` = sapply(round(mv_mlma_4$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
+```
+
+
+```{r, fig-fig2}
+#| label: fig-fig2
+#| fig-cap: Between study correlation for reproduction and longevity
+# Lets explore the among study correlation. 
+data  %>%  group_by(Experiment.code)  %>% summarise(es_repro = mean(es_reproduction), es_long = mean(es_longevity), mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + geom_point() + labs(x = "SMD (Reproduction)", y = "SMD (Longevity)", size =  "Sampling Variance") + theme_bw() + geom_text(aes(label = Experiment.code), size = 3, nudge_x = 0.8, nudge_y = 0.8)
 
 ```

@@ -4,3 +4,5 @@
 .Ruserdata
 ms/
 .DS_Store
+*.docx
+Rmarkdown/multivariate_analysis.docx
