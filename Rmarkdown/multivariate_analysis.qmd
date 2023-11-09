@@ -217,20 +217,20 @@ pest <- subset(data_long_final, Agricultural.importance == "Pest")
 
 # Multivariate meta-analysis and meta-regression
 
-Reproductive traits were more strongly impacted by temperature changes than longevity when controlling for temperature (contrast = `r mv_mlma_2$b[2]`, 95% CI: `r mv_mlma_2$ci.lb[2]` to `r mv_mlma_2$ci.ub[2]`, df = `r mv_mlma_2$ddf[2]`, *p*-value = `r p_value(mv_mlma_2$pval[2])`). At 25$^o$C, longevity was reduced by `r mv_mlma_3$b[1]` SD units relative to the control, but not significantly so (95% CI: `r mv_mlma_3$ci.lb[1]` to `r mv_mlma_3$ci.ub[1]`, df = `r mv_mlma_3$ddf[1]`, *p*-value = `r p_value(mv_mlma_3$pval[1])`). In contrast, reproduction was significantly reduced by `r mv_mlma_3$b[2]` SD units relative to the control (95% CI: `r mv_mlma_3$ci.lb[2]` to `r mv_mlma_3$ci.ub[2]`, df = `r mv_mlma_3$ddf[2]`, *p*-value = `r p_value(mv_mlma_3$pval[2])`). However, there was high heterogeneity in both traits with prediction intervals spanning `r min(mv_pi$mod_table$lowerPR)` to `r max(mv_pi$mod_table$upperPR)` (@fig-fig1). 
+Reproductive traits were more strongly impacted by temperature changes than longevity when controlling for temperature (contrast = `r mv_mlma_2$b[2]`, 95% CI: `r mv_mlma_2$ci.lb[2]` to `r mv_mlma_2$ci.ub[2]`, df = `r mv_mlma_2$ddf[2]`, *p*-value = `r p_value(mv_mlma_2$pval[2])`). At 25$^o$C, longevity was reduced by `r mv_mlma_3$b[1]` SD units relative to the control (95% CI: `r mv_mlma_3$ci.lb[1]` to `r mv_mlma_3$ci.ub[1]`, df = `r mv_mlma_3$ddf[1]`, *p*-value = `r p_value(mv_mlma_3$pval[1])`). In contrast, reproduction was significantly reduced by `r mv_mlma_3$b[2]` SD units relative to the control (95% CI: `r mv_mlma_3$ci.lb[2]` to `r mv_mlma_3$ci.ub[2]`, df = `r mv_mlma_3$ddf[2]`, *p*-value = `r p_value(mv_mlma_3$pval[2])`). However, there was high heterogeneity in both traits with prediction intervals spanning `r min(mv_pi$mod_table$lowerPR)` to `r max(mv_pi$mod_table$upperPR)` (@fig-fig1). 
 
 Mean effects changed in complicated ways with changes in temperaure, with significant non-linear patterns that depended on the effect outcome (@tbl-tbl1), with effect magnitude and direction changing non-linearly with temperature increases (FAY, MAYBE ADD FIG). Interestingly, studies that observed larger changes in reprodcution also observed correlated changes in longevity (between study correlation = `r mv_mlma_3$phi`), however, at the within study-level there was a much weaker correlation (within-study correlation = `r mv_mlma_3$rho`, @fig-fig2). 
 
 ```{r, fig-fig1}
 #| label: fig-fig1
-#| fig-cap: Orchard plot with the overall meta-analytic mean (central dots) for reproduction and longevity traits. Thick bars are the 95% confidence intervals and thin bars are the 95% prediction intervals. Data are weighted by their precision (inverse sampling error). Plot is truncated for ease of visualisation. k is the number of effect sizes and n the number of studies. Given we limited our analysis to studies with both reproduction and longevity the samples sizes are the same for both trait types.
+#| fig-cap: Orchard plot with the overall meta-analytic mean (central dots) for reproduction and longevity traits. Thick bars are the 95 confidence intervals and thin bars are the 95 prediction intervals. Data are weighted by their precision (inverse sampling error). Plot is truncated for ease of visualisation. k is the number of effect sizes and n the number of studies. Given we limited our analysis to studies with both reproduction and longevity the samples sizes are the same for both trait types.
 
 samples <- mv_pi$data  %>% group_by(moderator)  %>% summarise(n = length(unique(stdy)), k = n())
 
-orchard_plot(mv_mlma_3, mod = "outcome", group = "Paper.code", xlab = "SMD", angle = 45) + ylim(-6.5, 6.5) +
+p <- orchard_plot(mv_mlma_3, mod = "outcome", group = "Paper.code", xlab = "SMD", angle = 45) + ylim(-6.5, 6.5) +
       annotate("text", x = 1.5, y = 3, label = paste0("k = ", samples$k[1], " (", samples$n[1], ")"), size = 5) + 
       annotate("text", x = 1.5, y = -3, label = TeX("Mean at 25$^o$C"), size = 5) + scale_x_discrete(labels=c("Es_reproduction"  ="Reproduction", "Es_longevity" = "Longevity")) + theme(axis.text = element_text(size = 12), axis.title = element_text(size = 18), legend.text = element_text(size = 12), legend.title = element_text(size = 14))
-
+ggsave(p, filename = "Output/Figures/fig_orchard.png", width = 6.617284, height = 5.851852)
 ```
 
 
@@ -242,7 +242,7 @@ table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "L
                     `L 95% CI` = round(mv_mlma_4$ci.lb, 2),
                     `U 95% CI` = round(mv_mlma_4$ci.lb, 2),
                     `df` = round(mv_mlma_4$ddf,2),
-                    `p-value` = round(mv_mlma_4$pval,2), row.names = NULL)
+                    `p-value` = round(mv_mlma_4$pval,2), row.names = NULL, check.names = FALSE)
 flextable(table)
 ```
 
