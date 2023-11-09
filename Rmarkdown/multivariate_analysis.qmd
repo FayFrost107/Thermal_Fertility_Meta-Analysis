@@ -238,11 +238,11 @@ ggsave(p, filename = "Output/Figures/fig_orchard.png", width = 6.617284, height 
 #| label: tbl-tbl1
 #| tbl-cap: Non-linear effects of temperature on mean effect size for longevity and reproduction
 table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction", "Quadratic Treatment Temperature (centered) - Longevity", "Quadratic Treatment Temperature (centered) - Reproduction", "Cubic Treatment Temperature (centered) - Longevity", "Cubic Treatment Temperature (centered) - Reproduction"),
-                    Est. = round(mv_mlma_4$b, 2),
-                    `L 95% CI` = round(mv_mlma_4$ci.lb, 2),
-                    `U 95% CI` = round(mv_mlma_4$ci.ub, 2),
+                    Est. = round(mv_mlma_4$b, 4),
+                    `L 95% CI` = round(mv_mlma_4$ci.lb, 4),
+                    `U 95% CI` = round(mv_mlma_4$ci.ub, 4),
                     `df` = round(mv_mlma_4$ddf,2),
-                    `p-value` = round(mv_mlma_4$pval,2), row.names = NULL, check.names = FALSE)
+                    `p-value` = sapply(round(mv_mlma_4$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
 flextable(table)
 ```
 
