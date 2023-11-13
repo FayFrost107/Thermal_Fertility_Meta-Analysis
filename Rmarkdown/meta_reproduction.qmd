@@ -417,7 +417,7 @@ We found that there was a significant difference in shape of the quadratic respo
 ```{r, tbl-ls}
 #| label: tbl-ls
 #| tbl-cap: Non-linear effects of temperature and life stageo animal on mean effect size of reproduction
-table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Both","Quadratic Treatment Temperature (centered) - Both", "Both (mean)", "Females only (mean)", "Treatment Temperature (centered) - Females only","Quadratic Treatment Temperature (centered) - Females only"),
+table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Adult","Quadratic Treatment Temperature (centered) - Adult", "Adult (mean)", "Immature (mean)", "Treatment Temperature (centered) - Immature","Quadratic Treatment Temperature (centered) - Immature"),
                     Est. = round(meta_treat_ls_nointer$b, 4),
                     `L 95% CI` = round(meta_treat_ls_nointer$ci.lb, 4),
                     `U 95% CI` = round(meta_treat_ls_nointer$ci.ub, 4),
@@ -538,3 +538,168 @@ q+ coord_cartesian(ylim=c(-20,10))
 
 
 # Sensitivity Analysis
+
+## Treatment temperature
+
+```{r, tbl-sactemp}
+#| label: tbl-sactemp
+#| tbl-cap: Non-linear effects of temperature on mean effect size of reproduction having removed 5% of the most extreme effect sizes. 
+table <- data.frame(Parameters = c("Reproduction (mean)", "Linear Treatment Temperature (centered) - Reproduction","Quadratic Treatment Temperature (centered) - Reproduction"),
+                    Est. = round(meta_sa_treat2$b, 4),
+                    `L 95% CI` = round(meta_sa_treat2$ci.lb, 4),
+                    `U 95% CI` = round(meta_sa_treat2$ci.ub, 4),
+                    `p-value` = sapply(round(meta_sa_treat2$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
+```
+
+## Sex exposed
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+if(rerun){
+minq <- quantile(new_data$es, 0.025)   
+maxq <- quantile(new_data$es, 0.975)
+
+sdata <- subset(new_data, es > minq & es < maxq)
+saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep_sex.rds"))
+
+
+## Treatment temperature as a quadratic effect (sesnsitivity analysis)
+
+# re-cmpute the covariance matrix for subsetted data
+VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+
+
+# re-run quadratic model
+meta_sa_sex_nointer <- rma.mv(es, VCV_shared_sa,  mod= ~ -1 + poly(c_treattemp, degree=2, raw=TRUE) * Sex.exposed, 
+                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+
+saveRDS(meta_sa_sex_nointer, here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
+} else {
+  meta_sa_sex <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
+  sa_rep_sexdata <- readRDS(here("Output", "Output data", "reproduction", "sensitivity_data_rep_sex.rds"))
+}
+
+```
+
+
+```{r, tbl-sasex}
+#| label: tbl-sasex
+#| tbl-cap: Non-linear effects of temperature and sex exposed on mean effect size of reproduction with 5% most extreme effect sizes removed. 
+table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Both","Quadratic Treatment Temperature (centered) - Both", "Both (mean)", "Females only (mean)", "Treatment Temperature (centered) - Females only","Quadratic Treatment Temperature (centered) - Females only"),
+                    Est. = round(meta_sa_sex$b, 4),
+                    `L 95% CI` = round(meta_sa_sex$ci.lb, 4),
+                    `U 95% CI` = round(meta_sa_sex$ci.ub, 4),
+                    `p-value` = sapply(round(meta_sa_sex$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
+```
+
+```{r, fig-figsexsa}
+#| label: fig-figsexsa
+#| fig-cap: Predicited models of sex exposed and temeprature effects on reproduction.  
+
+preds.rep.sex <- predict(meta_sa_sex, addx=TRUE)
+sex_rep_data <- sa_rep_sexdata
+
+sex_rep_data$pred <- preds.rep.sex$pred  
+sex_rep_data$pred.lb <- preds.rep.sex$pi.lb
+sex_rep_data$pred.ub <- preds.rep.sex$pi.ub
+sex_rep_data$c.lb <- preds.rep.sex$ci.lb
+sex_rep_data$c.ub <- preds.rep.sex$ci.ub
+
+library(ggplot2)
+
+ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, linetype = Sex.exposed)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Sex.exposed), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  theme_bw() + 
+  labs(title = "Predicted emperature effect on reproduction",
+       x = "Temperature devaition from 25C",
+       y = "Effect size",
+       color = "Sex exposed",  # Set the title of the color legend
+       fill = "Sex exposed",
+       linetype = "Sex exposed")   # Set the title of the fill legend (for ribbons)
+```
+
+## Life-stage
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+if(rerun){
+minq <- quantile(ls_data$es, 0.025)   
+maxq <- quantile(ls_data$es, 0.975)
+
+sdata <- subset(ls_data, es > minq & es < maxq)
+saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep_ls.rds"))
+
+
+## Treatment temperature as a quadratic effect (sesnsitivity analysis)
+
+# re-cmpute the covariance matrix for subsetted data
+VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+
+
+# re-run quadratic model
+meta_sa_ls_nointer <- rma.mv(es, VCV_shared_sa,  mod= ~ -1 + poly(c_treattemp, degree=2, raw=TRUE) * Life.stage.of.animal, 
+                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+
+saveRDS(meta_sa_ls_nointer, here("Output", "models", "reproduction", "meta_sa_rep_ls.rds"))
+} else {
+  meta_sa_ls <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_ls.rds"))
+  sa_rep_lsdata <- readRDS(here("Output", "Output data", "reproduction", "sensitivity_data_rep_ls.rds"))
+}
+
+```
+
+
+```{r, tbl-sals}
+#| label: tbl-sals
+#| tbl-cap: Non-linear effects of temperature and life stageo animal on mean effect size of reproduction after removing the 5% most extreme effect sizes.
+table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Adult","Quadratic Treatment Temperature (centered) - Adult", "Adult (mean)", "Immature (mean)", "Treatment Temperature (centered) - Immature","Quadratic Treatment Temperature (centered) - Immature"),
+                    Est. = round(meta_sa_ls$b, 4),
+                    `L 95% CI` = round(meta_sa_ls$ci.lb, 4),
+                    `U 95% CI` = round(meta_sa_ls$ci.ub, 4),
+                    `p-value` = sapply(round(meta_sa_ls$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
+```
+
+```{r, fig-figlssa}
+#| label: fig-figlssa
+#| fig-cap: Predicited models of sex exposed and temeprature effects on reproduction.  
+
+preds.rep.ls <- predict(meta_sa_ls, addx=TRUE)
+ls_rep_data <- sa_rep_lsdata
+
+ls_rep_data$pred <- preds.rep.ls$pred  
+ls_rep_data$pred.lb <- preds.rep.ls$pi.lb
+ls_rep_data$pred.ub <- preds.rep.ls$pi.ub
+ls_rep_data$c.lb <- preds.rep.ls$ci.lb
+ls_rep_data$c.ub <- preds.rep.ls$ci.ub
+
+library(ggplot2)
+
+ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.animal, linetype = Life.stage.of.animal)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Life.stage.of.animal), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  theme_bw() + 
+    coord_cartesian(ylim = c(-10,1))+
+  labs(title = "Predicted temperature effect on reproduction",
+       x = "Observed temperature devaition from 25C",
+       y = "Effect size",
+       color = "Life stage",  # Set the title of the color legend
+       fill = "Life stage",
+       linetype = "Life stage")   # Set the title of the fill legend (for ribbons)
+```
