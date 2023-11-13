@@ -1,5 +1,5 @@
 ---
-title: "Multivariate Meta-Analysis for Longevity and Reproduction"
+title: "Results for Reproduction Meta-Analysis"
 author: "Daniel Noble & Fay Frost"
 format: docx
 execute:
@@ -38,7 +38,7 @@ options(digits = 2)
 #| eval: true
 
 ## rerun all models?
-rerun <- TRUE
+rerun <- FALSE
 ```
 
 ```{r, load data}
@@ -88,11 +88,9 @@ phylo_matrix <- vcv(tree_grafen, cor=TRUE, model="Brownian") # Make phylogenetic
 
 
 
-# Models   
+# Results   
 
-In this section we fit a series of random and fixed effects models. 
 
-## Random effects models
 
 ```{r}
 #| echo: false
@@ -100,9 +98,9 @@ In this section we fit a series of random and fixed effects models.
 #| include: false
 #| 
 # Simple model (no random effects)
-
+if(rerun){
 meta1 <- rma.uni(es, v, data= rdata, method= "REML")
-summary(meta1) 
+summary(meta1)}
 ```
 
 ```{r}
@@ -119,16 +117,9 @@ meta2 <- rma.mv(es, v, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1|study_co
 } else { 
    meta2 <- readRDS(here("Output", "models", "reproduction", "mv_rep_2.rds"))
   }
-
-summary(meta2)
-i2_ml(meta2, method=c("ratio")) # Heterogeneity at each random factor level
 ```
 
 
-
-## Accounting for non-independence of data points from the same experiment
-
-We initially fit the model using all random factors.
 ```{r}
 #| echo: false
 #| warning: false
@@ -149,17 +140,23 @@ meta3 <- rma.mv(es, VCV_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1
   }
 ```
 
+# Random effects models
+
+### Intercept only model
+
+We found a significant and negative overall mean effect size for reproduction (est = `r meta3$b`, 95% CI: `r meta3$ci.lb` to `r meta3$ci.ub`, *p*-value = `r p_value(meta3$pval)`). The estimated I2for each random effect was I2[Total] = `r i2_ml(meta3, method=c("ratio"))[1]`%, I2[Phylogeny]= `r i2_ml(meta3, method=c("ratio"))[2]`%,  I2[species]= `r i2_ml(meta3, method=c("ratio"))[3]`%, I2[study]=`r i2_ml(meta3, method=c("ratio"))[4]`%, I2[obs]=`r i2_ml(meta3, method=c("ratio"))[5]`%
+
 ```{r}
-#| echo: true
+#| echo: false
 #| warning: false
 #| include: true
-#| eval: true
+#| eval: false
 summary(meta3)
 i2_ml(meta3, method=c("ratio"))
 ```
 
 
-We then fit the models with different combinations of random effects. 
+ 
 ```{r}
 #| echo: false
 #| warning: false
@@ -187,19 +184,13 @@ saveRDS(meta7, here("Output", "models", "reproduction", "mv_rep_7.rds"))
 
 ```
 
-The best fitting model according to AIC has just study_code and obs as random factors. 
-```{r}
-#| echo: true
-#| warning: false
-#| include: true
-#| eval: true
-summary(meta7)
-i2_ml(meta7, method=c("ratio"))
-```
+### Random effects combinations
+We then fit the models with different combinations of random effects. The best fitting model according to AIC used only study_ID and observation_ID as random effects with `r round(i2_ml(meta4)[2],2)`% and  `r round(i2_ml(meta4)[3],2)`% estimated heterogeneity respectively. We used this random effects model as a base for our meta-regression models. 
 
-## Meta-Regressions 
 
-We fit single categorical factors as a fixed effect.
+# Meta-Regressions 
+
+## How does temperature affect reproduction?
 
 ```{r}
 #| echo: false
@@ -214,7 +205,7 @@ saveRDS(meta_trait_warm, here("Output", "models", "reproduction", "mv_rep_warm.r
 
 # warm/cool -1
 meta_trait_warm_nointer <- rma.mv(es, VCV_shared,  mod= ~warm.cool-1, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
-saveRDS(meta_trait_warm_noiter, here("Output", "models", "reproduction", "mv_rep_warm-1.rds"))
+saveRDS(meta_trait_warm_nointer, here("Output", "models", "reproduction", "mv_rep_warm-1.rds"))
 
 
 # ref temp
@@ -261,7 +252,7 @@ saveRDS(meta_trait_bintemp, here("Output", "models", "reproduction", "mv_rep_bin
 
 } else {
 meta_trait_warm  <- readRDS(here("Output", "models", "reproduction", "mv_rep_warm.rds"))
-meta_trait_warm_noiter  <- readRDS(meta_trait_warm_noiter, here("Output", "models", "reproduction", "mv_rep_warm-1.rds"))
+meta_trait_warm_nointer  <- readRDS(here("Output", "models", "reproduction", "mv_rep_warm-1.rds"))
 meta_trait_ref <- readRDS(here("Output", "models", "reproduction", "mv_rep_ref.rds"))
 meta_trait_treattemp  <- readRDS(here("Output", "models", "reproduction", "mv_rep_ctemp.rds"))
 meta_trait_treat2  <- readRDS(here("Output", "models", "mv_rep_ctemp2.rds"))
@@ -270,6 +261,27 @@ meta_trait_bintemp <-  readRDS(here("Output", "models", "reproduction", "mv_rep_
 }
 
 ```
+
+On average, across all taxa, exposure durations, and various life stages, it was observed that temperature had a significant and negative quadratic impact on reproduction (@tbl-treat2). When temperature deviated from the optimal 25°C, there was a noticeable reduction in reproductive outcomes (@fig-treat2). The inclusion of phylogenetic relatedness did not enhance the model's fit, as evidenced by the change in Akaike Information Criterion (AIC), and was consequently excluded from the model. Nevertheless, there was considerable diversity in how different organisms responded to temperature with regards to reproduction, indicated by a substantial heterogeneity (I²[total] = `r i2_ml(meta_trait_treat2)[1]`%). At the individual observation level (ID), this heterogeneity accounted for `r i2_ml(meta_trait_treat2)[3]`% of the variation, while at the study-level, it contributed to `r i2_ml(meta_trait_treat2)[2]`% of the variation. Phylogeny, on the other hand, played a negligible role, accounting for less than 0.001% of the variation.
+
+```{r, tbl-treat2}
+#| label: tbl-treat2
+#| tbl-cap: Non-linear effects of temperature on mean effect size of reproduction
+table <- data.frame(Parameters = c("Reproduction (mean)", "Linear Treatment Temperature (centered) - Reproduction","Quadratic Treatment Temperature (centered) - Reproduction"),
+                    Est. = round(meta_trait_treat2$b, 4),
+                    `L 95% CI` = round(meta_trait_treat2$ci.lb, 4),
+                    `U 95% CI` = round(meta_trait_treat2$ci.ub, 4),
+                    `p-value` = sapply(round(meta_trait_treat2$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
+```
+
+```{r, fig-treat2}
+#| label: fig-treat2
+#| fig-cap: Bubble plot of effect size of reproduction when controlling for temperature. 
+p <- bubble_plot(meta_trait_treat2, mod = "c_treattemp", group="study_code")
+p+coord_cartesian(ylim=c(-10,10)) + labs(x = "Temperature deviation from 25C")
+```
+
 
 
 # How does sex exposed and life stage of exposure effect reproduction?
@@ -294,10 +306,14 @@ new_data <- subset(new_data, Sex.exposed != "Unsure")
 VCV_shared_sex <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$shared_control, r=0.5)
 
 
-meta_treat_sex <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed-1, 
+meta_treat_sex <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed, 
+                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML")
+
+meta_treat_sex_nointer <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed-1, 
                          random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML")
 
 saveRDS(meta_treat_sex, here("Output", "models", "reproduction", "meta_treat_rep_sex.rds"))
+saveRDS(meta_treat_sex_nointer, here("Output", "models", "reproduction", "meta_treat_rep_sex_nointer.rds"))
 saveRDS(new_data, here("Output", "Output data",  "data_rep_sex.rds"))
 
 
@@ -319,16 +335,146 @@ VCV_shared_life <- impute_covariance_matrix(vi=ls_data$v, cluster = ls_data$shar
 
 meta_treat_ls <- rma.mv(es, VCV_shared_life,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Life.stage.of.animal,
                         random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML")
+
+meta_treat_ls_nointer <- rma.mv(es, VCV_shared_life,  mod= ~ -1 + poly(c_treattemp, degree=2, raw=TRUE)*Life.stage.of.animal,
+                        random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML")
+
 saveRDS(meta_treat_ls, here("Output", "models", "reproduction", "meta_treat_rep_ls.rds"))
+saveRDS(meta_treat_ls_nointer, here("Output", "models", "reproduction", "meta_treat_rep_ls_nointer.rds"))
 saveRDS(ls_data, here("Output", "Output data", "data_rep_ls.rds"))
 } else {
   meta_treat_sex <- readRDS(here("Output", "models", "reproduction", "meta_treat_rep_sex.rds"))
+  meta_treat_sex_nointer <- readRDS(here("Output", "models", "reproduction", "meta_treat_rep_sex_nointer.rds"))
   new_data <- readRDS(here("Output", "Output data", "data_rep_sex.rds"))
+  
+  meta_treat_ls <- readRDS(here("Output", "models", "reproduction", "meta_treat_rep_ls.rds"))
+  meta_treat_ls_nointer <- readRDS(here("Output", "models", "reproduction", "meta_treat_rep_ls_nointer.rds"))
+  ls_data <- readRDS(here("Output", "Output data", "data_rep_ls.rds"))
   }
 
 ```
 
-#Publication Bias and Sensitivity Analysis
+### sex exposed
+
+We found that the shape of the response to temperature differed between the two sex exposed treatments (*p*-value = `r p_value(meta_treat_sex$pval[6])`) (Interaction between the quadratic effect of (centered) temperature and sex exposed category (@tbl-sex).  
+
+```{r, tbl-sex}
+#| label: tbl-sex
+#| tbl-cap: Non-linear effects of temperature and sex exposed on mean effect size of reproduction
+table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Both","Quadratic Treatment Temperature (centered) - Both", "Both (mean)", "Females only (mean)", "Treatment Temperature (centered) - Females only","Quadratic Treatment Temperature (centered) - Females only"),
+                    Est. = round(meta_treat_sex_nointer$b, 4),
+                    `L 95% CI` = round(meta_treat_sex_nointer$ci.lb, 4),
+                    `U 95% CI` = round(meta_treat_sex_nointer$ci.ub, 4),
+                    `p-value` = sapply(round(meta_treat_sex_nointer$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
+```
+```{r, fig-figsex}
+#| label: fig-figsex
+#| fig-cap: Predicited models of sex exposed and temeprature effects on reproduction.  
+
+preds.rep.sex <- predict(meta_treat_sex, addx=TRUE)
+sex_rep_data <- new_data
+
+sex_rep_data$pred <- preds.rep.sex$pred  
+sex_rep_data$pred.lb <- preds.rep.sex$pi.lb
+sex_rep_data$pred.ub <- preds.rep.sex$pi.ub
+sex_rep_data$c.lb <- preds.rep.sex$ci.lb
+sex_rep_data$c.ub <- preds.rep.sex$ci.ub
+
+library(ggplot2)
+
+ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, linetype = Sex.exposed)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Sex.exposed), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  theme_bw() + 
+  labs(title = "Predicted emperature effect on reproduction",
+       x = "Temperature devaition from 25C",
+       y = "Effect size",
+       color = "Sex exposed",  # Set the title of the color legend
+       fill = "Sex exposed",
+       linetype = "Sex exposed")   # Set the title of the fill legend (for ribbons)
+
+
+ggplot(data = sex_rep_data, aes(x = c_treattemp, y = es, col = Sex.exposed)) +
+  geom_point( alpha=0.5)+
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) + 
+  theme_bw() + 
+  labs(title = "Observed temperature effect on reproduction",
+       x = "Temperature devaition from 25C",
+       y = "Effect size",
+       color = "Sex exposed")   # Set the title of the fill legend (for ribbons)
+
+```
+
+### life stage of animal
+
+We found that there was a significant difference in shape of the quadratic response to temperature those treated as immature individuals and those treated only as adults (*p*-value = `r p_value(meta_treat_ls$pval[6])`, Table (@tbl-ls). As is consisitent with our apriori beliefs, the fitted model predicts that immature individuals respond negativly to temperature away from 25C at a sharper and more pronounced rate.   
+
+```{r, tbl-ls}
+#| label: tbl-ls
+#| tbl-cap: Non-linear effects of temperature and life stageo animal on mean effect size of reproduction
+table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Both","Quadratic Treatment Temperature (centered) - Both", "Both (mean)", "Females only (mean)", "Treatment Temperature (centered) - Females only","Quadratic Treatment Temperature (centered) - Females only"),
+                    Est. = round(meta_treat_ls_nointer$b, 4),
+                    `L 95% CI` = round(meta_treat_ls_nointer$ci.lb, 4),
+                    `U 95% CI` = round(meta_treat_ls_nointer$ci.ub, 4),
+                    `p-value` = sapply(round(meta_treat_ls_nointer$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
+```
+
+
+```{r, fig-figls}
+#| label: fig-figls
+#| fig-cap: Predicited models of sex exposed and temeprature effects on reproduction.  
+
+preds.rep.ls <- predict(meta_treat_ls, addx=TRUE)
+ls_rep_data <- ls_data
+
+ls_rep_data$pred <- preds.rep.ls$pred  
+ls_rep_data$pred.lb <- preds.rep.ls$pi.lb
+ls_rep_data$pred.ub <- preds.rep.ls$pi.ub
+ls_rep_data$c.lb <- preds.rep.ls$ci.lb
+ls_rep_data$c.ub <- preds.rep.ls$ci.ub
+
+library(ggplot2)
+
+ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.animal, linetype = Life.stage.of.animal)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Life.stage.of.animal), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  theme_bw() + 
+    coord_cartesian(ylim = c(-10,1))+
+  labs(title = "Predicted temperature effect on reproduction",
+       x = "Observed temperature devaition from 25C",
+       y = "Effect size",
+       color = "Life stage",  # Set the title of the color legend
+       fill = "Life stage",
+       linetype = "Life stage")   # Set the title of the fill legend (for ribbons)
+```
+
+However, looking at the observed values, it is possible these model estimates are strongly driven by outlying values. 
+```{r}
+### observed data 
+ggplot(data = ls_rep_data, aes(x = c_treattemp, y = es, col = Life.stage.of.animal)) +
+  geom_point( alpha=0.5)+
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) + 
+  theme_bw() + 
+  coord_cartesian(ylim = c(-10,1))+
+  labs(title = "Observed temperature effect on reproduction",
+       x = "Temperature devaition from 25C",
+       y = "Effect size",
+       color = "Life stage")   # Set the title of the fill legend (for ribbons)
+
+
+```
+
+# Publication Bias
 
 ```{r}
 #| echo: false
@@ -343,6 +489,7 @@ meta_year <- rma.mv(es, VCV_shared,  mod= ~Publication.year,
 
 saveRDS(meta_year, here("Output", "models", "reproduction", "meta_rep_year.rds"))
 
+
 # Sensitivty Analysis
 # Preform a sensitivity analysis by removing the smallest and largest 2.5% of effect sizes.
 
@@ -351,7 +498,7 @@ minq <- quantile(rdata$es, 0.025)
 maxq <- quantile(rdata$es, 0.975)
 
 sdata <- subset(rdata, es > minq & es < maxq)
-saveRDS(s_data, here("Output", "Output data", "reproduction", "sensitivity_data_rep.rds"))
+saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep.rds"))
 
 
 ## Treatment temperature as a quadratic effect (sesnsitivity analysis)
@@ -380,3 +527,14 @@ saveRDS(meta_sa_treat2, here("Output", "models", "reproduction", "meta_sa_ctemp2
 #subdata <- rdata[!(rdata$Paper.code %in% remove), ]
 #VCV_shared_subdata <- impute_covariance_matrix(vi=subdata$v, cluster = subdata$shared_control, r=0.5)
 ```
+
+We found no significant effect of year on effect suggesting that there was no presence of publication bias (*p*-value = `r meta_year$pval[2]`)
+
+```{r, fig-year}
+q <- bubble_plot(meta_year, mod = "Publication.year", group="study_code") +
+  labs(x = "Year of Publication")
+q+ coord_cartesian(ylim=c(-20,10))
+```
+
+
+# Sensitivity Analysis

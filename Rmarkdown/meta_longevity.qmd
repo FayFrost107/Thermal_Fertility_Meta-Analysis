@@ -17,7 +17,7 @@ fig-prefix: "Figure"
 tbl-prefix: "Table"
 ---
   
-  ```{r, packages}
+```{r, packages}
 #| echo: false
 #| warning: false
 #| include: false
@@ -92,7 +92,6 @@ phylo_matrix <- vcv(tree_grafen, cor=TRUE, model="Brownian") # Make phylogenetic
 
 In this section we fit a series of random and fixed effects models. 
 
-## Random effects models
 
 ```{r}
 #| echo: false
@@ -105,7 +104,7 @@ meta1 <- rma.uni(es, v, data= rdata, method= "REML")
 summary(meta1) 
 ```
 
-```{r}
+```{r, meta2}
 #| echo: false
 #| warning: false
 #| include: false
@@ -126,10 +125,7 @@ i2_ml(meta2, method=c("ratio")) # Heterogeneity at each random factor level
 
 
 
-## Accounting for non-independence of data points from the same experiment
-
-We initially fit the model using all random factors.
-```{r}
+```{r, meta3}
 #| echo: false
 #| warning: false
 #| include: false
@@ -149,18 +145,13 @@ if(rerun){
 }
 ```
 
-```{r}
-#| echo: true
-#| warning: false
-#| include: true
-#| eval: true
-summary(meta3)
-i2_ml(meta3, method=c("ratio"))
-```
 
+## Random effects models
+
+We found a significant and negative overall mean effect size for reproduction (est = `r meta3$b`, 95% CI: `r meta3$ci.lb` to `r meta3$ci.ub`,*p*-value = `r p_value(meta3$pval)`). The estimated I2  for each random effect was I2 [Total] = `r i2_ml(meta3, method=c("ratio"))[1]`%, I2 [Phylogeny]= `r i2_ml(meta3, method=c("ratio"))[2]`%,  I2 [species]= `r i2_ml(meta3, method=c("ratio"))[3]`%, I2 [study]=`r i2_ml(meta3, method=c("ratio"))[4]`%, I2 [obs]=`r i2_ml(meta3, method=c("ratio"))[5]`%
 
 We then fit the models with different combinations of random effects. 
-```{r}
+```{r, meta4-7}
 #| echo: false
 #| warning: false
 #| include: false
@@ -201,7 +192,7 @@ i2_ml(meta7, method=c("ratio"))
 
 We fit single categorical factors as a fixed effect.
 
-```{r}
+```{r, regressionmodels}
 #| echo: false
 #| warning: false
 #| include: false
@@ -214,7 +205,7 @@ if(rerun){
   
   # warm/cool -1
   meta_trait_warm_nointer <- rma.mv(es, VCV_shared,  mod= ~warm.cool-1, random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
-  saveRDS(meta_trait_warm_noiter, here("Output", "models", "longevity", "mv_long_warm-1.rds"))
+  saveRDS(meta_trait_warm_nointer, here("Output", "models", "longevity", "mv_long_warm-1.rds"))
   
   
   # ref temp
@@ -265,7 +256,7 @@ if(rerun){
   
 } else {
   meta_trait_warm  <- readRDS(here("Output", "models", "longevity", "mv_long_warm.rds"))
-  meta_trait_warm_noiter  <- readRDS(meta_trait_warm_noiter, here("Output", "models", "longevity", "mv_long_warm-1.rds"))
+  meta_trait_warm_nointer  <- readRDS(here("Output", "models", "longevity", "mv_long_warm-1.rds"))
   meta_trait_ref <- readRDS(here("Output", "models", "longevity", "mv_long_ref.rds"))
   meta_trait_treattemp  <- readRDS(here("Output", "models", "longevity", "mv_long_ctemp.rds"))
   meta_trait_treat2  <- readRDS(here("Output", "models", "mv_long_ctemp2.rds"))
@@ -275,10 +266,10 @@ if(rerun){
 }
 
 ```
-
+When we control for treatment temperature 
 
 # How does sex exposed and life stage of exposure effect longevity?
-```{r}
+```{r, lifestagesex}
 #| echo: false
 #| warning: false
 #| include: false
@@ -333,9 +324,9 @@ if(rerun){
 
 ```
 
-#Publication Bias and Sensitivity Analysis
+# Publication Bias and Sensitivity Analysis
 
-```{r}
+```{r, publicationbias}
 #| echo: false
 #| warning: false
 #| include: false
@@ -356,7 +347,7 @@ if(rerun){
   maxq <- quantile(rdata$es, 0.975)
   
   sdata <- subset(rdata, es > minq & es < maxq)
-  saveRDS(s_data, here("Output", "Output data", "longevity", "sensitivity_data_long.rds"))
+  saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long.rds"))
   
   
   ## Treatment temperature as a quadratic effect (sesnsitivity analysis)

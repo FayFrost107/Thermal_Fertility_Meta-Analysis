@@ -187,3 +187,8 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, li
        color = "Sex.exposed",  # Set the title of the color legend
        fill = "Sex.exposed",
        linetype = "Sex.exposed")   # Set the title of the fill legend (for ribbons)
+
+
+### can also predict more data points with this code
+xs <- seq(min(rdata$c_treattemp), max(rdata$c_treattemp), length.out=100)
+preds <- data.frame(predict(mv_long, newmods=unname(poly(xs, degree=3, raw=TRUE)), addx=TRUE))
