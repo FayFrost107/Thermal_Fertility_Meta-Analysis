@@ -38,7 +38,7 @@ options(digits = 2)
 #| eval: true
 
 ## rerun all models?
-rerun <- TRUE
+rerun <- FALSE
 ```
 
 ```{r, load data}
@@ -88,9 +88,7 @@ phylo_matrix <- vcv(tree_grafen, cor=TRUE, model="Brownian") # Make phylogenetic
 
 
 
-# Models   
-
-In this section we fit a series of random and fixed effects models. 
+# Results   
 
 
 ```{r}
@@ -99,12 +97,12 @@ In this section we fit a series of random and fixed effects models.
 #| include: false
 #| 
 # Simple model (no random effects)
-
+if(rerun){
 meta1 <- rma.uni(es, v, data= rdata, method= "REML")
-summary(meta1) 
+summary(meta1)}
 ```
 
-```{r, meta2}
+```{r}
 #| echo: false
 #| warning: false
 #| include: false
@@ -112,20 +110,16 @@ summary(meta1)
 
 # Adding four random factors
 if(rerun){
-  meta2 <- rma.mv(es, v, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1|study_code, ~1|obs), 
-                  R= list(Species.phylo = phylo_matrix), data= rdata, method= "REML")
+meta2 <- rma.mv(es, v, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1|study_code, ~1|obs), 
+                R= list(Species.phylo = phylo_matrix), data= rdata, method= "REML")
   saveRDS(meta2, here("Output", "models", "longevity", "mv_long_2.rds"))
 } else { 
-  meta2 <- readRDS(here("Output", "models", "longevity", "mv_long_2.rds"))
-}
-
-summary(meta2)
-i2_ml(meta2, method=c("ratio")) # Heterogeneity at each random factor level
+   meta2 <- readRDS(here("Output", "models", "longevity", "mv_long_2.rds"))
+  }
 ```
 
 
-
-```{r, meta3}
+```{r}
 #| echo: false
 #| warning: false
 #| include: false
@@ -137,20 +131,31 @@ VCV_shared <- impute_covariance_matrix(vi=rdata$v, cluster = rdata$shared_contro
 
 # Add new variance matrix for shared_control into the mixed-effects meta-analysis model
 if(rerun){
-  meta3 <- rma.mv(es, VCV_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1|study_code, ~1|obs), 
-                  R= list(Species.phylo = phylo_matrix), data= rdata, method= "REML")
-  saveRDS(meta3, here("Output", "models", "longevity", "mv_long_3.rds"))
+meta3 <- rma.mv(es, VCV_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1|study_code, ~1|obs), 
+                R= list(Species.phylo = phylo_matrix), data= rdata, method= "REML")
+ saveRDS(meta3, here("Output", "models", "longevity", "mv_long_3.rds"))
 } else { 
   meta3 <-  readRDS(here("Output", "models", "longevity", "mv_long_3.rds"))
-}
+  }
+```
+
+# Random effects models
+
+### Intercept only model
+
+We found a significant and negative overall mean effect size for longevity (est = `r meta3$b`, 95% CI: `r meta3$ci.lb` to `r meta3$ci.ub`, *p*-value = `r p_value(meta3$pval)`). The estimated I2 for each random effect was I2[Total] = `r i2_ml(meta3, method=c("ratio"))[1]`%, I2[Phylogeny]= `r i2_ml(meta3, method=c("ratio"))[2]`%,  I2[species]= `r i2_ml(meta3, method=c("ratio"))[3]`%, I2[study]=`r i2_ml(meta3, method=c("ratio"))[4]`%, I2[obs]=`r i2_ml(meta3, method=c("ratio"))[5]`%
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: true
+#| eval: false
+summary(meta3)
+i2_ml(meta3, method=c("ratio"))
 ```
 
 
-## Random effects models
 
-We found a significant and negative overall mean effect size for reproduction (est = `r meta3$b`, 95% CI: `r meta3$ci.lb` to `r meta3$ci.ub`,*p*-value = `r p_value(meta3$pval)`). The estimated I2  for each random effect was I2 [Total] = `r i2_ml(meta3, method=c("ratio"))[1]`%, I2 [Phylogeny]= `r i2_ml(meta3, method=c("ratio"))[2]`%,  I2 [species]= `r i2_ml(meta3, method=c("ratio"))[3]`%, I2 [study]=`r i2_ml(meta3, method=c("ratio"))[4]`%, I2 [obs]=`r i2_ml(meta3, method=c("ratio"))[5]`%
-
-We then fit the models with different combinations of random effects. 
 ```{r, meta4-7}
 #| echo: false
 #| warning: false
@@ -178,19 +183,13 @@ if(rerun){
 
 ```
 
-The best fitting model according to AIC has just study_code and obs as random factors. 
-```{r}
-#| echo: true
-#| warning: false
-#| include: true
-#| eval: true
-summary(meta7)
-i2_ml(meta7, method=c("ratio"))
-```
+### Random effects combinations
+We then fit the models with different combinations of random effects. The best fitting model according to AIC used only study_ID and observation_ID as random effects with `r round(i2_ml(meta4)[2],2)`% and  `r round(i2_ml(meta4)[3],2)`% estimated heterogeneity respectively. We used this random effects model as a base for our meta-regression models. 
 
-## Meta-Regressions 
 
-We fit single categorical factors as a fixed effect.
+# Meta-Regressions 
+
+## How does temperature affect longevity?
 
 ```{r, regressionmodels}
 #| echo: false
@@ -224,7 +223,7 @@ if(rerun){
   
   # treat temp^3 centered
   meta_trait_treat3 <- rma.mv(es, VCV_shared,  mod= ~ poly(c_treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
-  saveRDS(meta_trait_treat2, here("Output", "models", "mv_long_ctemp3.rds"))
+  saveRDS(meta_trait_treat3, here("Output", "models", "mv_long_ctemp3.rds"))
   
   
   # diff temp
@@ -266,9 +265,30 @@ if(rerun){
 }
 
 ```
-When we control for treatment temperature 
+
+On average, when considering various taxonomic groups, exposure durations, and life stages, it was observed that temperature had a significant negative cubic impact on the lifespan of individuals, as illustrated in Figure (@fig-treat3). Specifically, cooler temperatures within the range of approximately 10°C to 20°C led to an increase in longevity, while higher temperatures exceeding 25°C were associated with reduced longevity (for detailed estimates, refer to Table @tbl-treat3 ). The inclusion of phylogenetic relatedness did not result in an improved model fit, as evidenced by the change in Akaike Information Criterion (AIC). Consequently, phylogeny was excluded from the model. Nevertheless, it's worth noting that there was a significant level of variability in lifespan responses to temperature, with a total I2 of `r i2_ml(meta_trait_treat3)[1]`%. The effect size at the observation level (ID) accounted for  `r i2_ml(meta_trait_treat3)[3]`% of this variability, while study-level ID contributed to `r i2_ml(meta_trait_treat3)[2]`%. Phylogeny, in contrast, had a negligible impact, explaining less than 0.001% of the variation.
+
+
+```{r, tbl-treat3}
+#| label: tbl-treat3
+#| tbl-cap: Non-linear effects of temperature on mean effect size of longevity
+table <- data.frame(Parameters = c("Longevity (mean)", "Linear Treatment Temperature (centered) - Longevity","Quadratic Treatment Temperature (centered) - Longevity", "Cubic Treatment Temperature (centered) - Longevity" ),
+                    Est. = round(meta_trait_treat3$b, 4),
+                    `L 95% CI` = round(meta_trait_treat3$ci.lb, 4),
+                    `U 95% CI` = round(meta_trait_treat3$ci.ub, 4),
+                    `p-value` = sapply(round(meta_trait_treat3$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
+```
+
+```{r}
+#| label: fig-treat3
+#| fig-cap: Bubble plot of effect size of longevity when controlling for temperature. 
+p <- bubble_plot(meta_trait_treat3, mod = "c_treattemp", group="study_code")
+p+coord_cartesian(ylim=c(-10,10)) + labs(x = "Temperature deviation from 25")
+```
 
 # How does sex exposed and life stage of exposure effect longevity?
+
 ```{r, lifestagesex}
 #| echo: false
 #| warning: false
@@ -293,7 +313,11 @@ if(rerun){
   meta_treat_sex <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=3, raw=TRUE)*Sex.exposed-1, 
                            random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML")
   
+  meta_treat_sex_nointer <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=3, raw=TRUE)*Sex.exposed-1, 
+                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML")
+  
   saveRDS(meta_treat_sex, here("Output", "models", "longevity", "meta_treat_long_sex.rds"))
+  saveRDS(meta_treat_sex_nointer, here("Output", "models", "longevity", "meta_treat_sex_nointer.rds"))
   saveRDS(new_data, here("Output", "Output data",  "data_long_sex.rds"))
   
   
@@ -315,18 +339,160 @@ if(rerun){
   
   meta_treat_ls <- rma.mv(es, VCV_shared_life,  mod= ~poly(c_treattemp, degree=3, raw=TRUE)*Life.stage.of.animal,
                           random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML")
+  
+  
+  meta_treat_ls_nointer <- rma.mv(es, VCV_shared_life,  mod= ~ -1 + poly(c_treattemp, degree=3, raw=TRUE)*Life.stage.of.animal,
+                           random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML")
+
+
   saveRDS(meta_treat_ls, here("Output", "models", "longevity", "meta_treat_long_ls.rds"))
+  saveRDS(meta_treat_ls_nointer, here("Output", "models", "longevity", "meta_treat_ls_nointer.rds"))
   saveRDS(ls_data, here("Output", "Output data", "data_long_ls.rds"))
 } else {
   meta_treat_sex <- readRDS(here("Output", "models", "longevity", "meta_treat_long_sex.rds"))
+  meta_treat_sex_nointer <- readRDS(here("Output", "models", "longevity", "meta_treat_sex_nointer.rds"))
   new_data <- readRDS(here("Output", "Output data", "data_long_sex.rds"))
+  
+  meta_treat_ls <- readRDS(here("Output", "models", "longevity", "meta_treat_long_ls.rds"))
+  meta_treat_ls_nointer <- readRDS(here("Output", "models", "longevity", "meta_treat_ls_nointer.rds"))
+  ls_data <- readRDS(here("Output", "Output data", "data_long_ls.rds"))
 }
 
 ```
 
-# Publication Bias and Sensitivity Analysis
 
-```{r, publicationbias}
+
+### sex exposed
+
+We found that the was no significant difference in shape of the response to temperature between studies with both sexes exposed and those with only females exposed to treatments (*p*-value = `r p_value(meta_treat_sex$pval[6])`).   
+
+```{r, tbl-sex}
+#| label: tbl-sex
+#| tbl-cap: Non-linear effects of temperature and sex exposed on mean effect size of longevity
+table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Both","Quadratic Treatment Temperature (centered) - Both", "Cubic Treatment Temperature (centered) - Both", "Both (mean)", "Females only (mean)", "Treatment Temperature (centered) - Females only","Quadratic Treatment Temperature (centered) - Females only", "Cubic Treatment Temperature (centered) - Females only"),
+                    Est. = round(meta_treat_sex_nointer$b, 4),
+                    `L 95% CI` = round(meta_treat_sex_nointer$ci.lb, 4),
+                    `U 95% CI` = round(meta_treat_sex_nointer$ci.ub, 4),
+                    `p-value` = sapply(round(meta_treat_sex_nointer$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
+```
+
+```{r, fig-figsex}
+#| label: fig-figsex
+#| fig-cap: Predicited models of sex exposed and temeprature effects on longevity.  
+
+preds.rep.sex <- predict(meta_treat_sex, addx=TRUE)
+sex_rep_data <- new_data
+
+sex_rep_data$pred <- preds.rep.sex$pred  
+sex_rep_data$pred.lb <- preds.rep.sex$pi.lb
+sex_rep_data$pred.ub <- preds.rep.sex$pi.ub
+sex_rep_data$c.lb <- preds.rep.sex$ci.lb
+sex_rep_data$c.ub <- preds.rep.sex$ci.ub
+
+library(ggplot2)
+
+ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, linetype = Sex.exposed)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Sex.exposed), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  theme_bw() + 
+  labs(title = "Predicted emperature effect on longevity",
+       x = "Temperature devaition from 25C",
+       y = "Effect size",
+       color = "Sex exposed",  # Set the title of the color legend
+       fill = "Sex exposed",
+       linetype = "Sex exposed")   # Set the title of the fill legend (for ribbons)
+```
+
+
+```{r, fig-figsexobs}
+#| label: fig-figsexobs
+#| fig-cap: Observed effects of sex exposed and temeprature on longevity.  
+
+ggplot(data = sex_rep_data, aes(x = c_treattemp, y = es, col = Sex.exposed)) +
+  geom_point( alpha=0.5)+
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) + 
+  theme_bw() + 
+  labs(title = "Observed temperature effect on longevity",
+       x = "Temperature devaition from 25C",
+       y = "Effect size",
+       color = "Sex exposed")   # Set the title of the fill legend (for ribbons)
+
+```
+
+### life stage of animal
+
+No significant difference between longevity of animal when treat as adults versus treatment at immature stages.  
+
+```{r, tbl-ls}
+#| label: tbl-ls
+#| tbl-cap: Non-linear effects of temperature and life stageo animal on mean effect size of longevity
+table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Adult","Quadratic Treatment Temperature (centered) - Adult", "Cubic Treatment Temperature (centered) - Adult",  "Adult (mean)", "Immature (mean)", "Treatment Temperature (centered) - Immature","Quadratic Treatment Temperature (centered) - Immature", "Cubic Treatment Temperature (centered) - Adult"),
+                    Est. = round(meta_treat_ls_nointer$b, 4),
+                    `L 95% CI` = round(meta_treat_ls_nointer$ci.lb, 4),
+                    `U 95% CI` = round(meta_treat_ls_nointer$ci.ub, 4),
+                    `p-value` = sapply(round(meta_treat_ls_nointer$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
+```
+
+
+```{r, fig-figls}
+#| label: fig-figls
+#| fig-cap: Predicited models of sex exposed and temeprature effects on longevity.  
+
+preds.rep.ls <- predict(meta_treat_ls, addx=TRUE)
+ls_rep_data <- ls_data
+
+ls_rep_data$pred <- preds.rep.ls$pred  
+ls_rep_data$pred.lb <- preds.rep.ls$pi.lb
+ls_rep_data$pred.ub <- preds.rep.ls$pi.ub
+ls_rep_data$c.lb <- preds.rep.ls$ci.lb
+ls_rep_data$c.ub <- preds.rep.ls$ci.ub
+
+library(ggplot2)
+
+ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.animal, linetype = Life.stage.of.animal)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Life.stage.of.animal), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  theme_bw() + 
+  labs(title = "Predicted temperature effect on longevity",
+       x = "Observed temperature devaition from 25C",
+       y = "Effect size",
+       color = "Life stage",  # Set the title of the color legend
+       fill = "Life stage",
+       linetype = "Life stage")   # Set the title of the fill legend (for ribbons)
+```
+
+However, looking at the observed values, it is possible these model estimates are strongly driven by outlying values. 
+```{r, fig-figlsobs}
+#| label: fig-figlsobs
+#| fig-cap: Observed effect sizes of sex and temeprature effects on longevity.  
+
+### observed data 
+ggplot(data = ls_rep_data, aes(x = c_treattemp, y = es, col = Life.stage.of.animal)) +
+  geom_point( alpha=0.5)+
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) + 
+  theme_bw() + 
+  coord_cartesian(ylim = c(-10,1))+
+  labs(title = "Observed temperature effect on longevity",
+       x = "Temperature devaition from 25C",
+       y = "Effect size",
+       color = "Life stage")   # Set the title of the fill legend (for ribbons)
+
+
+```
+
+# Publication Bias
+
+```{r}
 #| echo: false
 #| warning: false
 #| include: false
@@ -334,45 +500,220 @@ if(rerun){
 ## Publication Bias.
 
 if(rerun){
-  meta_year <- rma.mv(es, VCV_shared,  mod= ~Publication.year,  
-                      random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
-  
-  saveRDS(meta_year, here("Output", "models", "longevity", "meta_long_year.rds"))
-  
-  # Sensitivty Analysis
-  # Preform a sensitivity analysis by removing the smallest and largest 2.5% of effect sizes.
-  
-  
-  minq <- quantile(rdata$es, 0.025)
-  maxq <- quantile(rdata$es, 0.975)
-  
-  sdata <- subset(rdata, es > minq & es < maxq)
-  saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long.rds"))
-  
-  
-  ## Treatment temperature as a quadratic effect (sesnsitivity analysis)
-  
-  # re-cmpute the covariance matrix for subsetted data
-  VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
-  
-  
-  # re-run quadratic model
-  meta_sa_treat2 <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=3, raw=TRUE), 
-                           random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
-  
-  saveRDS(meta_sa_treat2, here("Output", "models", "longevity", "meta_sa_ctemp2.rds"))
+meta_year <- rma.mv(es, VCV_shared,  mod= ~Publication.year,  
+                    random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+
+saveRDS(meta_year, here("Output", "models", "longevity", "meta_long_year.rds"))
+
+
+# Sensitivty Analysis
+# Preform a sensitivity analysis by removing the smallest and largest 2.5% of effect sizes.
+
+
+minq <- quantile(rdata$es, 0.025)
+maxq <- quantile(rdata$es, 0.975)
+
+sdata <- subset(rdata, es > minq & es < maxq)
+saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long.rds"))
+
+
+## Treatment temperature as a cubic effect (sesnsitivity analysis)
+
+# re-cmpute the covariance matrix for subsetted data
+VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+
+
+# re-run cubic model
+meta_sa_treat3 <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=3, raw=TRUE), 
+                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+
+saveRDS(meta_sa_treat3, here("Output", "models", "longevity", "meta_sa_ctemp3.rds"))
 } else {
   meta_year <- readRDS(here("Output", "models", "longevity", "meta_long_year.rds"))
   sdata <- readRDS(here("Output", "Output data", "longevity", "sensitivity_data_long.rds"))
-  meta_sa_treat2 <- readRDS(here("Output", "models", "longevity", "meta_sa_ctemp2.rds"))
+  meta_sa_treat3 <- readRDS(here("Output", "models", "longevity", "meta_sa_ctemp3.rds"))
+}
+```
+
+We found no significant effect of year on effect suggesting that there was no presence of publication bias (*p*-value = `r meta_year$pval[2]`)
+
+
+```{r, @fig-figyear}
+#| label: fig-figyear
+#| fig-cap: Bubble plot of mean effect size throughout time.  
+
+q <- bubble_plot(meta_year, mod = "Publication.year", group="study_code") +
+  labs(x = "Year of Publication")
+q+ coord_cartesian(ylim=c(-20,10))
+```
+
+## Treatment temperature
+
+```{r, tbl-sactemp}
+#| label: tbl-sactemp
+#| tbl-cap: Non-linear effects of temperature on mean effect size of longevity having removed 5% of the most extreme effect sizes. 
+table <- data.frame(Parameters = c("Longevity (mean)", "Linear Treatment Temperature (centered) - Longevity","Quadratic Treatment Temperature (centered) - Longevity", "Cubic Treatment Temperature (centered) - Longevity" ),
+                    Est. = round(meta_sa_treat3$b, 4),
+                    `L 95% CI` = round(meta_sa_treat3$ci.lb, 4),
+                    `U 95% CI` = round(meta_sa_treat3$ci.ub, 4),
+                    `p-value` = sapply(round(meta_sa_treat3$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
+```
+
+
+
+## Sex exposed
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+if(rerun){
+minq <- quantile(new_data$es, 0.025)   
+maxq <- quantile(new_data$es, 0.975)
+
+sdata <- subset(new_data, es > minq & es < maxq)
+saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long_sex.rds"))
+
+
+## Treatment temperature as a Cubic effect (sesnsitivity analysis)
+
+# re-cmpute the covariance matrix for subsetted data
+VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+
+
+# re-run cubic model
+meta_sa_sex_nointer <- rma.mv(es, VCV_shared_sa,  mod= ~ -1 + poly(c_treattemp, degree=3, raw=TRUE) * Sex.exposed, 
+                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+
+saveRDS(meta_sa_sex_nointer, here("Output", "models", "longevity", "meta_sa_long_sex.rds"))
+} else {
+  meta_sa_sex <- readRDS(here("Output", "models", "longevity", "meta_sa_long_sex.rds"))
+  sa_rep_sexdata <- readRDS(here("Output", "Output data", "longevity", "sensitivity_data_long_sex.rds"))
 }
 
+```
 
-## Now we completely remove any study that has an effect size in the highest or lowest 2.5%. 
 
-#remove_min <- unique(rdata$Paper.code[which(rdata$es < minq)])
-#remove_max <- unique(rdata$Paper.code[which(rdata$es > maxq)])
-#remove <- union(remove_min, remove_max)
-#subdata <- rdata[!(rdata$Paper.code %in% remove), ]
-#VCV_shared_subdata <- impute_covariance_matrix(vi=subdata$v, cluster = subdata$shared_control, r=0.5)
+
+```{r, tbl-sasex}
+#| label: tbl-sasex
+#| tbl-cap: Non-linear effects of temperature and sex exposed on mean effect size of longevity with 5% most extreme effect sizes removed. 
+table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Both","Quadratic Treatment Temperature (centered) - Both", "Cubic Treatment Temperature (centered) - Both", "Both (mean)", "Females only (mean)", "Treatment Temperature (centered) - Females only","Quadratic Treatment Temperature (centered) - Females only", "Cubic Treatment Temperature (centered) - Females only"),
+                    Est. = round(meta_sa_sex$b, 4),
+                    `L 95% CI` = round(meta_sa_sex$ci.lb, 4),
+                    `U 95% CI` = round(meta_sa_sex$ci.ub, 4),
+                    `p-value` = sapply(round(meta_sa_sex$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
+```
+
+
+```{r, fig-figsexsa}
+#| label: fig-figsexsa
+#| fig-cap: Predicited models of sex exposed and temeprature effects on longevity.  
+
+preds.rep.sex <- predict(meta_sa_sex, addx=TRUE)
+sex_rep_data <- sa_rep_sexdata
+
+sex_rep_data$pred <- preds.rep.sex$pred  
+sex_rep_data$pred.lb <- preds.rep.sex$pi.lb
+sex_rep_data$pred.ub <- preds.rep.sex$pi.ub
+sex_rep_data$c.lb <- preds.rep.sex$ci.lb
+sex_rep_data$c.ub <- preds.rep.sex$ci.ub
+
+library(ggplot2)
+
+ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, linetype = Sex.exposed)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Sex.exposed), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  theme_bw() + 
+  labs(title = "Predicted emperature effect on longevity",
+       x = "Temperature devaition from 25C",
+       y = "Effect size",
+       color = "Sex exposed",  # Set the title of the color legend
+       fill = "Sex exposed",
+       linetype = "Sex exposed")   # Set the title of the fill legend (for ribbons)
+```
+
+
+
+## Life-stage
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+if(rerun){
+minq <- quantile(ls_data$es, 0.025)   
+maxq <- quantile(ls_data$es, 0.975)
+
+sdata <- subset(ls_data, es > minq & es < maxq)
+saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long_ls.rds"))
+
+
+## Treatment temperature as a quadratic effect (sesnsitivity analysis)
+
+# re-cmpute the covariance matrix for subsetted data
+VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+
+
+# re-run quadratic model
+meta_sa_ls_nointer <- rma.mv(es, VCV_shared_sa,  mod= ~ -1 + poly(c_treattemp, degree=3, raw=TRUE) * Life.stage.of.animal, 
+                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+
+saveRDS(meta_sa_ls_nointer, here("Output", "models", "longevity", "meta_sa_long_ls.rds"))
+} else {
+  meta_sa_ls <- readRDS(here("Output", "models", "longevity", "meta_sa_long_ls.rds"))
+  sa_rep_lsdata <- readRDS(here("Output", "Output data", "longevity", "sensitivity_data_long_ls.rds"))
+}
+
+```
+
+
+```{r, tbl-sals}
+#| label: tbl-sals
+#| tbl-cap: Non-linear effects of temperature and life stageo animal on mean effect size of longevity after removing the 5% most extreme effect sizes.
+table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Adult","Quadratic Treatment Temperature (centered) - Adult", "Cubic Treatment Temperature (centered) - Adult",  "Adult (mean)", "Immature (mean)", "Treatment Temperature (centered) - Immature","Quadratic Treatment Temperature (centered) - Immature", "Cubic Treatment Temperature (centered) - Adult"),
+                    Est. = round(meta_sa_ls$b, 4),
+                    `L 95% CI` = round(meta_sa_ls$ci.lb, 4),
+                    `U 95% CI` = round(meta_sa_ls$ci.ub, 4),
+                    `p-value` = sapply(round(meta_sa_ls$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
+```
+
+```{r, fig-figlssa}
+#| label: fig-figlssa
+#| fig-cap: Predicited models of sex exposed and temeprature effects on longevity.  
+
+preds.rep.ls <- predict(meta_sa_ls, addx=TRUE)
+ls_rep_data <- sa_rep_lsdata
+
+ls_rep_data$pred <- preds.rep.ls$pred  
+ls_rep_data$pred.lb <- preds.rep.ls$pi.lb
+ls_rep_data$pred.ub <- preds.rep.ls$pi.ub
+ls_rep_data$c.lb <- preds.rep.ls$ci.lb
+ls_rep_data$c.ub <- preds.rep.ls$ci.ub
+
+library(ggplot2)
+
+ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.animal, linetype = Life.stage.of.animal)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Life.stage.of.animal), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  theme_bw() + 
+    coord_cartesian(ylim = c(-10,1))+
+  labs(title = "Predicted temperature effect on longevity",
+       x = "Observed temperature devaition from 25C",
+       y = "Effect size",
+       color = "Life stage",  # Set the title of the color legend
+       fill = "Life stage",
+       linetype = "Life stage")   # Set the title of the fill legend (for ribbons)
 ```

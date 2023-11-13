@@ -157,7 +157,7 @@ i2_ml(meta3, method=c("ratio"))
 
 
  
-```{r}
+```{r, meta4-7}
 #| echo: false
 #| warning: false
 #| include: false
@@ -579,7 +579,7 @@ meta_sa_sex_nointer <- rma.mv(es, VCV_shared_sa,  mod= ~ -1 + poly(c_treattemp, 
 
 saveRDS(meta_sa_sex_nointer, here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
 } else {
-  meta_sa_sex <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
+  meta_sa_sex_nointer <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
   sa_rep_sexdata <- readRDS(here("Output", "Output data", "reproduction", "sensitivity_data_rep_sex.rds"))
 }
 
@@ -590,10 +590,10 @@ saveRDS(meta_sa_sex_nointer, here("Output", "models", "reproduction", "meta_sa_r
 #| label: tbl-sasex
 #| tbl-cap: Non-linear effects of temperature and sex exposed on mean effect size of reproduction with 5% most extreme effect sizes removed. 
 table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Both","Quadratic Treatment Temperature (centered) - Both", "Both (mean)", "Females only (mean)", "Treatment Temperature (centered) - Females only","Quadratic Treatment Temperature (centered) - Females only"),
-                    Est. = round(meta_sa_sex$b, 4),
-                    `L 95% CI` = round(meta_sa_sex$ci.lb, 4),
-                    `U 95% CI` = round(meta_sa_sex$ci.ub, 4),
-                    `p-value` = sapply(round(meta_sa_sex$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+                    Est. = round(meta_sa_sex_nointer$b, 4),
+                    `L 95% CI` = round(meta_sa_sex_nointer$ci.lb, 4),
+                    `U 95% CI` = round(meta_sa_sex_nointer$ci.ub, 4),
+                    `p-value` = sapply(round(meta_sa_sex_nointer$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
 flextable(table)
 ```
 
@@ -601,7 +601,7 @@ flextable(table)
 #| label: fig-figsexsa
 #| fig-cap: Predicited models of sex exposed and temeprature effects on reproduction.  
 
-preds.rep.sex <- predict(meta_sa_sex, addx=TRUE)
+preds.rep.sex <- predict(meta_sa_sex_nointer, addx=TRUE)
 sex_rep_data <- sa_rep_sexdata
 
 sex_rep_data$pred <- preds.rep.sex$pred  
