@@ -390,7 +390,7 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, li
   scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
   scale_linetype_manual(values = c("solid", "dashed")) +
   theme_bw() + 
-  labs(title = "Predicted emperature effect on reproduction",
+  labs(title = "Predicted temperature effect on reproduction",
        x = "Temperature devaition from 25C",
        y = "Effect size",
        color = "Sex exposed",  # Set the title of the color legend
@@ -619,7 +619,7 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, li
   scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
   scale_linetype_manual(values = c("solid", "dashed")) +
   theme_bw() + 
-  labs(title = "Predicted emperature effect on reproduction",
+  labs(title = "Predicted temperature effect on reproduction",
        x = "Temperature devaition from 25C",
        y = "Effect size",
        color = "Sex exposed",  # Set the title of the color legend
