@@ -356,11 +356,12 @@ saveRDS(ls_data, here("Output", "Output data", "data_rep_ls.rds"))
 
 ### sex exposed
 
-We found that the shape of the response to temperature differed between the two sex exposed treatments (*p*-value = `r p_value(meta_treat_sex$pval[6])`) (Interaction between the quadratic effect of (centered) temperature and sex exposed category (@tbl-sex).  
+We found that the shape of the response to temperature differed between the two sex exposed treatments (*p*-value = `r p_value(meta_treat_sex$pval[6])`) (Interaction between the quadratic effect of (centered) temperature and sex exposed category (@tbl-sex). 
+The samples sizes for the Both and Females only category are `r length(which(new_data$Sex.exposed == "Both"))` and `r length(which(new_data$Sex.exposed == "Female"))`  respectively.
 
 ```{r, tbl-sex}
 #| label: tbl-sex
-#| tbl-cap: Non-linear effects of temperature and sex exposed on mean effect size of reproduction
+#| tbl-cap: Non-linear effects of temperature and sex exposed on mean effect size of reproduction.
 table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Both","Quadratic Treatment Temperature (centered) - Both", "Both (mean)", "Females only (mean)", "Treatment Temperature (centered) - Females only","Quadratic Treatment Temperature (centered) - Females only"),
                     Est. = round(meta_treat_sex_nointer$b, 4),
                     `L 95% CI` = round(meta_treat_sex_nointer$ci.lb, 4),
@@ -370,7 +371,7 @@ flextable(table)
 ```
 ```{r, fig-figsex}
 #| label: fig-figsex
-#| fig-cap: Predicited models of sex exposed and temeprature effects on reproduction.  
+#| fig-cap: Non-linear effects of temperature and sex exposed on mean effect size of reproduction.   
 
 preds.rep.sex <- predict(meta_treat_sex, addx=TRUE)
 sex_rep_data <- new_data
@@ -398,6 +399,8 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, li
        linetype = "Sex exposed")   # Set the title of the fill legend (for ribbons)
 
 
+#### observed data
+
 ggplot(data = sex_rep_data, aes(x = c_treattemp, y = es, col = Sex.exposed)) +
   geom_point( alpha=0.5)+
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
@@ -412,7 +415,8 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = es, col = Sex.exposed)) +
 
 ### life stage of animal
 
-We found that there was a significant difference in shape of the quadratic response to temperature those treated as immature individuals and those treated only as adults (*p*-value = `r p_value(meta_treat_ls$pval[6])`, Table (@tbl-ls). As is consisitent with our apriori beliefs, the fitted model predicts that immature individuals respond negativly to temperature away from 25C at a sharper and more pronounced rate.   
+We found that there was a significant difference in shape of the quadratic response to temperature those treated as immature individuals and those treated only as adults (*p*-value = `r p_value(meta_treat_ls$pval[6])`, Table (@tbl-ls). As is consisitent with our apriori beliefs, the fitted model predicts that immature individuals respond negativly to temperature away from 25C at a sharper and more pronounced rate.  The samples sizes for the Immature and Adult only categories are `r length(which(ls_data$Life.stage.of.animal == "Immature"))` and `r length(which(ls_data$Life.stage.of.animal == "Adult"))`  respectively.")  
+ 
 
 ```{r, tbl-ls}
 #| label: tbl-ls
@@ -428,8 +432,7 @@ flextable(table)
 
 ```{r, fig-figls}
 #| label: fig-figls
-#| fig-cap: Predicited models of sex exposed and temeprature effects on reproduction.  
-
+#| fig-cap: Predicited Non-linear effects of temperature and life stage of the animal on mean effect size of reproduction. 
 preds.rep.ls <- predict(meta_treat_ls, addx=TRUE)
 ls_rep_data <- ls_data
 
@@ -551,6 +554,59 @@ table <- data.frame(Parameters = c("Reproduction (mean)", "Linear Treatment Temp
                     `p-value` = sapply(round(meta_sa_treat2$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
 flextable(table)
 ```
+
+```{r}
+#| label: fig-ctemp_vs_sactemp
+#| fig-cap: Predicited models of sex exposed and temeprature effects on reproduction.  
+
+preds.ctemp <- predict(meta_trait_treat2, addx=TRUE)
+preds.sa.ctemp <- predict(meta_sa_treat2, addx=TRUE)
+
+ctemp_data <- rdata
+ctemp_sa_data <- sdata
+
+ctemp_data$pred <- preds.ctemp$pred  
+ctemp_data$pred.lb <- preds.ctemp$pi.lb
+ctemp_data$pred.ub <- preds.ctemp$pi.ub
+ctemp_data$c.lb <- preds.ctemp$ci.lb
+ctemp_data$c.ub <- preds.ctemp$ci.ub
+
+ctemp_sa_data$pred <- preds.sa.ctemp$pred  
+ctemp_sa_data$pred.lb <- preds.sa.ctemp$pi.lb
+ctemp_sa_data$pred.ub <- preds.sa.ctemp$pi.ub
+ctemp_sa_data$c.lb <- preds.sa.ctemp$ci.lb
+ctemp_sa_data$c.ub <- preds.sa.ctemp$ci.ub
+
+
+library(ggplot2)
+
+p <- ggplot(data = ctemp_data, aes(x = c_treattemp, y = pred, col="Full data", fill = "Full data", linetype = "Full data")) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub), alpha = 0.15) +
+  geom_line() +
+  theme_bw() + 
+  labs(title = "Predicted temperature effect on reproduction",
+       x = "Temperature deviation from 25C",
+       y = "Effect size",
+       color = "Full data",  # Set the title of the color legend
+       fill = "Full data",
+       linetype = "Full data")   
+
+p + 
+  geom_line(data = ctemp_sa_data, aes(x = c_treattemp, y = pred, col = "Sensitivity data", linetype = "Sensitivity data")) +
+  geom_ribbon(data = ctemp_sa_data, aes(ymin = c.lb, ymax = c.ub, fill = "Sensitivity data"), col="orange", alpha = 0.15) +
+  scale_color_manual(name = "Model", values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(name = "Model", values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(name = "Model", values = c("solid", "dashed")) +
+  labs(title = "Predicted temperature effect on reproduction",
+       x = "Temperature deviation from 25C",
+       y = "Effect size",
+       color = "Sensitivity data",  # Set the title of the color legend
+       fill = "Sensitivity data",
+       linetype = "Sensitivity data")
+
+
+```
+
 
 ## Sex exposed
 

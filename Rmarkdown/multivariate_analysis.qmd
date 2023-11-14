@@ -251,6 +251,80 @@ flextable(table)
 #| label: fig-fig2
 #| fig-cap: Between study correlation for reproduction and longevity
 # Lets explore the among study correlation. 
-data  %>%  group_by(Experiment.code)  %>% summarise(es_repro = mean(es_reproduction), es_long = mean(es_longevity), mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + geom_point() + labs(x = "SMD (Reproduction)", y = "SMD (Longevity)", size =  "Sampling Variance") + theme_bw() + geom_text(aes(label = Experiment.code), size = 3, nudge_x = 0.8, nudge_y = 0.8)
+data  %>%  group_by(Experiment.code)  %>% summarise(es_repro = mean(es_reproduction), es_long = mean(es_longevity), mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + 
+                    geom_point(alpha = 1/10) + labs(x = "SMD (Reproduction)", y = "SMD (Longevity)", size =  "Sampling Variance") +
+                    theme_bw() +
+                    coord_cartesian(xlim=c(-60,20)) +
+                    geom_text(aes(label = Experiment.code), size = 3, nudge_x = 0.8, nudge_y = 0.8)
 
 ```
+
+
+# Sensitivity Analysis 
+This removes the smallest and largest 5% effect sizes (so 10% of the data in total). The plot above shows only the experiments that have outlying effect sizes not the specific effect size itself.
+
+
+```{r, sa_multivariate}
+#| echo: false
+#| warning: false
+#| include: false
+# We'll now run the multivariate model with non-linear terms as was done in the univariate cases.
+rerun3=TRUE
+if(rerun3){
+  
+
+minq <- quantile(data_long_final$es, 0.05)
+maxq <- quantile(data_long_final$es, 0.95)
+
+sdata <- subset(data_long_final, es > minq & es < maxq)
+
+## make V matrix for sensitivity data
+ V_2 <- make_VCV_matrix(data = sdata, cluster = "trial",  V = "v", rho = 0.5)
+
+ V2 <- metaAidR::make_VCV_matrix(data = sdata, matrix = V_2, cluster = "shared_control",  V = "v", rho = 0.5)
+
+ # Check of PD
+  corpcor::is.positive.definite(V2) # FALSE
+
+# Can bend it to make it PD
+  V2 <- Matrix::nearPD(V2)$mat
+
+# Check of PD
+  corpcor::is.positive.definite(V2) # TRUE
+  
+  mlma_sa <- rma.mv(es ~ -1 + outcome + outcome:poly(c_treattemp, degree=3, raw=TRUE), V = V2,    
+               random = list(~outcome - 1 | trial,   ~outcome - 1 | Paper.code),  
+               struc = "UN", data = sdata, test = "t", dfs = "contain")
+  
+  saveRDS(mlma_sa, here("output", "models", "mlma_sa.rds"))
+  saveRDS(sdata, here("output", "Output data", "mlma_sa_data.rds"))
+} else {
+  mlma_sa <- readRDS(here("output", "models", "mlma_sa.rds"))
+}
+  mlma_sa
+```
+
+When removing the 5% largest and smallest effect sizes, the following effect sizes are removed.
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: true
+#| eval: true
+
+sort(setdiff(data_long_final$trial, sdata$trial))
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
