@@ -16,20 +16,18 @@ title-delim: "-"
 fig-prefix: "Figure"
 tbl-prefix: "Table"
 ---
-  
+
 ```{r, packages}
 #| echo: false
 #| warning: false
 #| include: false
-
+#| eval: true
 #install.packages("pacman")
 #devtools::install_github("daniel1noble/metaAidR", force=TRUE)
-#devtools::install_github("daniel1noble/orchaRd", force=TRUE)
 pacman::p_load(tidyverse, here, ggplot2, rotl, multicomp, dplyr, clubSandwich, tidyr,  metafor, ape, phytools, corrplot, metaAidR, orchaRd, latex2exp, flextable)
 # source functions
 source(here("R", "func.R"))
-
-options(digits = 2)
+options(digits = 6)
 ```
 
 
@@ -147,7 +145,7 @@ meta3 <- rma.mv(es, VCV_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1
 
 ### Intercept only model
 
-We found a significant and negative overall mean effect size for reproduction (est = `r meta3$b`, 95% CI: `r meta3$ci.lb` to `r meta3$ci.ub`, *p*-value = `r p_value(meta3$pval)`). The estimated I2for each random effect was I2[Total] = `r i2_ml(meta3, method=c("ratio"))[1]`%, I2[Phylogeny]= `r i2_ml(meta3, method=c("ratio"))[2]`%,  I2[species]= `r i2_ml(meta3, method=c("ratio"))[3]`%, I2[study]=`r i2_ml(meta3, method=c("ratio"))[4]`%, I2[obs]=`r i2_ml(meta3, method=c("ratio"))[5]`%
+We found a significant negative mean effect size for reproduction (est = `r meta3$b`, 95% CI: `r meta3$ci.lb` to `r meta3$ci.ub`, *p*-value = `r p_value(meta3$pval)`, k= 'r meta3$k'). Overall heterogeneity was very high (I2[Total] = `r i2_ml(meta3, method=c("ratio"))[1]`%), with almost all of this being attributable to between-study differences (I2[study]=`r i2_ml(meta3, method=c("ratio"))[4]`%) or observational-level differences (I2[obs]=`r i2_ml(meta3, method=c("ratio"))[5]`%). A negligible amount of heterogeneity was explained by species (I2[species]= `r i2_ml(meta3, method=c("ratio"))[3]`%) or phylogenetic history (I2[Phylogeny]= `r i2_ml(meta3, method=c("ratio"))[2]`%).
 
 ```{r}
 #| echo: false
@@ -270,7 +268,9 @@ meta_trait_bintemp <-  readRDS(here("Output", "models", "reproduction", "mv_rep_
 
 ```
 
-On average, across all taxa, exposure durations, and various life stages, it was observed that temperature had a significant and negative quadratic impact on reproduction (@tbl-treat2). When temperature deviated from the optimal 25°C, there was a noticeable reduction in reproductive outcomes (@fig-treat2). The inclusion of phylogenetic relatedness did not enhance the model's fit, as evidenced by the change in Akaike Information Criterion (AIC), and was consequently excluded from the model. Nevertheless, there was considerable diversity in how different organisms responded to temperature with regards to reproduction, indicated by a substantial heterogeneity (I²[total] = `r i2_ml(meta_trait_treat2)[1]`%). At the individual observation level (ID), this heterogeneity accounted for `r i2_ml(meta_trait_treat2)[3]`% of the variation, while at the study-level, it contributed to `r i2_ml(meta_trait_treat2)[2]`% of the variation. Phylogeny, on the other hand, played a negligible role, accounting for less than 0.001% of the variation.
+Across all taxa, reproduction exhibited a significant quadratic relationship with temperature (QM=`r meta_trait_treat2$QM`, P = `r meta_trait_treat2$QMp`) (@tbl-treat2), with a reduction in reproductive output above and below 25°C (@fig-treat2). 
+
+The inclusion of phylogenetic relatedness did not enhance the model's fit, as evidenced by the change in Akaike Information Criterion (AIC), and was consequently excluded from the model. Nevertheless, there was considerable diversity in how different organisms responded to temperature with regards to reproduction, indicated by a substantial heterogeneity (I²[total] = `r i2_ml(meta_trait_treat2)[1]`%). At the individual observation level (ID), this heterogeneity accounted for `r i2_ml(meta_trait_treat2)[3]`% of the variation, while at the study-level, it contributed to `r i2_ml(meta_trait_treat2)[2]`% of the variation. Phylogeny, on the other hand, played a negligible role, accounting for less than 0.001% of the variation.
 
 ```{r, tbl-treat2}
 #| label: tbl-treat2
@@ -364,7 +364,7 @@ saveRDS(ls_data, here("Output", "Output data", "data_rep_ls.rds"))
 
 ### sex exposed
 
-We found that the shape of the response to temperature differed between the two sex exposed treatments (*p*-value = `r p_value(meta_treat_sex$pval[6])`) (Interaction between the quadratic effect of (centered) temperature and sex exposed category (@tbl-sex). 
+The relationship between reproduction and temperature depended on whether both males and females were exposed to experimental temperatures, or whether just females were exposed to experimental temperatures (*p*-value = `r p_value(meta_treat_sex$pval[6])`) (Interaction between the quadratic effect of (centered) temperature and sex exposed category (@tbl-sex). 
 The samples sizes for the Both and Females only category are `r length(which(new_data$Sex.exposed == "Both"))` and `r length(which(new_data$Sex.exposed == "Female"))`  respectively.
 
 ```{r, tbl-sex}
