@@ -21,7 +21,7 @@ tbl-prefix: "Table"
 #| echo: false
 #| warning: false
 #| include: false
-#| eval: true
+
 #install.packages("pacman")
 #devtools::install_github("daniel1noble/metaAidR", force=TRUE)
 #devtools::install_github("daniel1noble/orchaRd", force=TRUE)
@@ -31,6 +31,7 @@ source(here("R", "func.R"))
 
 options(digits = 2)
 ```
+
 
 ```{r, rerun}
 #| echo: false
@@ -222,7 +223,11 @@ saveRDS(meta_trait_treattemp, here("Output", "models", "reproduction", "mv_rep_c
 
 # treat temp^2 centered
 meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
-saveRDS(meta_trait_treat2, here("Output", "models", "mv_rep_ctemp2.rds"))
+saveRDS(meta_trait_treat2, here("Output", "models", "reproduction", "mv_rep_ctemp2.rds"))
+
+# treat temp^3 centered
+meta_trait_treat3 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+saveRDS(meta_trait_treat3, here("Output", "models", "reproduction", "mv_rep_ctemp3.rds"))
 
 
 # diff temp
@@ -257,7 +262,8 @@ meta_trait_warm  <- readRDS(here("Output", "models", "reproduction", "mv_rep_war
 meta_trait_warm_nointer  <- readRDS(here("Output", "models", "reproduction", "mv_rep_warm-1.rds"))
 meta_trait_ref <- readRDS(here("Output", "models", "reproduction", "mv_rep_ref.rds"))
 meta_trait_treattemp  <- readRDS(here("Output", "models", "reproduction", "mv_rep_ctemp.rds"))
-meta_trait_treat2  <- readRDS(here("Output", "models", "mv_rep_ctemp2.rds"))
+meta_trait_treat2  <- readRDS(here("Output", "models",  "reproduction", "mv_rep_ctemp2.rds"))
+meta_trait_treat3  <- readRDS(here("Output", "models",  "reproduction", "mv_rep_ctemp3.rds"))
 meta_trait_diff <- readRDS(here("Output", "models", "reproduction", "mv_rep_diff.rds"))
 meta_trait_bintemp <-  readRDS(here("Output", "models", "reproduction", "mv_rep_bintemp.rds"))
 }

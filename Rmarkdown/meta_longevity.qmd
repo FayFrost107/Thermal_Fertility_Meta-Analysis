@@ -219,11 +219,15 @@ if(rerun){
   
   # treat temp^2 centered
   meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
-  saveRDS(meta_trait_treat2, here("Output", "models", "mv_long_ctemp2.rds"))
+  saveRDS(meta_trait_treat2, here("Output", "models", "longevity",  "mv_long_ctemp2.rds"))
   
   # treat temp^3 centered
   meta_trait_treat3 <- rma.mv(es, VCV_shared,  mod= ~ poly(c_treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
-  saveRDS(meta_trait_treat3, here("Output", "models", "mv_long_ctemp3.rds"))
+  saveRDS(meta_trait_treat3, here("Output", "models", "longevity", "mv_long_ctemp3.rds"))
+  
+    # treat temp^4 centered
+  meta_trait_treat4 <- rma.mv(es, VCV_shared,  mod= ~ poly(c_treattemp, degree=4, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+  saveRDS(meta_trait_treat3, here("Output", "models", "longevity", "mv_long_ctemp4.rds"))
   
   
   # diff temp
@@ -258,10 +262,11 @@ if(rerun){
   meta_trait_warm_nointer  <- readRDS(here("Output", "models", "longevity", "mv_long_warm-1.rds"))
   meta_trait_ref <- readRDS(here("Output", "models", "longevity", "mv_long_ref.rds"))
   meta_trait_treattemp  <- readRDS(here("Output", "models", "longevity", "mv_long_ctemp.rds"))
-  meta_trait_treat2  <- readRDS(here("Output", "models", "mv_long_ctemp2.rds"))
+  meta_trait_treat2  <- readRDS(here("Output", "models", "longevity", "mv_long_ctemp2.rds"))
   meta_trait_diff <- readRDS(here("Output", "models", "longevity", "mv_long_diff.rds"))
   meta_trait_bintemp <-  readRDS(here("Output", "models", "longevity", "mv_long_bintemp.rds"))
-  meta_trait_treat3 <- readRDS(here("Output", "models", "mv_long_ctemp3.rds"))
+  meta_trait_treat3 <- readRDS(here("Output", "models", "longevity", "mv_long_ctemp3.rds"))
+  meta_trait_treat4 <- readRDS(here("Output", "models", "longevity", "mv_long_ctemp4.rds"))
 }
 
 ```
