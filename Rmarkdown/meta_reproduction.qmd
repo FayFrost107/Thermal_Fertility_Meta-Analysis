@@ -776,3 +776,5 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.an
        fill = "Life stage",
        linetype = "Life stage")   # Set the title of the fill legend (for ribbons)
 ```
+
+
