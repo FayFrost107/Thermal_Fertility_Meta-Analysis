@@ -269,7 +269,7 @@ This removes the smallest and largest 5% effect sizes (so 10% of the data in tot
 #| warning: false
 #| include: false
 # We'll now run the multivariate model with non-linear terms as was done in the univariate cases.
-rerun3=TRUE
+rerun3=FALSE
 if(rerun3){
   
 
