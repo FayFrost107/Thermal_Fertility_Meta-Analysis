@@ -258,7 +258,15 @@ data  %>%  group_by(Experiment.code)  %>% summarise(es_repro = mean(es_reproduct
                     geom_text(aes(label = Experiment.code), size = 3, nudge_x = 0.8, nudge_y = 0.8)
 
 ```
-
+```{r, fig-fig3}
+#| label: fig-fig3
+#| fig-cap: Zoomed Between study correlation for reproduction and longevity
+# Lets explore the among study correlation. 
+data  %>%  group_by(Experiment.code)  %>% summarise(es_repro = mean(es_reproduction), es_long = mean(es_longevity), mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + 
+                    geom_point(alpha = 1/10) + labs(x = "SMD (Reproduction)", y = "SMD (Longevity)", size =  "Sampling Variance") +
+                    theme_bw() +
+                    coord_cartesian(xlim=c(-5,5), ylim = c(-5,5)) 
+```
 
 # Sensitivity Analysis 
 This removes the smallest and largest 5% effect sizes (so 10% of the data in total). The plot above shows only the experiments that have outlying effect sizes not the specific effect size itself.
