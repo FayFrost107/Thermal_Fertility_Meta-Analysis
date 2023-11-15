@@ -329,13 +329,24 @@ sort(setdiff(data_long_final$trial, sdata$trial))
 
 
 if(rerun){
+  data_warm <- subset(data_long_final, warm.cool == "Warm")
+  data_cool <- subset(data_long_final, warm.cool == "Cool")
+  
 mv_mlma_split.warm <- rma.mv(es ~ -1 + outcome + outcome:c_treattemp, V = V,    # This should compare whether the linear effect of temperature differs between the two outcomes when we allow for intercept, but without intercept  it will test whether there is a linear effect of temperature on each outcome separately and estimate that effect
                random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
                              ~outcome - 1 | Paper.code),  # This should estimate a study level random effect for each outcome.
-               struc = "UN", data = data_long_final, test = "t", dfs = "contain")
-saveRDS(mv_mlma_split.warm, here("output", "models", "mv_mlma_split.rds"))
+               struc = "UN", data = data_warm, test = "t", dfs = "contain")
+saveRDS(mv_mlma_split.warm, here("output", "models", "mv_mlma_split.warm.rds"))
+
+mv_mlma_split.cool <- rma.mv(es ~ -1 + outcome + outcome:c_treattemp, V = V,   
+               random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code), 
+               struc = "UN", data = data_cool, test = "t", dfs = "contain")
+saveRDS(mv_mlma_split.cool, here("output", "models", "mv_mlma_split.cool.rds"))
+
+
 } else {
-  mv_mlma_split.warm <- readRDS(here("output", "models", "mv_mlma_split.rds"))
+  mv_mlma_split.warm <- readRDS(here("output", "models", "mv_mlma_split.warm.rds"))
+  mv_mlma_split.cool <- readRDS(here("output", "models", "mv_mlma_split.cool.rds"))
 }
 mv_mlma_split.warm
 ```
