@@ -798,7 +798,7 @@ saveRDS(meta_trait_treat6, here("Output", "models", "reproduction", "mv_rep_ctem
 
 
   # treat temp^7 centered
-meta_trait_treat7 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=7, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+meta_trait_treat7 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=7, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML", verbose=TRUE)
 saveRDS(meta_trait_treat7, here("Output", "models", "reproduction", "mv_rep_ctemp7.rds"))
 
 
