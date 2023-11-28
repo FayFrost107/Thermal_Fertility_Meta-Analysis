@@ -776,3 +776,44 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.an
        fill = "Life stage",
        linetype = "Life stage")   # Set the title of the fill legend (for ribbons)
 ```
+
+
+
+```{r, higherorderpoly}
+
+
+if(rerun){
+  
+  # treat temp^4 centered
+meta_trait_treat4 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=4, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+saveRDS(meta_trait_treat4, here("Output", "models", "reproduction", "mv_rep_ctemp4.rds"))
+
+  # treat temp^5 centered
+meta_trait_treat5 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=5, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+saveRDS(meta_trait_treat5, here("Output", "models", "reproduction", "mv_rep_ctemp5.rds"))
+
+  # treat temp^6 centered
+meta_trait_treat6 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=6, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+saveRDS(meta_trait_treat6, here("Output", "models", "reproduction", "mv_rep_ctemp6.rds"))
+
+
+  # treat temp^7 centered
+meta_trait_treat7 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=7, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML", verbose=TRUE)
+saveRDS(meta_trait_treat7, here("Output", "models", "reproduction", "mv_rep_ctemp7.rds"))
+
+
+  # treat temp^8 centered
+meta_trait_treat8 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=8, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+saveRDS(meta_trait_treat8, here("Output", "models", "reproduction", "mv_rep_ctemp8.rds"))
+
+} else {
+  meta_trait_treat4  <- readRDS(here("Output", "models",  "reproduction", "mv_rep_ctemp4.rds"))
+  meta_trait_treat5  <- readRDS(here("Output", "models",  "reproduction", "mv_rep_ctemp5.rds"))
+  meta_trait_treat6  <- readRDS(here("Output", "models",  "reproduction", "mv_rep_ctemp6.rds"))
+  meta_trait_treat7  <- readRDS(here("Output", "models",  "reproduction", "mv_rep_ctemp7.rds"))
+  meta_trait_treat8  <- readRDS(here("Output", "models",  "reproduction", "mv_rep_ctemp8.rds"))
+}
+
+
+
+```
