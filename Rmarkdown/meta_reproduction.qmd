@@ -145,7 +145,7 @@ meta3 <- rma.mv(es, VCV_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1
 
 ### Intercept only model
 
-We found a significant negative mean effect size for reproduction (est = `r meta3$b`, 95% CI: `r meta3$ci.lb` to `r meta3$ci.ub`, *p*-value = `r p_value(meta3$pval)`, k= 'r meta3$k'). Overall heterogeneity was very high (I2[Total] = `r i2_ml(meta3, method=c("ratio"))[1]`%), with almost all of this being attributable to between-study differences (I2[study]=`r i2_ml(meta3, method=c("ratio"))[4]`%) or observational-level differences (I2[obs]=`r i2_ml(meta3, method=c("ratio"))[5]`%). A negligible amount of heterogeneity was explained by species (I2[species]= `r i2_ml(meta3, method=c("ratio"))[3]`%) or phylogenetic history (I2[Phylogeny]= `r i2_ml(meta3, method=c("ratio"))[2]`%).
+At 25C the mean effect size for reproduction was significantly negative (est = `r meta3$b`, 95% CI: `r meta3$ci.lb` to `r meta3$ci.ub`, *p*-value = `r p_value(meta3$pval)`, k= 'r meta3$k'). Overall heterogeneity was very high (I2[Total] = `r i2_ml(meta3, method=c("ratio"))[1]`%), with almost all of this being attributable to between-study differences (I2[study]=`r i2_ml(meta3, method=c("ratio"))[4]`%) or observational-level differences (I2[obs]=`r i2_ml(meta3, method=c("ratio"))[5]`%). A negligible amount of heterogeneity was explained by species (I2[species]= `r i2_ml(meta3, method=c("ratio"))[3]`%) or phylogenetic history (I2[Phylogeny]= `r i2_ml(meta3, method=c("ratio"))[2]`%).
 
 ```{r}
 #| echo: false
@@ -268,9 +268,7 @@ meta_trait_bintemp <-  readRDS(here("Output", "models", "reproduction", "mv_rep_
 
 ```
 
-Across all taxa, reproduction exhibited a significant quadratic relationship with temperature (QM=`r meta_trait_treat2$QM`, P = `r meta_trait_treat2$QMp`) (@tbl-treat2), with a reduction in reproductive output above and below 25°C (@fig-treat2). 
-
-The inclusion of phylogenetic relatedness did not enhance the model's fit, as evidenced by the change in Akaike Information Criterion (AIC), and was consequently excluded from the model. Nevertheless, there was considerable diversity in how different organisms responded to temperature with regards to reproduction, indicated by a substantial heterogeneity (I²[total] = `r i2_ml(meta_trait_treat2)[1]`%). At the individual observation level (ID), this heterogeneity accounted for `r i2_ml(meta_trait_treat2)[3]`% of the variation, while at the study-level, it contributed to `r i2_ml(meta_trait_treat2)[2]`% of the variation. Phylogeny, on the other hand, played a negligible role, accounting for less than 0.001% of the variation.
+Across all taxa, reproduction exhibited a significant quadratic relationship with temperature (QM=`r meta_trait_treat2$QM`, P = `r meta_trait_treat2$QMp`) (@tbl-treat2), with a reduction in reproductive output above and below 25°C (@fig-treat2). The inclusion of phylogenetic relatedness did not enhance the model's fit, as evidenced by the change in Akaike Information Criterion (AIC), and was consequently excluded from the model. Nevertheless, there was considerable diversity in how different organisms responded to temperature with regards to reproduction, indicated by a substantial heterogeneity (I²[total] = `r i2_ml(meta_trait_treat2)[1]`%). At the individual observation level (ID), this heterogeneity accounted for `r i2_ml(meta_trait_treat2)[3]`% of the variation, while at the study-level, it contributed to `r i2_ml(meta_trait_treat2)[2]`% of the variation. Phylogeny, on the other hand, played a negligible role, accounting for less than 0.001% of the variation.
 
 ```{r, tbl-treat2}
 #| label: tbl-treat2
@@ -364,8 +362,7 @@ saveRDS(ls_data, here("Output", "Output data", "data_rep_ls.rds"))
 
 ### sex exposed
 
-The relationship between reproduction and temperature depended on whether both males and females were exposed to experimental temperatures, or whether just females were exposed to experimental temperatures (*p*-value = `r p_value(meta_treat_sex$pval[6])`) (Interaction between the quadratic effect of (centered) temperature and sex exposed category (@tbl-sex). 
-The samples sizes for the Both and Females only category are `r length(which(new_data$Sex.exposed == "Both"))` and `r length(which(new_data$Sex.exposed == "Female"))`  respectively.
+The relationship between reproduction and temperature depended on whether both males and females were exposed to experimental temperatures (N= `r length(which(new_data$Sex.exposed == "Both"))` effect sizes), or whether just females were exposed to experimental temperatures (N= `r length(which(new_data$Sex.exposed == "Female"))` effect sizes) (Interaction between the quadratic effect of (centered) temperature and sex exposed category, z=`r meta_treat_sex$zval[6]`, *p*-value = `r p_value(meta_treat_sex$pval[6])`) (@tbl-sex). 
 
 ```{r, tbl-sex}
 #| label: tbl-sex
@@ -423,7 +420,7 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = es, col = Sex.exposed)) +
 
 ### life stage of animal
 
-We found that there was a significant difference in shape of the quadratic response to temperature those treated as immature individuals and those treated only as adults (*p*-value = `r p_value(meta_treat_ls$pval[6])`, Table (@tbl-ls). As is consisitent with our apriori beliefs, the fitted model predicts that immature individuals respond negativly to temperature away from 25C at a sharper and more pronounced rate.  The samples sizes for the Immature and Adult only categories are `r length(which(ls_data$Life.stage.of.animal == "Immature"))` and `r length(which(ls_data$Life.stage.of.animal == "Adult"))`  respectively.")  
+The relationship between temperature and reproduction depended on whether subjects were exposed as adults only (N= `r length(which(ls_data$Life.stage.of.animal == "Adult"))` effect sizes), or across multiple life stages (N= `r length(which(ls_data$Life.stage.of.animal == "Immature"))`effect sizes) (Interaction between the quadratic effect of (centered) temperature and life stage category, z=`r meta_treat_ls$zval[6]`, *p*-value = `r p_value(meta_treat_ls$pval[6])`), Table (@tbl-ls): the decline in reproduction above and below 25C is steeper when subjects were exposed across multiple life stages. 
  
 
 ```{r, tbl-ls}
@@ -468,7 +465,7 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.an
        linetype = "Life stage")   # Set the title of the fill legend (for ribbons)
 ```
 
-However, looking at the observed values, it is possible these model estimates are strongly driven by outlying values. 
+ 
 ```{r}
 ### observed data 
 ggplot(data = ls_rep_data, aes(x = c_treattemp, y = es, col = Life.stage.of.animal)) +
@@ -640,9 +637,9 @@ sdata <- subset(new_data, es > minq & es < maxq)
 saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep_sex.rds"))
 
 
-## Treatment temperature as a quadratic effect (sesnsitivity analysis)
+## Treatment temperature as a quadratic effect (sensitivity analysis)
 
-# re-cmpute the covariance matrix for subsetted data
+# re-compute the covariance matrix for subsetted data
 VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
 
 
@@ -651,6 +648,7 @@ meta_sa_sex_nointer <- rma.mv(es, VCV_shared_sa,  mod= ~ -1 + poly(c_treattemp, 
                          random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
 
 saveRDS(meta_sa_sex_nointer, here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
+
 } else {
   meta_sa_sex_nointer <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
   sa_rep_sexdata <- readRDS(here("Output", "Output data", "reproduction", "sensitivity_data_rep_sex.rds"))
@@ -658,6 +656,7 @@ saveRDS(meta_sa_sex_nointer, here("Output", "models", "reproduction", "meta_sa_r
 
 ```
 
+The interaction between treatment temperature and sex exposed was no longer significant after removing outliers (Interaction between the quadratic effect of (centered) temperature and sex exposed category, z=`r meta_sa_sex_nointer$zval[6]`, *p*-value = `r p_value(meta_sa_sex_nointer$pval[6])`).
 
 ```{r, tbl-sasex}
 #| label: tbl-sasex
@@ -734,6 +733,8 @@ saveRDS(meta_sa_ls_nointer, here("Output", "models", "reproduction", "meta_sa_re
 
 ```
 
+There was a significant interaction between treatment temperature and life stage even after removing outliers (Interaction between the quadratic effect of (centered) temperature and life stage category, z=`r meta_sa_ls$zval[6]`, *p*-value = `r p_value(meta_sa_ls$pval[6])`).
+
 
 ```{r, tbl-sals}
 #| label: tbl-sals
@@ -792,26 +793,23 @@ saveRDS(meta_trait_treat4, here("Output", "models", "reproduction", "mv_rep_ctem
 meta_trait_treat5 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=5, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 saveRDS(meta_trait_treat5, here("Output", "models", "reproduction", "mv_rep_ctemp5.rds"))
 
-  # treat temp^6 centered
+  # treat temp^6 centered (fails to converge)
 meta_trait_treat6 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=6, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 saveRDS(meta_trait_treat6, here("Output", "models", "reproduction", "mv_rep_ctemp6.rds"))
 
 
-  # treat temp^7 centered
+  # treat temp^7 centered (fails to converge)
 meta_trait_treat7 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=7, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML", verbose=TRUE)
 saveRDS(meta_trait_treat7, here("Output", "models", "reproduction", "mv_rep_ctemp7.rds"))
 
 
-  # treat temp^8 centered
+  # treat temp^8 centered (fails to converge)
 meta_trait_treat8 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=8, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 saveRDS(meta_trait_treat8, here("Output", "models", "reproduction", "mv_rep_ctemp8.rds"))
 
 } else {
   meta_trait_treat4  <- readRDS(here("Output", "models",  "reproduction", "mv_rep_ctemp4.rds"))
   meta_trait_treat5  <- readRDS(here("Output", "models",  "reproduction", "mv_rep_ctemp5.rds"))
-  meta_trait_treat6  <- readRDS(here("Output", "models",  "reproduction", "mv_rep_ctemp6.rds"))
-  meta_trait_treat7  <- readRDS(here("Output", "models",  "reproduction", "mv_rep_ctemp7.rds"))
-  meta_trait_treat8  <- readRDS(here("Output", "models",  "reproduction", "mv_rep_ctemp8.rds"))
 }
 
 
