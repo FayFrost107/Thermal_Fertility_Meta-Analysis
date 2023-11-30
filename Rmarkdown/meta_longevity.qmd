@@ -142,7 +142,7 @@ meta3 <- rma.mv(es, VCV_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1
 
 ### Intercept only model
 
-We found a significant and negative overall mean effect size for longevity (est = `r meta3$b`, 95% CI: `r meta3$ci.lb` to `r meta3$ci.ub`, *p*-value = `r p_value(meta3$pval)`). The estimated I2 for each random effect was I2[Total] = `r i2_ml(meta3, method=c("ratio"))[1]`%, I2[Phylogeny]= `r i2_ml(meta3, method=c("ratio"))[2]`%,  I2[species]= `r i2_ml(meta3, method=c("ratio"))[3]`%, I2[study]=`r i2_ml(meta3, method=c("ratio"))[4]`%, I2[obs]=`r i2_ml(meta3, method=c("ratio"))[5]`%
+At 25C the mean effect size for longevity was significantly negative (est = `r meta3$b`, 95% CI: `r meta3$ci.lb` to `r meta3$ci.ub`, *p*-value = `r p_value(meta3$pval)`). The estimated I2 for each random effect was I2[Total] = `r i2_ml(meta3, method=c("ratio"))[1]`%, I2[Phylogeny]= `r i2_ml(meta3, method=c("ratio"))[2]`%,  I2[species]= `r i2_ml(meta3, method=c("ratio"))[3]`%, I2[study]=`r i2_ml(meta3, method=c("ratio"))[4]`%, I2[obs]=`r i2_ml(meta3, method=c("ratio"))[5]`%
 
 ```{r}
 #| echo: false
@@ -270,7 +270,7 @@ if(rerun){
 
 ```
 
-On average, when considering various taxonomic groups, exposure durations, and life stages, it was observed that temperature had a significant negative cubic impact on the lifespan of individuals, as illustrated in Figure (@fig-treat3). Specifically, cooler temperatures within the range of approximately 10°C to 20°C led to an increase in longevity, while higher temperatures exceeding 25°C were associated with reduced longevity (for detailed estimates, refer to Table @tbl-treat3 ). The inclusion of phylogenetic relatedness did not result in an improved model fit, as evidenced by the change in Akaike Information Criterion (AIC). Consequently, phylogeny was excluded from the model. Nevertheless, it's worth noting that there was a significant level of variability in lifespan responses to temperature, with a total I2 of `r i2_ml(meta_trait_treat3)[1]`%. The effect size at the observation level (ID) accounted for  `r i2_ml(meta_trait_treat3)[3]`% of this variability, while study-level ID contributed to `r i2_ml(meta_trait_treat3)[2]`%. Phylogeny, in contrast, had a negligible impact, explaining less than 0.001% of the variation.
+Across all taxa, longevity exhibited a significant cubic relationship with temperature (QM=`r meta_trait_treat3$QM`, P = `r meta_trait_treat3$QMp`) (@tbl-treat3): longevity peaked around 15°C, and decreased either side of this (@fig-treat3). The inclusion of phylogenetic relatedness did not result in an improved model fit, as evidenced by the change in Akaike Information Criterion (AIC). Consequently, phylogeny was excluded from the model. Nevertheless, it's worth noting that there was a significant level of variability in lifespan responses to temperature, with a total I2 of `r i2_ml(meta_trait_treat3)[1]`%. The effect size at the observation level (ID) accounted for  `r i2_ml(meta_trait_treat3)[3]`% of this variability, while study-level ID contributed to `r i2_ml(meta_trait_treat3)[2]`%. Phylogeny, in contrast, had a negligible impact, explaining less than 0.001% of the variation.
 
 
 ```{r, tbl-treat3}
@@ -368,8 +368,8 @@ if(rerun){
 
 ### sex exposed
 
-We found that the was no significant difference in shape of the response to temperature between studies with both sexes exposed and those with only females exposed to treatments (*p*-value = `r p_value(meta_treat_sex$pval[6])`).   
-
+The relationship between temperature and longevity did not depend on whether both males and females were exposed to experimental temperatures (N= `r length(which(new_data$Sex.exposed == "Both"))` effect sizes), or whether just females were exposed to experimental temperatures (N= `r length(which(new_data$Sex.exposed == "Female"))` effect sizes) (Interaction between the quadratic effect of (centered) temperature and sex exposed category, z=`r meta_treat_sex$zval[8]`, *p*-value = `r p_value(meta_treat_sex$pval[8])`).   
+                                        
 ```{r, tbl-sex}
 #| label: tbl-sex
 #| tbl-cap: Non-linear effects of temperature and sex exposed on mean effect size of longevity
@@ -430,7 +430,7 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = es, col = Sex.exposed)) +
 
 ### life stage of animal
 
-No significant difference between longevity of animal when treat as adults versus treatment at immature stages.  
+The relationship between temperature and reproduction did not depend on whether subjects were exposed as adults only (N= `r length(which(ls_data$Life.stage.of.animal == "Adult"))` effect sizes), or across multiple life stages (N= `r length(which(ls_data$Life.stage.of.animal == "Immature"))`effect sizes) (Interaction between the quadratic effect of (centered) temperature and life stage category, z=`r meta_treat_ls$zval[8]`, *p*-value = `r p_value(meta_treat_ls$pval[8])`), Table (@tbl-ls). 
 
 ```{r, tbl-ls}
 #| label: tbl-ls
@@ -599,6 +599,7 @@ saveRDS(meta_sa_sex_nointer, here("Output", "models", "longevity", "meta_sa_long
 
 ```
 
+The interaction between treatment temperature and sex exposed was also not significant after removing outliers (Interaction between the quadratic effect of (centered) temperature and sex exposed category, z=`r meta_sa_sex$zval[8]`, *p*-value = `r p_value(meta_sa_sex$pval[8])`).
 
 
 ```{r, tbl-sasex}
@@ -679,6 +680,7 @@ saveRDS(meta_sa_ls_nointer, here("Output", "models", "longevity", "meta_sa_long_
 
 ```
 
+The relationship between temperature and reproduction did not depend on life stage category after removing outliers (Interaction between the quadratic effect of (centered) temperature and life stage category, z=`r meta_sa_ls$zval[8]`, *p*-value = `r p_value(meta_sa_ls$pval[8])`), Table (@tbl-sals).
 
 ```{r, tbl-sals}
 #| label: tbl-sals
@@ -713,7 +715,7 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.an
   scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
   scale_linetype_manual(values = c("solid", "dashed")) +
   theme_bw() + 
-    coord_cartesian(ylim = c(-10,1))+
+    coord_cartesian(ylim = c(-7,3))+
   labs(title = "Predicted temperature effect on longevity",
        x = "Observed temperature devaition from 25C",
        y = "Effect size",
@@ -741,12 +743,12 @@ meta_trait_treat6 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=6, r
 saveRDS(meta_trait_treat6, here("Output", "models", "longevity", "mv_rep_ctemp6.rds"))
 
 
-  # treat temp^7 centered
+  # treat temp^7 centered (fails to converge)
 meta_trait_treat7 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=7, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 saveRDS(meta_trait_treat7, here("Output", "models", "longevity", "mv_rep_ctemp7.rds"))
 
 
-  # treat temp^8 centered
+  # treat temp^8 centered (fails to converge)
 meta_trait_treat8 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=8, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 saveRDS(meta_trait_treat8, here("Output", "models", "longevity", "mv_rep_ctemp8.rds"))
 
@@ -754,10 +756,8 @@ saveRDS(meta_trait_treat8, here("Output", "models", "longevity", "mv_rep_ctemp8.
   meta_trait_treat4  <- readRDS(here("Output", "models",  "longevity", "mv_rep_ctemp4.rds"))
   meta_trait_treat5  <- readRDS(here("Output", "models",  "longevity", "mv_rep_ctemp5.rds"))
   meta_trait_treat6  <- readRDS(here("Output", "models",  "longevity", "mv_rep_ctemp6.rds"))
-  meta_trait_treat7  <- readRDS(here("Output", "models",  "longevity", "mv_rep_ctemp7.rds"))
-  meta_trait_treat8  <- readRDS(here("Output", "models",  "longevity", "mv_rep_ctemp8.rds"))
+
 }
 
-r2_ml(meta_trait_treat4)
 
 ```
