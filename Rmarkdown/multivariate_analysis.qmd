@@ -120,7 +120,7 @@ pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR, orch
 #| echo: false
 #| warning: false
 #| include: false
-## Univariate models were found to only need two random effects, obs and study. This greatly simplifies the multivarite model, which can only have two levels anyway. We will save these models because they take quite some time to estimate given how much data is available
+## Univariate models were found to only need two random effects, obs and study. This greatly simplifies the multivariate model, which can only have two levels anyway. We will save these models because they take quite some time to estimate given how much data is available
 rerun = FALSE
 if(rerun){
   mv_mlma_1 <- rma.mv(es ~ outcome - 1, V = V, 
@@ -144,9 +144,9 @@ saveRDS(mv_mlma_2, here("output", "models", "mv_mlma_2.rds"))
 } else {
   mv_mlma_2 <- readRDS(here("output", "models", "mv_mlma_2.rds"))
 }
-# Now lets tri supressing the intercept. This should now estimate the linear effect of temp on each outcome
+# Now lets try suppressing the intercept. This should now estimate the linear effect of temp on each outcome
 mv_mlma_2
-## OUTCOME: This modell tells us that: 1) the overall effects on reproduction vs longevity are significantly different from each other when controlling for treattemp; 2) that the treatment temp effect on longevity is significant and that 3) the treattemp effect on reproduction is signioficantly different than its effect on longevity.
+## OUTCOME: This model tells us that: 1) the overall effects on reproduction vs longevity are significantly different from each other when controlling for treattemp; 2) that the treatment temp effect on longevity is significant and that 3) the treattemp effect on reproduction is significantly different than its effect on longevity.
 
 if(rerun){
 mv_mlma_3 <- rma.mv(es ~ -1 + outcome + outcome:c_treattemp, V = V,    # This should compare whether the linear effect of temperature differs between the two outcomes when we allow for intercept, but without intercept  it will test whether there is a linear effect of temperature on each outcome separately and estimate that effect
@@ -177,7 +177,7 @@ if(rerun2){
 }
   mv_mlma_4
 
-# We can get confidence intervals by profiling the liklihood
+# We can get confidence intervals by profiling the likelihood
   if(rerun2){
   cis_phi <- confint(mv_mlma_3, phi = 1)
   cis_rho <- confint(mv_mlma_3, rho = 1)
@@ -271,27 +271,6 @@ data  %>%  group_by(Experiment.code)  %>% summarise(es_repro = mean(es_reproduct
                     coord_cartesian(xlim=c(-5,5), ylim = c(-5,5)) 
 ```
 
-```{r, fig- scatter raw reproduction es vs longevity es}
-#| fig-cap: Zoomed correlation between reproduction and longevity effect sizes
-
-# Data in wide format
-warm_wide <- subset(data, warm.cool=="Warm")
-cool_wide <- subset(data, warm.cool=="Cool")
-
-# Warm
-plot(warm_wide$es_reproduction, warm_wide$es_longevity, xlim=c(-10,5), ylim=c(-10,5), 
-     xlab="Reproduction effect size", ylab= "Longevity effect size")
-abline(0,1)
-abline(0,0)
-
-# Cool
-plot(cool_wide$es_reproduction, cool_wide$es_longevity, xlim=c(-10,10), ylim=c(-5,10),
-     xlab="Reproduction effect size", ylab= "Longevity effect size")
-abline(0,1)
-abline(0,0)
- 
-```
-
 
 # Sensitivity Analysis 
 This removes the smallest and largest 5% effect sizes (so 10% of the data in total). The plot above shows only the experiments that have outlying effect sizes not the specific effect size itself.
@@ -382,6 +361,15 @@ mv_mlma_split.warm <- rma.mv(es ~ outcome*c_treattemp, V = V_warm,    # This sho
                struc = "UN", data = data_warm, test = "t", dfs = "contain")
 saveRDS(mv_mlma_split.warm, here("output", "models", "mv_mlma_split.warm.rds"))
 
+  if(rerun2){
+  cis_phi_warm <- confint(mv_mlma_split.warm, phi = 1)
+  cis_rho_warm <- confint(mv_mlma_split.warm, rho = 1)
+  write.csv(cis_warm, here("output", "tables", "mv_mlma_split.warm_cis.csv"))
+  } else {
+    cis_warm <- read.csv(here("output", "tables", "mv_mlma_split.warm_cis.csv"))
+  }
+ cis_warm
+
 mv_mlma_split.cool <- rma.mv(es ~ outcome*c_treattemp, V = V_cool,   
                random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code), 
                struc = "UN", data = data_cool, test = "t", dfs = "contain")
@@ -403,7 +391,16 @@ mv_mlma_split.cool_quad <- rma.mv(es ~ outcome*poly(c_treattemp, degree=2, raw=T
 summary(mv_mlma_split.cool_quad)
 saveRDS(mv_mlma_split.cool_quad, here("output", "models", "mv_mlma_split.cool_quad.rds"))
 
+  if(rerun2){
+  cis_phi_cool <- confint(mv_mlma_split.cool, phi = 1)
+  cis_rho_cool <- confint(mv_mlma_split.cool, rho = 1)
+  write.csv(cis_cool, here("output", "tables", "mv_mlma_split.cool_cis.csv"))
+  } else {
+    cis_cool <- read.csv(here("output", "tables", "mv_mlma_split.cool_cis.csv"))
+  }
+ cis_cool
 
+ 
 ### Cubic models
 
 mv_mlma_split.warm_cubic <- rma.mv(es ~ outcome*poly(c_treattemp, degree=3, raw=TRUE), V = V_warm,    
@@ -428,6 +425,29 @@ saveRDS(mv_mlma_split.cool_cubic, here("output", "models", "mv_mlma_split.cool_c
   mv_mlma_split.cool_cubic <- readRDS(here("output", "models", "mv_mlma_split.cool_cubic.rds"))
 }
 ```
+
+
+```{r, fig- between-study correlation for reproduction and longevity- split into warm and cool}
+
+data_warm2 <- subset(data, warm.cool == "Warm")
+data_cool2 <- subset(data, warm.cool == "Cool")
+
+
+#| fig-cap: Zoomed Between study correlation for reproduction and longevity- warm
+data_warm2  %>%  group_by(Experiment.code)  %>% reframe(es_repro = mean(es_reproduction), es_long = mean(es_longevity), mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + 
+                    geom_point(alpha = 1/10) + labs(x = "SMD (Reproduction)", y = "SMD (Longevity)", size =  "Sampling Variance") +
+                    theme_bw() +
+                    coord_cartesian(xlim=c(-5,5), ylim = c(-5,5)) +
+                    labs(title = "Between-study correlation- warm")
+
+#| fig-cap: Zoomed Between study correlation for reproduction and longevity- cool
+data_cool2  %>%  group_by(Experiment.code)  %>% reframe(es_repro = mean(es_reproduction), es_long = mean(es_longevity), mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + 
+                    geom_point(alpha = 1/10) + labs(x = "SMD (Reproduction)", y = "SMD (Longevity)", size =  "Sampling Variance") +
+                    theme_bw() +
+                    coord_cartesian(xlim=c(-5,5), ylim = c(-5,5))+
+                    labs(title = "Between-study correlation- cool")
+```
+
 
 ```{r, fig- prediction intervals for mv_mlma split by warm.cool- linear models}
 
