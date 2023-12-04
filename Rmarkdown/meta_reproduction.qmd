@@ -793,24 +793,56 @@ saveRDS(meta_trait_treat4, here("Output", "models", "reproduction", "mv_rep_ctem
 meta_trait_treat5 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=5, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 saveRDS(meta_trait_treat5, here("Output", "models", "reproduction", "mv_rep_ctemp5.rds"))
 
-  # treat temp^6 centered (fails to converge)
+  # treat temp^6 centered (fails to convergeafter degree 5)
 meta_trait_treat6 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=6, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 saveRDS(meta_trait_treat6, here("Output", "models", "reproduction", "mv_rep_ctemp6.rds"))
 
-
-  # treat temp^7 centered (fails to converge)
-meta_trait_treat7 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=7, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML", verbose=TRUE)
-saveRDS(meta_trait_treat7, here("Output", "models", "reproduction", "mv_rep_ctemp7.rds"))
-
-
-  # treat temp^8 centered (fails to converge)
-meta_trait_treat8 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=8, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
-saveRDS(meta_trait_treat8, here("Output", "models", "reproduction", "mv_rep_ctemp8.rds"))
+  
 
 } else {
   meta_trait_treat4  <- readRDS(here("Output", "models",  "reproduction", "mv_rep_ctemp4.rds"))
   meta_trait_treat5  <- readRDS(here("Output", "models",  "reproduction", "mv_rep_ctemp5.rds"))
 }
+
+
+
+```
+
+
+```{r, fig_rep-degree}
+
+preds.2 <- predict(meta_trait_treat2, addx=TRUE)
+preds.3 <- predict(meta_trait_treat3, addx=TRUE)
+preds.4 <- predict(meta_trait_treat4, addx=TRUE)
+preds.5 <- predict(meta_trait_treat5, addx=TRUE)
+
+ctemp_data <- rdata
+
+ctemp_data$preds.2 <- preds.2$pred  
+ctemp_data$preds.3 <- preds.3$pred  
+ctemp_data$preds.4 <- preds.4$pred  
+ctemp_data$preds.5 <- preds.5$pred  
+
+
+library(ggplot2)
+
+cbp2 <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
+          "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+    
+ggplot(ctemp_data, aes(x = c_treattemp)) +
+  geom_point(aes(y = es, size = v), color="black", fill="white", alpha=1/5, size=2) +
+  geom_line(aes(y = preds.2, color = "2", linetype= "2"), size = 1.5) +
+  geom_line(aes(y = preds.3, color = "3", linetype= "3"), size = 1.5) +
+  geom_line(aes(y = preds.4, color = "4", linetype= "4"), size = 1.5) +
+  geom_line(aes(y = preds.5, color = "5", linetype= "5"), size = 1.5) +
+  labs(title = "Predicted effect size curves for reproduction using different polynomials",
+       x = "Temperature deviation from 25C",
+       y = "Effect size") +
+  theme_minimal() +
+  coord_cartesian(ylim = c(-10, 10)) +
+  scale_color_manual(values = c("2" = cbp2[2], "3" = cbp2[3], "4" = cbp2[4], "5" = cbp2[5]),
+                     name = "Polynomial Degree") +
+  scale_linetype_manual(values = c("solid", "dashed", "dotted", "dotdash"), name = "Polynomial Degree")
 
 
 

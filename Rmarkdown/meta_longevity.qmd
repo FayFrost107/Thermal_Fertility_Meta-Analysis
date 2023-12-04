@@ -761,3 +761,46 @@ saveRDS(meta_trait_treat8, here("Output", "models", "longevity", "mv_rep_ctemp8.
 
 
 ```
+
+
+```{r, fig_long-degree}
+
+preds.2 <- predict(meta_trait_treat2, addx=TRUE)
+preds.3 <- predict(meta_trait_treat3, addx=TRUE)
+preds.4 <- predict(meta_trait_treat4, addx=TRUE)
+preds.5 <- predict(meta_trait_treat5, addx=TRUE)
+preds.6 <- predict(meta_trait_treat6, addx=TRUE)
+
+ctemp_data <- rdata
+
+ctemp_data$preds.2 <- preds.2$pred  
+ctemp_data$preds.3 <- preds.3$pred  
+ctemp_data$preds.4 <- preds.4$pred  
+ctemp_data$preds.5 <- preds.5$pred  
+ctemp_data$preds.6 <- preds.6$pred  
+
+
+library(ggplot2)
+
+cbp2 <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
+          "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+ggplot(ctemp_data, aes(x = c_treattemp)) +
+  geom_point(aes(y = es, size = v), color="black", fill="white", alpha=1/5, size=2) +
+  geom_line(aes(y = preds.2, color = "2", linetype= "2"), size = 1.5) +
+  geom_line(aes(y = preds.3, color = "3", linetype= "3"), size = 1.5) +
+  geom_line(aes(y = preds.4, color = "4", linetype= "4"), size = 1.5) +
+  geom_line(aes(y = preds.5, color = "5", linetype= "5"), size = 1.5) +
+  geom_line(aes(y = preds.6, color = "6", linetype= "6"), size = 1.5) +
+  labs(title = "Predicted effect size curves for longevity using different polynomials",
+       x = "Temperature deviation from 25C",
+       y = "Effect size") +
+  theme_minimal() +
+  coord_cartesian(ylim = c(-10, 10)) +
+  scale_color_manual(values = c("2" = cbp2[2], "3" = cbp2[3], "4" = cbp2[4], "5" = cbp2[5], "6" = cbp2[8]),
+                     name = "Polynomial Degree") +
+  scale_linetype_manual(values = c("solid", "dashed", "dotted", "dotdash", "longdash" ), name = "Polynomial Degree")
+
+
+
+```

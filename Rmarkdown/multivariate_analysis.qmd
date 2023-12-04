@@ -355,74 +355,99 @@ if(rerun){
 
 ### Linear models
   
-mv_mlma_split.warm <- rma.mv(es ~ outcome*c_treattemp, V = V_warm,    # This should compare whether the linear effect of temperature differs between the two outcomes when we allow for intercept, but without intercept  it will test whether there is a linear effect of temperature on each outcome separately and estimate that effect
-               random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
-                             ~outcome - 1 | Paper.code),  # This should estimate a study level random effect for each outcome.
-               struc = "UN", data = data_warm, test = "t", dfs = "contain")
-saveRDS(mv_mlma_split.warm, here("output", "models", "mv_mlma_split.warm.rds"))
+mv_mlma_split.warm <- rma.mv(es ~ outcome*c_treattemp, V = V2_warm,   
+                             random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
+                             struc = "UN", data = data_warm, test = "t", dfs = "contain")
 
-  if(rerun2){
-  cis_phi_warm <- confint(mv_mlma_split.warm, phi = 1)
-  cis_rho_warm <- confint(mv_mlma_split.warm, rho = 1)
+
+
+mv_mlma_split.cool <- rma.mv(es ~ outcome*c_treattemp, V = V2_cool,   
+                             random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code), 
+                             struc = "UN", data = data_cool, test = "t", dfs = "contain")
+
+
+  cis_phi_warm <- as.data.frame(confint(mv_mlma_split.warm, phi = 1))
+  cis_rho_warm <- as.data.frame(confint(mv_mlma_split.warm, rho = 1))
+  cis_warm <- rbind(cis_phi_warm, cis_rho_warm)
+  
+  cis_phi_cool <- as.data.frame(confint(mv_mlma_split.cool, phi = 1))
+  cis_rho_cool <- as.data.frame(confint(mv_mlma_split.cool, rho = 1))
+  cis_cool <- rbind(cis_phi_cool, cis_rho_cool)
+  
+  write.csv(cis_cool, here("output", "tables", "mv_mlma_split.cool_cis.csv"))
   write.csv(cis_warm, here("output", "tables", "mv_mlma_split.warm_cis.csv"))
-  } else {
-    cis_warm <- read.csv(here("output", "tables", "mv_mlma_split.warm_cis.csv"))
-  }
- cis_warm
-
-mv_mlma_split.cool <- rma.mv(es ~ outcome*c_treattemp, V = V_cool,   
-               random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code), 
-               struc = "UN", data = data_cool, test = "t", dfs = "contain")
-saveRDS(mv_mlma_split.cool, here("output", "models", "mv_mlma_split.cool.rds"))
-
+  
 
 ### Quadratic models
 
-mv_mlma_split.warm_quad <- rma.mv(es ~ outcome*poly(c_treattemp, degree=2, raw=TRUE), V = V_warm,    
-                                   random = list(~outcome - 1 | trial,        
-                                                 ~outcome - 1 | Paper.code),  
+mv_mlma_split.warm_quad <- rma.mv(es ~ outcome*poly(c_treattemp, degree=2, raw=TRUE), V = V2_warm,    
+                                   random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),  
                                    struc = "UN", data = data_warm, test = "t", dfs = "contain")
-summary(mv_mlma_split.warm_quad)
-saveRDS(mv_mlma_split.warm_quad, here("output", "models", "mv_mlma_split.warm_quad.rds"))
 
-mv_mlma_split.cool_quad <- rma.mv(es ~ outcome*poly(c_treattemp, degree=2, raw=TRUE), V = V_cool,   
-                                   random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code), 
+mv_mlma_split.cool_quad <- rma.mv(es ~ outcome*poly(c_treattemp, degree=2, raw=TRUE), V = V2_cool,   
+                                   random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
                                    struc = "UN", data = data_cool, test = "t", dfs = "contain")
-summary(mv_mlma_split.cool_quad)
-saveRDS(mv_mlma_split.cool_quad, here("output", "models", "mv_mlma_split.cool_quad.rds"))
 
-  if(rerun2){
-  cis_phi_cool <- confint(mv_mlma_split.cool, phi = 1)
-  cis_rho_cool <- confint(mv_mlma_split.cool, rho = 1)
-  write.csv(cis_cool, here("output", "tables", "mv_mlma_split.cool_cis.csv"))
-  } else {
-    cis_cool <- read.csv(here("output", "tables", "mv_mlma_split.cool_cis.csv"))
-  }
- cis_cool
-
+  cis_phi_warm.q <- as.data.frame(confint(mv_mlma_split.warm_quad, phi = 1))
+  cis_rho_warm.q <- as.data.frame(confint(mv_mlma_split.warm_quad, rho = 1))
+  cis_warm.q <- rbind(cis_phi_warm.q, cis_rho_warm.q)
+  
+  cis_phi_cool.q <- as.data.frame(confint(mv_mlma_split.cool_quad, phi = 1))
+  cis_rho_cool.q <- as.data.frame(confint(mv_mlma_split.cool_quad, rho = 1))
+  cis_cool.q <- rbind(cis_phi_cool.q, cis_rho_cool.q)
+  
+  write.csv(cis_cool.q, here("output", "tables", "mv_mlma_split.cool_cis_quad.csv"))
+  write.csv(cis_warm.q, here("output", "tables", "mv_mlma_split.warm_cis-quad.csv"))
+  
+    
  
 ### Cubic models
 
-mv_mlma_split.warm_cubic <- rma.mv(es ~ outcome*poly(c_treattemp, degree=3, raw=TRUE), V = V_warm,    
-                             random = list(~outcome - 1 | trial,        
-                                           ~outcome - 1 | Paper.code),  
+mv_mlma_split.warm_cubic <- rma.mv(es ~ outcome*poly(c_treattemp, degree=3, raw=TRUE), V = V2_warm,    
+                             random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),  
                              struc = "UN", data = data_warm, test = "t", dfs = "contain")
-summary(mv_mlma_split.warm_cubic)
-saveRDS(mv_mlma_split.warm_cubic, here("output", "models", "mv_mlma_split.warm_cubic.rds"))
 
-mv_mlma_split.cool_cubic <- rma.mv(es ~ outcome*poly(c_treattemp, degree=3, raw=TRUE), V = V_cool,   
+
+mv_mlma_split.cool_cubic <- rma.mv(es ~ outcome*poly(c_treattemp, degree=3, raw=TRUE), V = V2_cool,   
                              random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code), 
                              struc = "UN", data = data_cool, test = "t", dfs = "contain")
-summary(mv_mlma_split.cool_cubic)
-saveRDS(mv_mlma_split.cool_cubic, here("output", "models", "mv_mlma_split.cool_cubic.rds"))
 
+
+  cis_phi_warm.c <- as.data.frame(confint(mv_mlma_split.warm_cubic, phi = 1))
+  cis_rho_warm.c <- as.data.frame(confint(mv_mlma_split.warm_cubic, rho = 1))
+  cis_warm.c <- rbind(cis_phi_warm.c, cis_rho_warm.c)
+  
+  cis_phi_cool.c <- as.data.frame(confint(mv_mlma_split.cool_cubic, phi = 1))
+  cis_rho_cool.c <- as.data.frame(confint(mv_mlma_split.cool_cubic, rho = 1))
+  cis_cool.c <- rbind(cis_phi_cool.c, cis_rho_cool.c)
+  
+  write.csv(cis_cool.c, here("output", "tables", "mv_mlma_split.cool_cis_cubic.csv"))
+  write.csv(cis_warm.c, here("output", "tables", "mv_mlma_split.warm_cis-cubic.csv"))
+  
+   
+
+saveRDS(mv_mlma_split.warm, here("output", "models", "mv_mlma_split.warm.rds"))
+saveRDS(mv_mlma_split.cool, here("output", "models", "mv_mlma_split.cool.rds"))
+saveRDS(mv_mlma_split.warm_quad, here("output", "models", "mv_mlma_split.warm_quad.rds"))
+saveRDS(mv_mlma_split.cool_quad, here("output", "models", "mv_mlma_split.cool_quad.rds"))
+saveRDS(mv_mlma_split.warm_cubic, here("output", "models", "mv_mlma_split.warm_cubic.rds"))
+saveRDS(mv_mlma_split.cool_cubic, here("output", "models", "mv_mlma_split.cool_cubic.rds"))
 } else {
+  #read in models
   mv_mlma_split.warm <- readRDS(here("output", "models", "mv_mlma_split.warm.rds"))
   mv_mlma_split.cool <- readRDS(here("output", "models", "mv_mlma_split.cool.rds"))
   mv_mlma_split.warm_quad <- readRDS(here("output", "models", "mv_mlma_split.warm_quad.rds"))
   mv_mlma_split.cool_quad <- readRDS(here("output", "models", "mv_mlma_split.cool_quad.rds"))
   mv_mlma_split.warm_cubic <- readRDS(here("output", "models", "mv_mlma_split.warm_cubic.rds"))
   mv_mlma_split.cool_cubic <- readRDS(here("output", "models", "mv_mlma_split.cool_cubic.rds"))
+  
+  # read confidence intervals
+  cis_warm <- read.csv(here("output", "tables", "mv_mlma_split.warm_cis.csv"))
+  cis_cool <- read.csv(here("output", "tables", "mv_mlma_split.cool_cis.csv"))
+  cis_warm.q <- read.csv(here("output", "tables", "mv_mlma_split.warm_cis_quad.csv"))
+  cis_cool.q <- read.csv(here("output", "tables", "mv_mlma_split.cool_cis_quad.csv"))
+  cis_warm.c <- read.csv(here("output", "tables", "mv_mlma_split.warm_cis_cubic.csv"))
+  cis_cool.c <- read.csv(here("output", "tables", "mv_mlma_split.cool_cis_cubic.csv"))
 }
 ```
 
