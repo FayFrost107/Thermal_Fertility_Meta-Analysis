@@ -397,7 +397,7 @@ mv_mlma_split.cool_quad <- rma.mv(es ~ outcome*poly(c_treattemp, degree=2, raw=T
   cis_cool.q <- rbind(cis_phi_cool.q, cis_rho_cool.q)
   
   write.csv(cis_cool.q, here("output", "tables", "mv_mlma_split.cool_cis_quad.csv"))
-  write.csv(cis_warm.q, here("output", "tables", "mv_mlma_split.warm_cis-quad.csv"))
+  write.csv(cis_warm.q, here("output", "tables", "mv_mlma_split.warm_cis_quad.csv"))
   
     
  
@@ -422,7 +422,7 @@ mv_mlma_split.cool_cubic <- rma.mv(es ~ outcome*poly(c_treattemp, degree=3, raw=
   cis_cool.c <- rbind(cis_phi_cool.c, cis_rho_cool.c)
   
   write.csv(cis_cool.c, here("output", "tables", "mv_mlma_split.cool_cis_cubic.csv"))
-  write.csv(cis_warm.c, here("output", "tables", "mv_mlma_split.warm_cis-cubic.csv"))
+  write.csv(cis_warm.c, here("output", "tables", "mv_mlma_split.warm_cis_cubic.csv"))
   
    
 
@@ -531,21 +531,18 @@ ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred, col = outcome, line
 
 ```{r, fig- prediction intervals for mv_mlma split by warm.cool- quadratic models}
 
-data_warm <- subset(data_long_final, warm.cool == "Warm")
-data_cool <- subset(data_long_final, warm.cool == "Cool")
-
 # Warm
-preds.mlma.warm <- predict(mv_mlma_split.warm_quad, addx=TRUE)
-mlma_warm_data <- data_warm
+preds.mlma.warm.2 <- predict(mv_mlma_split.warm_quad, addx=TRUE)
 
-mlma_warm_data$pred <- preds.mlma.warm$pred  
-mlma_warm_data$pred.lb <- preds.mlma.warm$pi.lb
-mlma_warm_data$pred.ub <- preds.mlma.warm$pi.ub
-mlma_warm_data$c.lb <- preds.mlma.warm$ci.lb
-mlma_warm_data$c.ub <- preds.mlma.warm$ci.ub
 
-ggplot(data = mlma_warm_data, aes(x = c_treattemp, y = pred, col = outcome, linetype = outcome)) +
-  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = outcome), alpha = 0.15) +
+mlma_warm_data$pred.2 <- preds.mlma.warm.2$pred  
+mlma_warm_data$pred.lb.2 <- preds.mlma.warm.2$pi.lb
+mlma_warm_data$pred.ub.2 <- preds.mlma.warm.2$pi.ub
+mlma_warm_data$c.lb.2 <- preds.mlma.warm.2$ci.lb
+mlma_warm_data$c.ub.2 <- preds.mlma.warm.2$ci.ub
+
+ggplot(data = mlma_warm_data, aes(x = c_treattemp, y = pred.2, col = outcome, linetype = outcome)) +
+  geom_ribbon(aes(ymin = c.lb.2, ymax = c.ub.2, fill = outcome), alpha = 0.15) +
   geom_line() +
   scale_color_manual(values = c("purple", "orange")) +  
   scale_fill_manual(values = c("purple", "orange")) +    
@@ -559,17 +556,16 @@ ggplot(data = mlma_warm_data, aes(x = c_treattemp, y = pred, col = outcome, line
        linetype = "outcome")
 
 # Cool
-preds.mlma.cool <- predict(mv_mlma_split.cool_quad, addx=TRUE)
-mlma_cool_data <- data_cool
+preds.mlma.cool.2 <- predict(mv_mlma_split.cool_quad, addx=TRUE)
 
-mlma_cool_data$pred <- preds.mlma.cool$pred  
-mlma_cool_data$pred.lb <- preds.mlma.cool$pi.lb
-mlma_cool_data$pred.ub <- preds.mlma.cool$pi.ub
-mlma_cool_data$c.lb <- preds.mlma.cool$ci.lb
-mlma_cool_data$c.ub <- preds.mlma.cool$ci.ub
+mlma_cool_data$pred.2 <- preds.mlma.cool.2$pred  
+mlma_cool_data$pred.lb.2 <- preds.mlma.cool.2$pi.lb
+mlma_cool_data$pred.ub.2 <- preds.mlma.cool.2$pi.ub
+mlma_cool_data$c.lb.2 <- preds.mlma.cool.2$ci.lb
+mlma_cool_data$c.ub.2 <- preds.mlma.cool.2$ci.ub
 
-ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred, col = outcome, linetype = outcome)) +
-  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = outcome), alpha = 0.15) +
+ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred.2, col = outcome, linetype = outcome)) +
+  geom_ribbon(aes(ymin = c.lb.2, ymax = c.ub.2, fill = outcome), alpha = 0.15) +
   geom_line() +
   scale_color_manual(values = c("purple", "orange")) +
   scale_fill_manual(values = c("purple", "orange")) + 
@@ -581,4 +577,184 @@ ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred, col = outcome, line
        color = "outcome", 
        fill = "outcome",
        linetype = "outcome") 
+```
+
+
+```{r, fig- prediction intervals for mv_mlma split by warm.cool- cubic models}
+
+# Warm
+preds.mlma.warm.3 <- predict(mv_mlma_split.warm_cubic, addx=TRUE)
+
+
+mlma_warm_data$pred.3 <- preds.mlma.warm.3$pred  
+mlma_warm_data$pred.lb.3 <- preds.mlma.warm.3$pi.lb
+mlma_warm_data$pred.ub.3 <- preds.mlma.warm.3$pi.ub
+mlma_warm_data$c.lb.3 <- preds.mlma.warm.3$ci.lb
+mlma_warm_data$c.ub.3 <- preds.mlma.warm.3$ci.ub
+
+ggplot(data = mlma_warm_data, aes(x = c_treattemp, y = pred.3, col = outcome, linetype = outcome)) +
+  geom_ribbon(aes(ymin = c.lb.3, ymax = c.ub.3, fill = outcome), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  
+  scale_fill_manual(values = c("purple", "orange")) +    
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  theme_bw() + 
+  labs(title = "Predicted temperature effect- warm",
+       x = "Temperature deviation from 25C",
+       y = "Effect size",
+       color = "outcome",
+       fill = "outcome",
+       linetype = "outcome")
+
+# Cool
+preds.mlma.cool.3 <- predict(mv_mlma_split.cool_cubic, addx=TRUE)
+
+
+mlma_cool_data$pred.3 <- preds.mlma.cool.3$pred  
+mlma_cool_data$pred.lb.3 <- preds.mlma.cool.3$pi.lb
+mlma_cool_data$pred.ub.3 <- preds.mlma.cool.3$pi.ub
+mlma_cool_data$c.lb.3 <- preds.mlma.cool.3$ci.lb
+mlma_cool_data$c.ub.3 <- preds.mlma.cool.3$ci.ub
+
+ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred.3, col = outcome, linetype = outcome)) +
+  geom_ribbon(aes(ymin = c.lb.3, ymax = c.ub.3, fill = outcome), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +
+  scale_fill_manual(values = c("purple", "orange")) + 
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  theme_bw() + 
+  labs(title = "Predicted temperature effect- cool",
+       x = "Temperature deviation from 25C",
+       y = "Effect size",
+       color = "outcome", 
+       fill = "outcome",
+       linetype = "outcome") 
+```
+
+
+```{r, plot-highorder-polynomials}
+
+## warm
+
+
+cbp2 <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
+          "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+
+
+ggplot(data = mlma_warm_data, aes(x = c_treattemp)) +
+  geom_line(aes(y = pred.3, linetype = outcome, color = "Cubic"), size = 1.2) +
+  geom_line(aes(y = pred.2, linetype = outcome, color = "Quadratic"), size = 1.2) +
+  geom_line(aes(y = pred, linetype = outcome, color = "Linear"), size = 1.2) +
+  scale_linetype_manual(values = c("solid", "dotted")) +
+  scale_color_manual(values = c(cbp2[2], cbp2[3], cbp2[4])) +
+  theme_bw() + 
+  labs(title = "Predicted temperature effect - warm",
+       x = "Temperature deviation from 25C",
+       y = "Effect size",
+       color = "Polynomial degree", 
+       fill = "Outcome",
+       linetype = "Outcome") +
+  guides(color = guide_legend(title = "Polynomial degree", ncol = 2))
+
+
+## cool
+
+ggplot(data = mlma_cool_data, aes(x = c_treattemp)) +
+  geom_line(aes(y = pred.3, linetype = outcome, color = "Cubic"), size = 1.2) +
+  geom_line(aes(y = pred.2, linetype = outcome, color = "Quadratic"), size = 1.2) +
+  geom_line(aes(y = pred, linetype = outcome, color = "Linear"), size = 1.2) +
+  scale_linetype_manual(values = c("solid", "dotted")) +
+  scale_color_manual(values = c(cbp2[2], cbp2[3], cbp2[4])) +
+  theme_bw() + 
+  labs(title = "Predicted temperature effect - warm",
+       x = "Temperature deviation from 25C",
+       y = "Effect size",
+       color = "Polynomial degree", 
+       fill = "Outcome",
+       linetype = "Outcome") +
+  guides(color = guide_legend(title = "Polynomial degree", ncol = 2))
+
+
+# to add observations  geom_point(aes(y = es, shape = outcome), color = cbp2[1],  size = 1.2) +
+
+### bit messy if you have both outcomes an dpoints on single plot. Maybe split by outcome.
+
+
+## warm rep
+mlma_warm_rep <- subset(mlma_warm_data, outcome == "es_reproduction")
+
+ggplot(data = mlma_warm_rep, aes(x = c_treattemp)) +
+  geom_point(aes(y = es), color = cbp2[1],  size = 1.2) +
+  geom_line(aes(y = pred.3, color = "Cubic"), size = 1.2) +
+  geom_line(aes(y = pred.2,  color = "Quadratic"), size = 1.2) +
+  geom_line(aes(y = pred, color = "Linear"), size = 1.2) +
+  scale_color_manual(values = c(cbp2[2], cbp2[3], cbp2[4])) +
+  theme_bw() + 
+  labs(title = "Predicted temperature effect - warm reproduction",
+       x = "Temperature deviation from 25C",
+       y = "Effect size",
+       color = "Polynomial degree", 
+       fill = "Outcome") +
+  coord_cartesian(ylim=c(-10,10))+
+  guides(color = guide_legend(title = "Polynomial degree", ncol = 2))
+
+
+## warm long
+mlma_warm_long <- subset(mlma_warm_data, outcome == "es_longevity")
+
+ggplot(data = mlma_warm_long, aes(x = c_treattemp)) +
+  geom_point(aes(y = es), color = cbp2[1],  size = 1.2) +
+  geom_line(aes(y = pred.3, color = "Cubic"), size = 1.2) +
+  geom_line(aes(y = pred.2,  color = "Quadratic"), size = 1.2) +
+  geom_line(aes(y = pred, color = "Linear"), size = 1.2) +
+  scale_color_manual(values = c(cbp2[2], cbp2[3], cbp2[4])) +
+  theme_bw() + 
+  labs(title = "Predicted temperature effect - warm longevity",
+       x = "Temperature deviation from 25C",
+       y = "Effect size",
+       color = "Polynomial degree", 
+       fill = "Outcome") +
+  coord_cartesian(ylim=c(-10,10))+
+  guides(color = guide_legend(title = "Polynomial degree", ncol = 2))
+
+
+## cool rep
+mlma_cool_rep <- subset(mlma_cool_data, outcome == "es_reproduction")
+
+ggplot(data = mlma_cool_rep, aes(x = c_treattemp)) +
+  geom_point(aes(y = es), color = cbp2[1],  size = 1.2) +
+  geom_line(aes(y = pred.3, color = "Cubic"), size = 1.2) +
+  geom_line(aes(y = pred.2,  color = "Quadratic"), size = 1.2) +
+  geom_line(aes(y = pred, color = "Linear"), size = 1.2) +
+  scale_color_manual(values = c(cbp2[2], cbp2[3], cbp2[4])) +
+  theme_bw() + 
+  labs(title = "Predicted temperature effect - cool reproduction",
+       x = "Temperature deviation from 25C",
+       y = "Effect size",
+       color = "Polynomial degree", 
+       fill = "Outcome") +
+  coord_cartesian(ylim=c(-10,10))+
+  guides(color = guide_legend(title = "Polynomial degree", ncol = 2))
+
+
+## warm long
+mlma_cool_long <- subset(mlma_cool_data, outcome == "es_longevity")
+
+ggplot(data = mlma_cool_long, aes(x = c_treattemp)) +
+  geom_point(aes(y = es), color = cbp2[1],  size = 1.2) +
+  geom_line(aes(y = pred.3, color = "Cubic"), size = 1.2) +
+  geom_line(aes(y = pred.2,  color = "Quadratic"), size = 1.2) +
+  geom_line(aes(y = pred, color = "Linear"), size = 1.2) +
+  scale_color_manual(values = c(cbp2[2], cbp2[3], cbp2[4])) +
+  theme_bw() + 
+  labs(title = "Predicted temperature effect - cool longevity",
+       x = "Temperature deviation from 25C",
+       y = "Effect size",
+       color = "Polynomial degree", 
+       fill = "Outcome") +
+  coord_cartesian(ylim=c(-10,10))+
+  guides(color = guide_legend(title = "Polynomial degree", ncol = 2))
+
+
 ```
