@@ -424,6 +424,30 @@ mv_mlma_split.cool_cubic <- rma.mv(es ~ outcome*poly(c_treattemp, degree=3, raw=
   write.csv(cis_cool.c, here("output", "tables", "mv_mlma_split.cool_cis_cubic.csv"))
   write.csv(cis_warm.c, here("output", "tables", "mv_mlma_split.warm_cis_cubic.csv"))
   
+  
+### higher order
+   
+mv_mlma_split.warm_4 <- rma.mv(es ~ outcome*poly(c_treattemp, degree=4, raw=TRUE), V = V2_warm,    
+                             random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),  
+                             struc = "UN", data = data_warm, test = "t", dfs = "contain")
+
+
+mv_mlma_split.cool_4 <- rma.mv(es ~ outcome*poly(c_treattemp, degree=4, raw=TRUE), V = V2_cool,   
+                             random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code), 
+                             struc = "UN", data = data_cool, test = "t", dfs = "contain")
+
+
+  cis_phi_warm.4 <- as.data.frame(confint(mv_mlma_split.warm_4, phi = 1))
+  cis_rho_warm.4 <- as.data.frame(confint(mv_mlma_split.warm_4, rho = 1))
+  cis_warm.4 <- rbind(cis_phi_warm.4, cis_rho_warm.4)
+  
+  cis_phi_cool.4 <- as.data.frame(confint(mv_mlma_split.cool_4, phi = 1))
+  cis_rho_cool.4 <- as.data.frame(confint(mv_mlma_split.cool_4, rho = 1))
+  cis_cool.4 <- rbind(cis_phi_cool.4, cis_rho_cool.4)
+  
+  write.csv(cis_cool.4, here("output", "tables", "mv_mlma_split.cool_cis_4.csv"))
+  write.csv(cis_warm.4, here("output", "tables", "mv_mlma_split.warm_cis_4.csv"))
+  
    
 
 saveRDS(mv_mlma_split.warm, here("output", "models", "mv_mlma_split.warm.rds"))
@@ -432,6 +456,8 @@ saveRDS(mv_mlma_split.warm_quad, here("output", "models", "mv_mlma_split.warm_qu
 saveRDS(mv_mlma_split.cool_quad, here("output", "models", "mv_mlma_split.cool_quad.rds"))
 saveRDS(mv_mlma_split.warm_cubic, here("output", "models", "mv_mlma_split.warm_cubic.rds"))
 saveRDS(mv_mlma_split.cool_cubic, here("output", "models", "mv_mlma_split.cool_cubic.rds"))
+saveRDS(mv_mlma_split.warm_4, here("output", "models", "mv_mlma_split.warm_4.rds"))
+saveRDS(mv_mlma_split.cool_4, here("output", "models", "mv_mlma_split.cool_4.rds"))
 } else {
   #read in models
   mv_mlma_split.warm <- readRDS(here("output", "models", "mv_mlma_split.warm.rds"))
@@ -440,14 +466,19 @@ saveRDS(mv_mlma_split.cool_cubic, here("output", "models", "mv_mlma_split.cool_c
   mv_mlma_split.cool_quad <- readRDS(here("output", "models", "mv_mlma_split.cool_quad.rds"))
   mv_mlma_split.warm_cubic <- readRDS(here("output", "models", "mv_mlma_split.warm_cubic.rds"))
   mv_mlma_split.cool_cubic <- readRDS(here("output", "models", "mv_mlma_split.cool_cubic.rds"))
+  mv_mlma_split.warm_4 <- readRDS(here("output", "models", "mv_mlma_split.warm_4rds"))
+  mv_mlma_split.cool_4 <- readRDS(here("output", "models", "mv_mlma_split.cool_4.rds"))
+  
   
   # read confidence intervals
   cis_warm <- read.csv(here("output", "tables", "mv_mlma_split.warm_cis.csv"))
   cis_cool <- read.csv(here("output", "tables", "mv_mlma_split.cool_cis.csv"))
   cis_warm.q <- read.csv(here("output", "tables", "mv_mlma_split.warm_cis_quad.csv"))
   cis_cool.q <- read.csv(here("output", "tables", "mv_mlma_split.cool_cis_quad.csv"))
-  cis_warm.c <- read.csv(here("output", "tables", "mv_mlma_split.warm_cis_cubic.csv"))
   cis_cool.c <- read.csv(here("output", "tables", "mv_mlma_split.cool_cis_cubic.csv"))
+  cis_warm.c <- read.csv(here("output", "tables", "mv_mlma_split.warm_cis_cubic.csv"))
+  cis_cool.4 <- read.csv(here("output", "tables", "mv_mlma_split.cool_cis_4.csv"))
+  cis_warm.4 <- read.csv(here("output", "tables", "mv_mlma_split.warm_cis_4.csv"))
 }
 ```
 
@@ -631,17 +662,35 @@ ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred.3, col = outcome, li
        linetype = "outcome") 
 ```
 
-
 ```{r, plot-highorder-polynomials}
 
-## warm
+# predicitons for higher order polys (>3)
 
 
+# warm 4
+preds.mlma.warm.4 <- predict(mv_mlma_split.warm_4, addx=TRUE)
+
+mlma_warm_data$pred.4 <- preds.mlma.warm.4$pred  
+mlma_warm_data$pred.lb.4 <- preds.mlma.warm.4$pi.lb
+mlma_warm_data$pred.ub.4 <- preds.mlma.warm.4$pi.ub
+mlma_warm_data$c.lb.4 <- preds.mlma.warm.4$ci.lb
+mlma_warm_data$c.ub.4 <- preds.mlma.warm.4$ci.ub
+
+#cool 4
+preds.mlma.cool.4 <- predict(mv_mlma_split.cool_4, addx=TRUE)
+
+mlma_cool_data$pred.4 <- preds.mlma.cool.4$pred  
+mlma_cool_data$pred.lb.4 <- preds.mlma.cool.4$pi.lb
+mlma_cool_data$pred.ub.4 <- preds.mlma.cool.4$pi.ub
+mlma_cool_data$c.lb.4 <- preds.mlma.cool.4$ci.lb
+mlma_cool_data$c.ub.4 <- preds.mlma.cool.4$ci.ub
+
+# colour pallette
 cbp2 <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
           "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 
-
+## warm (all lines)
 ggplot(data = mlma_warm_data, aes(x = c_treattemp)) +
   geom_line(aes(y = pred.3, linetype = outcome, color = "Cubic"), size = 1.2) +
   geom_line(aes(y = pred.2, linetype = outcome, color = "Quadratic"), size = 1.2) +
@@ -658,7 +707,7 @@ ggplot(data = mlma_warm_data, aes(x = c_treattemp)) +
   guides(color = guide_legend(title = "Polynomial degree", ncol = 2))
 
 
-## cool
+## cool (all lines)
 
 ggplot(data = mlma_cool_data, aes(x = c_treattemp)) +
   geom_line(aes(y = pred.3, linetype = outcome, color = "Cubic"), size = 1.2) +
@@ -678,7 +727,7 @@ ggplot(data = mlma_cool_data, aes(x = c_treattemp)) +
 
 # to add observations  geom_point(aes(y = es, shape = outcome), color = cbp2[1],  size = 1.2) +
 
-### bit messy if you have both outcomes an dpoints on single plot. Maybe split by outcome.
+### bit messy if you have both outcomes and points on single plot. Maybe split by outcome.
 
 
 ## warm rep
@@ -686,10 +735,11 @@ mlma_warm_rep <- subset(mlma_warm_data, outcome == "es_reproduction")
 
 ggplot(data = mlma_warm_rep, aes(x = c_treattemp)) +
   geom_point(aes(y = es), color = cbp2[1],  size = 1.2) +
+  geom_line(aes(y = pred.4, color = "Degree 4"), size = 1.2) +
   geom_line(aes(y = pred.3, color = "Cubic"), size = 1.2) +
   geom_line(aes(y = pred.2,  color = "Quadratic"), size = 1.2) +
   geom_line(aes(y = pred, color = "Linear"), size = 1.2) +
-  scale_color_manual(values = c(cbp2[2], cbp2[3], cbp2[4])) +
+  scale_color_manual(values = c(cbp2[2], cbp2[3], cbp2[4], cbp2[5])) +
   theme_bw() + 
   labs(title = "Predicted temperature effect - warm reproduction",
        x = "Temperature deviation from 25C",
@@ -705,10 +755,11 @@ mlma_warm_long <- subset(mlma_warm_data, outcome == "es_longevity")
 
 ggplot(data = mlma_warm_long, aes(x = c_treattemp)) +
   geom_point(aes(y = es), color = cbp2[1],  size = 1.2) +
+  geom_line(aes(y = pred.4, color = "Degree 4"), size = 1.2) +
   geom_line(aes(y = pred.3, color = "Cubic"), size = 1.2) +
   geom_line(aes(y = pred.2,  color = "Quadratic"), size = 1.2) +
   geom_line(aes(y = pred, color = "Linear"), size = 1.2) +
-  scale_color_manual(values = c(cbp2[2], cbp2[3], cbp2[4])) +
+  scale_color_manual(values = c(cbp2[2], cbp2[3], cbp2[4], cbp2[5])) +
   theme_bw() + 
   labs(title = "Predicted temperature effect - warm longevity",
        x = "Temperature deviation from 25C",
@@ -724,10 +775,11 @@ mlma_cool_rep <- subset(mlma_cool_data, outcome == "es_reproduction")
 
 ggplot(data = mlma_cool_rep, aes(x = c_treattemp)) +
   geom_point(aes(y = es), color = cbp2[1],  size = 1.2) +
+  geom_line(aes(y = pred.4, color = "Degree 4"), size = 1.2) +
   geom_line(aes(y = pred.3, color = "Cubic"), size = 1.2) +
   geom_line(aes(y = pred.2,  color = "Quadratic"), size = 1.2) +
   geom_line(aes(y = pred, color = "Linear"), size = 1.2) +
-  scale_color_manual(values = c(cbp2[2], cbp2[3], cbp2[4])) +
+  scale_color_manual(values = c(cbp2[2], cbp2[3], cbp2[4], cbp2[5])) +
   theme_bw() + 
   labs(title = "Predicted temperature effect - cool reproduction",
        x = "Temperature deviation from 25C",
@@ -743,10 +795,11 @@ mlma_cool_long <- subset(mlma_cool_data, outcome == "es_longevity")
 
 ggplot(data = mlma_cool_long, aes(x = c_treattemp)) +
   geom_point(aes(y = es), color = cbp2[1],  size = 1.2) +
+  geom_line(aes(y = pred.4, color = "Degree 4"), size = 1.2) +
   geom_line(aes(y = pred.3, color = "Cubic"), size = 1.2) +
   geom_line(aes(y = pred.2,  color = "Quadratic"), size = 1.2) +
   geom_line(aes(y = pred, color = "Linear"), size = 1.2) +
-  scale_color_manual(values = c(cbp2[2], cbp2[3], cbp2[4])) +
+  scale_color_manual(values = c(cbp2[2], cbp2[3], cbp2[4], cbp2[5])) +
   theme_bw() + 
   labs(title = "Predicted temperature effect - cool longevity",
        x = "Temperature deviation from 25C",
