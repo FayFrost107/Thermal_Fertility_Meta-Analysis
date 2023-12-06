@@ -1,12 +1,12 @@
 # Read in data and models
 
 ## Longevity 
-mv_long<- readRDS(here("output", "models", "meta_longevity_3.rds"))
-long_data <- readRDS(here("output", "Output data", "long_data.rds"))
+mv_long<- readRDS(here("output", "models", "longevity", "mv_long_ctemp3.rds"))
+long_data <- readRDS(here("output", "Output data", "longevity", "data_full_longevity.rds"))
 
 ## Reproduction
-mv_rep <- readRDS(here("output", "models", "meta_rep_2.rds")) 
-rep_data <- readRDS(here("output", "Output data", "rep_data.rds"))
+mv_rep <- readRDS(here("output", "models", "reproduction", "mv_rep_ctemp2.rds")) 
+rep_data <- readRDS(here("output", "Output data", "reproduction", "data_full_rep.rds"))
 
 # Make predicitons
 preds.long <- predict(mv_long,addx=TRUE)
@@ -66,11 +66,14 @@ ggplot(data = mvs_data, aes(x = c_treattemp, y = pred, col= outcome)) +
 ggplot(data = mvs_data, aes(x = c_treattemp, y = pred, col= outcome)) +
   geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill=outcome), alpha=0.25) +
   geom_line() +
-  geom_point() +
   theme_bw() + 
-  labs(title = "Confidence Interval Plot",
-       x = "X-axis Label",
-       y = "Y-axis Label")
+  scale_color_manual(name = "Trait", labels = c("Longevity", "Reproduciton"), values = c("red", "blue"))+
+  scale_fill_manual(name = "Trait", labels = c("Longevity", "Reproduciton"), values = c("red", "blue"))+
+  labs(title = "Multivarate analysis: predictions",
+       x = "Temperature deviation from 25C",
+       y = "Effect size",
+       color = "Trait",  # Set the title of the color legend
+       fill = "Trait")
 
 
 ### prediciton intervals for sex exposed (reproduction)

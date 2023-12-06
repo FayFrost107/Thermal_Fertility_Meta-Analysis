@@ -83,7 +83,7 @@ phylo_matrix <- vcv(tree_grafen, cor=TRUE, model="Brownian") # Make phylogenetic
 # use a randomization approach to deal with polytomies. 
 # Could this this approach or another detailed here: https://search.r-project.org/CRAN/refmans/RRphylo/html/fix.poly.html
 
-
+saveRDS(rdata, here("Output", "Output data", "reproduction", "data_full_rep.rds"))
 ```
 
 

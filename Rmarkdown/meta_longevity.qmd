@@ -82,7 +82,7 @@ phylo_matrix <- vcv(tree_grafen, cor=TRUE, model="Brownian") # Make phylogenetic
 # use a randomization approach to deal with polytomies. 
 # Could this this approach or another detailed here: https://search.r-project.org/CRAN/refmans/RRphylo/html/fix.poly.html
 
-
+saveRDS(rdata, here("Output", "Output data", "longevity", "data_full_longevity.rds"))
 ```
 
 
@@ -288,7 +288,7 @@ flextable(table)
 #| label: fig-treat3
 #| fig-cap: Bubble plot of effect size of longevity when controlling for temperature. 
 p <- bubble_plot(meta_trait_treat3, mod = "c_treattemp", group="study_code")
-p+coord_cartesian(ylim=c(-10,10)) + labs(x = "Temperature deviation from 25")
+p+coord_cartesian(ylim=c(-10,10)) + labs(x = "Temperature deviation from 25C")
 ```
 
 # How does sex exposed and life stage of exposure effect longevity?

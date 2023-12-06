@@ -466,7 +466,7 @@ saveRDS(mv_mlma_split.cool_4, here("output", "models", "mv_mlma_split.cool_4.rds
   mv_mlma_split.cool_quad <- readRDS(here("output", "models", "mv_mlma_split.cool_quad.rds"))
   mv_mlma_split.warm_cubic <- readRDS(here("output", "models", "mv_mlma_split.warm_cubic.rds"))
   mv_mlma_split.cool_cubic <- readRDS(here("output", "models", "mv_mlma_split.cool_cubic.rds"))
-  mv_mlma_split.warm_4 <- readRDS(here("output", "models", "mv_mlma_split.warm_4rds"))
+  mv_mlma_split.warm_4 <- readRDS(here("output", "models", "mv_mlma_split.warm_4.rds"))
   mv_mlma_split.cool_4 <- readRDS(here("output", "models", "mv_mlma_split.cool_4.rds"))
   
   
@@ -523,16 +523,16 @@ mlma_warm_data$c.ub <- preds.mlma.warm$ci.ub
 ggplot(data = mlma_warm_data, aes(x = c_treattemp, y = pred, col = outcome, linetype = outcome)) +
   geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = outcome), alpha = 0.15) +
   geom_line() +
-  scale_color_manual(values = c("purple", "orange")) +  
-  scale_fill_manual(values = c("purple", "orange")) +    
-  scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_color_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) +
+  scale_fill_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) + 
+  scale_linetype_manual(values = c("solid", "dashed"), labels = c("Longevity", "Reproduciton"), name="Trait") +
   theme_bw() + 
   labs(title = "Predicted temperature effect- warm",
        x = "Temperature deviation from 25C",
        y = "Effect size",
-       color = "outcome",
-       fill = "outcome",
-       linetype = "outcome")
+       color = "Trait",
+       fill = "Trait",
+       linetype = "Trait")
 
 # Cool
 preds.mlma.cool <- predict(mv_mlma_split.cool, addx=TRUE)
@@ -547,16 +547,16 @@ mlma_cool_data$c.ub <- preds.mlma.cool$ci.ub
 ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred, col = outcome, linetype = outcome)) +
   geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = outcome), alpha = 0.15) +
   geom_line() +
-  scale_color_manual(values = c("purple", "orange")) +
-  scale_fill_manual(values = c("purple", "orange")) + 
-  scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_color_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) +
+  scale_fill_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) + 
+  scale_linetype_manual(values = c("solid", "dashed"), labels = c("Longevity", "Reproduciton"), name="Trait") +
   theme_bw() + 
   labs(title = "Predicted temperature effect- cool",
        x = "Temperature deviation from 25C",
        y = "Effect size",
-       color = "outcome", 
-       fill = "outcome",
-       linetype = "outcome") 
+       color = "Trait", 
+       fill = "Trait",
+       linetype = "Trait") 
 ```
 
 
@@ -575,16 +575,16 @@ mlma_warm_data$c.ub.2 <- preds.mlma.warm.2$ci.ub
 ggplot(data = mlma_warm_data, aes(x = c_treattemp, y = pred.2, col = outcome, linetype = outcome)) +
   geom_ribbon(aes(ymin = c.lb.2, ymax = c.ub.2, fill = outcome), alpha = 0.15) +
   geom_line() +
-  scale_color_manual(values = c("purple", "orange")) +  
-  scale_fill_manual(values = c("purple", "orange")) +    
-  scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_color_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) +
+  scale_fill_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) + 
+  scale_linetype_manual(values = c("solid", "dashed"), labels = c("Longevity", "Reproduciton"), name="Trait") +
   theme_bw() + 
   labs(title = "Predicted temperature effect- warm",
        x = "Temperature deviation from 25C",
        y = "Effect size",
-       color = "outcome",
-       fill = "outcome",
-       linetype = "outcome")
+       color = "Trait", 
+       fill = "Trait",
+       linetype = "Trait") 
 
 # Cool
 preds.mlma.cool.2 <- predict(mv_mlma_split.cool_quad, addx=TRUE)
@@ -598,16 +598,16 @@ mlma_cool_data$c.ub.2 <- preds.mlma.cool.2$ci.ub
 ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred.2, col = outcome, linetype = outcome)) +
   geom_ribbon(aes(ymin = c.lb.2, ymax = c.ub.2, fill = outcome), alpha = 0.15) +
   geom_line() +
-  scale_color_manual(values = c("purple", "orange")) +
-  scale_fill_manual(values = c("purple", "orange")) + 
-  scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_color_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) +
+  scale_fill_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) + 
+  scale_linetype_manual(values = c("solid", "dashed"), labels = c("Longevity", "Reproduciton"), name="Trait") +
   theme_bw() + 
   labs(title = "Predicted temperature effect- cool",
        x = "Temperature deviation from 25C",
        y = "Effect size",
-       color = "outcome", 
-       fill = "outcome",
-       linetype = "outcome") 
+       color = "Trait", 
+       fill = "Trait",
+       linetype = "Trait") 
 ```
 
 
