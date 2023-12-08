@@ -499,11 +499,11 @@ saveRDS(meta_year, here("Output", "models", "reproduction", "meta_rep_year.rds")
 
 
 # Sensitivty Analysis
-# Preform a sensitivity analysis by removing the smallest and largest 2.5% of effect sizes.
+# Preform a sensitivity analysis by removing the smallest and largest 5% of effect sizes.
 
 
-minq <- quantile(rdata$es, 0.025)
-maxq <- quantile(rdata$es, 0.975)
+minq <- quantile(rdata$es, 0.05)
+maxq <- quantile(rdata$es, 0.95)
 
 sdata <- subset(rdata, es > minq & es < maxq)
 saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep.rds"))
@@ -527,13 +527,7 @@ saveRDS(meta_sa_treat2, here("Output", "models", "reproduction", "meta_sa_ctemp2
 }
 
 
-## Now we completely remove any study that has an effect size in the highest or lowest 2.5%. 
 
-#remove_min <- unique(rdata$Paper.code[which(rdata$es < minq)])
-#remove_max <- unique(rdata$Paper.code[which(rdata$es > maxq)])
-#remove <- union(remove_min, remove_max)
-#subdata <- rdata[!(rdata$Paper.code %in% remove), ]
-#VCV_shared_subdata <- impute_covariance_matrix(vi=subdata$v, cluster = subdata$shared_control, r=0.5)
 ```
 
 We found no significant effect of year on effect suggesting that there was no presence of publication bias (*p*-value = `r meta_year$pval[2]`)
@@ -560,7 +554,7 @@ q+ coord_cartesian(ylim=c(-20,10))
 
 ```{r, tbl-sactemp}
 #| label: tbl-sactemp
-#| tbl-cap: Non-linear effects of temperature on mean effect size of reproduction having removed 5% of the most extreme effect sizes. 
+#| tbl-cap: Non-linear effects of temperature on mean effect size of reproduction having removed 10% of the most extreme effect sizes. 
 table <- data.frame(Parameters = c("Reproduction (mean)", "Linear Treatment Temperature (centered) - Reproduction","Quadratic Treatment Temperature (centered) - Reproduction"),
                     Est. = round(meta_sa_treat2$b, 4),
                     `L 95% CI` = round(meta_sa_treat2$ci.lb, 4),
@@ -630,8 +624,8 @@ p +
 #| include: false
 
 if(rerun){
-minq <- quantile(new_data$es, 0.025)   
-maxq <- quantile(new_data$es, 0.975)
+minq <- quantile(new_data$es, 0.05)   
+maxq <- quantile(new_data$es, 0.95)
 
 sdata <- subset(new_data, es > minq & es < maxq)
 saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep_sex.rds"))
@@ -708,8 +702,8 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, li
 #| include: false
 
 if(rerun){
-minq <- quantile(ls_data$es, 0.025)   
-maxq <- quantile(ls_data$es, 0.975)
+minq <- quantile(ls_data$es, 0.05)   
+maxq <- quantile(ls_data$es, 0.95)
 
 sdata <- subset(ls_data, es > minq & es < maxq)
 saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep_ls.rds"))
@@ -738,7 +732,7 @@ There was a significant interaction between treatment temperature and life stage
 
 ```{r, tbl-sals}
 #| label: tbl-sals
-#| tbl-cap: Non-linear effects of temperature and life stageo animal on mean effect size of reproduction after removing the 5% most extreme effect sizes.
+#| tbl-cap: Non-linear effects of temperature and life stageo animal on mean effect size of reproduction after removing the 10% most extreme effect sizes.
 table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Adult","Quadratic Treatment Temperature (centered) - Adult", "Adult (mean)", "Immature (mean)", "Treatment Temperature (centered) - Immature","Quadratic Treatment Temperature (centered) - Immature"),
                     Est. = round(meta_sa_ls$b, 4),
                     `L 95% CI` = round(meta_sa_ls$ci.lb, 4),

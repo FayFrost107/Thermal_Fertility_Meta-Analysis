@@ -514,8 +514,8 @@ saveRDS(meta_year, here("Output", "models", "longevity", "meta_long_year.rds"))
 # Preform a sensitivity analysis by removing the smallest and largest 2.5% of effect sizes.
 
 
-minq <- quantile(rdata$es, 0.025)
-maxq <- quantile(rdata$es, 0.975)
+minq <- quantile(rdata$es, 0.05)
+maxq <- quantile(rdata$es, 0.95)
 
 sdata <- subset(rdata, es > minq & es < maxq)
 saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long.rds"))
@@ -555,7 +555,7 @@ q+ coord_cartesian(ylim=c(-20,10))
 
 ```{r, tbl-sactemp}
 #| label: tbl-sactemp
-#| tbl-cap: Non-linear effects of temperature on mean effect size of longevity having removed 5% of the most extreme effect sizes. 
+#| tbl-cap: Non-linear effects of temperature on mean effect size of longevity having removed 10% of the most extreme effect sizes. 
 table <- data.frame(Parameters = c("Longevity (mean)", "Linear Treatment Temperature (centered) - Longevity","Quadratic Treatment Temperature (centered) - Longevity", "Cubic Treatment Temperature (centered) - Longevity" ),
                     Est. = round(meta_sa_treat3$b, 4),
                     `L 95% CI` = round(meta_sa_treat3$ci.lb, 4),
@@ -574,8 +574,8 @@ flextable(table)
 #| include: false
 
 if(rerun){
-minq <- quantile(new_data$es, 0.025)   
-maxq <- quantile(new_data$es, 0.975)
+minq <- quantile(new_data$es, 0.05)   
+maxq <- quantile(new_data$es, 0.95)
 
 sdata <- subset(new_data, es > minq & es < maxq)
 saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long_sex.rds"))
@@ -604,7 +604,7 @@ The interaction between treatment temperature and sex exposed was also not signi
 
 ```{r, tbl-sasex}
 #| label: tbl-sasex
-#| tbl-cap: Non-linear effects of temperature and sex exposed on mean effect size of longevity with 5% most extreme effect sizes removed. 
+#| tbl-cap: Non-linear effects of temperature and sex exposed on mean effect size of longevity with 10% most extreme effect sizes removed. 
 table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Both","Quadratic Treatment Temperature (centered) - Both", "Cubic Treatment Temperature (centered) - Both", "Both (mean)", "Females only (mean)", "Treatment Temperature (centered) - Females only","Quadratic Treatment Temperature (centered) - Females only", "Cubic Treatment Temperature (centered) - Females only"),
                     Est. = round(meta_sa_sex$b, 4),
                     `L 95% CI` = round(meta_sa_sex$ci.lb, 4),
@@ -655,8 +655,8 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, li
 #| include: false
 
 if(rerun){
-minq <- quantile(ls_data$es, 0.025)   
-maxq <- quantile(ls_data$es, 0.975)
+minq <- quantile(ls_data$es, 0.05)   
+maxq <- quantile(ls_data$es, 0.95)
 
 sdata <- subset(ls_data, es > minq & es < maxq)
 saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long_ls.rds"))
@@ -684,7 +684,7 @@ The relationship between temperature and reproduction did not depend on life sta
 
 ```{r, tbl-sals}
 #| label: tbl-sals
-#| tbl-cap: Non-linear effects of temperature and life stageo animal on mean effect size of longevity after removing the 5% most extreme effect sizes.
+#| tbl-cap: Non-linear effects of temperature and life stageo animal on mean effect size of longevity after removing the 10% most extreme effect sizes.
 table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Adult","Quadratic Treatment Temperature (centered) - Adult", "Cubic Treatment Temperature (centered) - Adult",  "Adult (mean)", "Immature (mean)", "Treatment Temperature (centered) - Immature","Quadratic Treatment Temperature (centered) - Immature", "Cubic Treatment Temperature (centered) - Adult"),
                     Est. = round(meta_sa_ls$b, 4),
                     `L 95% CI` = round(meta_sa_ls$ci.lb, 4),
