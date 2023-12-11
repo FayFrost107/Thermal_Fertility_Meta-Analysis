@@ -493,7 +493,7 @@ data_cool2 <- subset(data, warm.cool == "Cool")
 data_warm2  %>%  group_by(Experiment.code)  %>% reframe(es_repro = mean(es_reproduction), es_long = mean(es_longevity), mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + 
                     geom_point(alpha = 1/10) + labs(x = "SMD (Reproduction)", y = "SMD (Longevity)", size =  "Sampling Variance") +
                     theme_bw() +
-                    coord_cartesian(xlim=c(-5,5), ylim = c(-5,5)) +
+                    coord_cartesian(xlim=c(-5,2.5), ylim = c(-5,2.5)) +
                     labs(title = "Between-study correlation- warm")
 
 #| fig-cap: Zoomed Between study correlation for reproduction and longevity- cool
