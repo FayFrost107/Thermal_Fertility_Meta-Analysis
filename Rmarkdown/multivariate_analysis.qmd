@@ -355,13 +355,20 @@ if(rerun){
 
 ### Linear models
   
+## used for contrasts
 mv_mlma_split.warm <- rma.mv(es ~ outcome*c_treattemp, V = V2_warm,   
                              random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
                              struc = "UN", data = data_warm, test = "t", dfs = "contain")
 
+## used for tvalues, pvalues and constrasts
 mv_mlma_split.warm.inter <- rma.mv(es ~ -1 + outcome*c_treattemp, V = V2_warm,   
                              random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
                              struc = "UN", data = data_warm, test = "t", dfs = "contain")
+
+## reported table for actual estimates
+mv_mlma_split.warm.report <- rma.mv(es ~ -1 + outcome + outcome:c_treattemp, V = V2_warm,   
+                                   random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
+                                   struc = "UN", data = data_warm, test = "t", dfs = "contain")
 
 
 mv_mlma_split.cool <- rma.mv(es ~ outcome*c_treattemp, V = V2_cool,   
@@ -460,6 +467,7 @@ mv_mlma_split.cool_4 <- rma.mv(es ~ outcome*poly(c_treattemp, degree=4, raw=TRUE
 
 saveRDS(mv_mlma_split.warm, here("output", "models", "mv_mlma_split.warm.rds"))
 saveRDS(mv_mlma_split.warm.inter, here("output", "models", "mv_mlma_split.warm.inter.rds"))
+saveRDS(mv_mlma_split.warm.report, here("output", "models", "mv_mlma_split.warm.report.rds"))
 saveRDS(mv_mlma_split.cool, here("output", "models", "mv_mlma_split.cool.rds"))
 saveRDS(mv_mlma_split.cool_quad.inter, here("output", "models", "mv_mlma_split.cool_quad.inter.rds"))
 saveRDS(mv_mlma_split.warm_quad, here("output", "models", "mv_mlma_split.warm_quad.rds"))
@@ -471,7 +479,8 @@ saveRDS(mv_mlma_split.cool_4, here("output", "models", "mv_mlma_split.cool_4.rds
 } else {
   #read in models
   mv_mlma_split.warm <- readRDS(here("output", "models", "mv_mlma_split.warm.rds"))
-  mv_mlma_split.warm.inter <- readRDS(here("output", "models", "mv_mlma_split.warm.inter.rds")) ## reported
+  mv_mlma_split.warm.inter <- readRDS(here("output", "models", "mv_mlma_split.warm.inter.rds")) 
+  mv_mlma_split.warm.report <- readRDS(here("output", "models", "mv_mlma_split.warm.report.rds")) ## reported table
   mv_mlma_split.cool <- readRDS(here("output", "models", "mv_mlma_split.cool.rds"))
   mv_mlma_split.cool_quad.inter <- readRDS(here("output", "models", "mv_mlma_split.cool_quad.inter.rds")) ## reported
   mv_mlma_split.warm_quad <- readRDS(here("output", "models", "mv_mlma_split.warm_quad.rds"))
@@ -495,20 +504,24 @@ saveRDS(mv_mlma_split.cool_4, here("output", "models", "mv_mlma_split.cool_4.rds
 ```
 
 
-```{r, tbl-warm.lin}
-#| label: tbl-warm.lin
+Reproductive traits were more strongly impacted by increased temperature changes than adult lifespan when controlling for temperature (contrast = `r mv_mlma_split.warm$b[4]`, 95% CI: `r mv_mlma_split.warm$ci.lb[4]` to `r mv_mlma_split.warm$ci.ub[4]`, df = `r mv_mlma_split.warm$ddf[4]`, *t*-value = `r mv_mlma_split.warm$zval[4]`,  *p*-value = `r p_value(mv_mlma_split.warm$pval[4])`). 
+
+```{r, tbl-warm-lin}
+#| label: tbl-warm-lin
 #| tbl-cap: Linear effects of temperature on mean effect size for longevity and reproduction when treatment temperatures are warmer than reference temperatures.
 table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction"),
-                    Est. = round(mv_mlma_split.warm.inter$b, 4),
-                    `L 95% CI` = round(mv_mlma_split.warm.inter$ci.lb, 4),
-                    `U 95% CI` = round(mv_mlma_split.warm.inter$ci.ub, 4),
-                    `df` = round(mv_mlma_split.warm.inter$ddf,2),
-                    `p-value` = sapply(round(mv_mlma_split.warm.inter$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+                    Est. = round(mv_mlma_split.warm.report$b, 4),
+                    `L 95% CI` = round(mv_mlma_split.warm.report$ci.lb, 4),
+                    `U 95% CI` = round(mv_mlma_split.warm.report$ci.ub, 4),
+                    `df` = round(mv_mlma_split.warm.report$ddf,2),
+                    `p-value` = sapply(round(mv_mlma_split.warm.report$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
 flextable(table)
 ```
 
-```{r, tbl-cool.quad}
-#| label: tbl-cool.quad
+
+
+```{r, tbl-cool-quad}
+#| label: tbl-cool-quad
 #| tbl-cap: Quadratic effects of temperature on mean effect size for longevity and reproduction when treatment temperatures are cooler than reference temperatures.
 table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "Linear Treatment Temperature (centered) - Longevity",  "Quadratic Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction",  "Quadratic Treatment Temperature (centered) - Reproduction"),
                     Est. = round(mv_mlma_split.cool_quad.inter$b, 4),
