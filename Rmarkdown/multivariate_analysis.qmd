@@ -394,12 +394,19 @@ mv_mlma_split.warm_quad <- rma.mv(es ~ outcome*poly(c_treattemp, degree=2, raw=T
                                    random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),  
                                    struc = "UN", data = data_warm, test = "t", dfs = "contain")
 
+# for contrasts
 mv_mlma_split.cool_quad <- rma.mv(es ~ outcome*poly(c_treattemp, degree=2, raw=TRUE), V = V2_cool,   
                                    random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
                                    struc = "UN", data = data_cool, test = "t", dfs = "contain")
 
-# intercept cool model
+# For tvalues and pvalues of absolute values of intercepts
 mv_mlma_split.cool_quad.inter <- rma.mv(es ~ -1 + outcome*poly(c_treattemp, degree=2, raw=TRUE), V = V2_cool,   
+                                   random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
+                                   struc = "UN", data = data_cool, test = "t", dfs = "contain")
+
+
+# for reported table (absolute values), for absolute values of nonlinear terms
+mv_mlma_split.cool_quad.report <- rma.mv(es ~ -1 + outcome:poly(c_treattemp, degree=2, raw=TRUE), V = V2_cool,   
                                    random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
                                    struc = "UN", data = data_cool, test = "t", dfs = "contain")
 
@@ -470,6 +477,7 @@ saveRDS(mv_mlma_split.warm.inter, here("output", "models", "mv_mlma_split.warm.i
 saveRDS(mv_mlma_split.warm.report, here("output", "models", "mv_mlma_split.warm.report.rds"))
 saveRDS(mv_mlma_split.cool, here("output", "models", "mv_mlma_split.cool.rds"))
 saveRDS(mv_mlma_split.cool_quad.inter, here("output", "models", "mv_mlma_split.cool_quad.inter.rds"))
+saveRDS(mv_mlma_split.cool_quad.report, here("output", "models", "mv_mlma_split.cool_quad.report.rds"))
 saveRDS(mv_mlma_split.warm_quad, here("output", "models", "mv_mlma_split.warm_quad.rds"))
 saveRDS(mv_mlma_split.cool_quad, here("output", "models", "mv_mlma_split.cool_quad.rds"))
 saveRDS(mv_mlma_split.warm_cubic, here("output", "models", "mv_mlma_split.warm_cubic.rds"))
@@ -482,9 +490,10 @@ saveRDS(mv_mlma_split.cool_4, here("output", "models", "mv_mlma_split.cool_4.rds
   mv_mlma_split.warm.inter <- readRDS(here("output", "models", "mv_mlma_split.warm.inter.rds")) 
   mv_mlma_split.warm.report <- readRDS(here("output", "models", "mv_mlma_split.warm.report.rds")) ## reported table
   mv_mlma_split.cool <- readRDS(here("output", "models", "mv_mlma_split.cool.rds"))
-  mv_mlma_split.cool_quad.inter <- readRDS(here("output", "models", "mv_mlma_split.cool_quad.inter.rds")) ## reported
+  mv_mlma_split.cool_quad.inter <- readRDS(here("output", "models", "mv_mlma_split.cool_quad.inter.rds")) 
   mv_mlma_split.warm_quad <- readRDS(here("output", "models", "mv_mlma_split.warm_quad.rds"))
   mv_mlma_split.cool_quad <- readRDS(here("output", "models", "mv_mlma_split.cool_quad.rds"))
+  mv_mlma_split.cool_quad.report <- readRDS(here("output", "models", "mv_mlma_split.cool_quad.report.rds"))
   mv_mlma_split.warm_cubic <- readRDS(here("output", "models", "mv_mlma_split.warm_cubic.rds"))
   mv_mlma_split.cool_cubic <- readRDS(here("output", "models", "mv_mlma_split.cool_cubic.rds"))
   mv_mlma_split.warm_4 <- readRDS(here("output", "models", "mv_mlma_split.warm_4.rds"))
@@ -503,8 +512,11 @@ saveRDS(mv_mlma_split.cool_4, here("output", "models", "mv_mlma_split.cool_4.rds
 }
 ```
 
-
+# Splitting analysis: warm versus cool
 Reproductive traits were more strongly impacted by increased temperature changes than adult lifespan when controlling for temperature (contrast = `r mv_mlma_split.warm$b[4]`, 95% CI: `r mv_mlma_split.warm$ci.lb[4]` to `r mv_mlma_split.warm$ci.ub[4]`, df = `r mv_mlma_split.warm$ddf[4]`, *t*-value = `r mv_mlma_split.warm$zval[4]`,  *p*-value = `r p_value(mv_mlma_split.warm$pval[4])`). 
+
+
+Interestingly, studies that observed larger changes in reproduction also observed correlated changes in longevity (between study correlation = `r mv_mlma_split.warm$phi`, 95% CI: `r cis_warm$ci.lb[1]` to `r cis_warm$ci.ub[1]`), however, at the within study-level there was a much weaker correlation (within-study correlation = `r mv_mlma_3$rho`, 95% CI: `r cis_warm$ci.lb[2]` to `r cis_warm$ci.ub[2]`)
 
 ```{r, tbl-warm-lin}
 #| label: tbl-warm-lin
@@ -518,7 +530,14 @@ table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "L
 flextable(table)
 ```
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% text to edit %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+# cool analysis
+Reproductive traits were more strongly impacted by increased temperature changes than adult lifespan when controlling for temperature (contrast = `r mv_mlma_split.warm$b[4]`, 95% CI: `r mv_mlma_split.warm$ci.lb[4]` to `r mv_mlma_split.warm$ci.ub[4]`, df = `r mv_mlma_split.warm$ddf[4]`, *t*-value = `r mv_mlma_split.warm$zval[4]`,  *p*-value = `r p_value(mv_mlma_split.warm$pval[4])`). 
 
+
+Interestingly, studies that observed larger changes in reproduction also observed correlated changes in longevity (between study correlation = `r mv_mlma_split.warm$phi`, 95% CI: `r cis_warm$ci.lb[1]` to `r cis_warm$ci.ub[1]`), however, at the within study-level there was a much weaker correlation (within-study correlation = `r mv_mlma_3$rho`, 95% CI: `r cis_warm$ci.lb[2]` to `r cis_warm$ci.ub[2]`)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% text to edit %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 ```{r, tbl-cool-quad}
 #| label: tbl-cool-quad
