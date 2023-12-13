@@ -512,11 +512,13 @@ saveRDS(mv_mlma_split.cool_4, here("output", "models", "mv_mlma_split.cool_4.rds
 }
 ```
 
+
 # Splitting analysis: warm versus cool
-Reproductive traits were more strongly impacted by increased temperature changes than adult lifespan when controlling for temperature (contrast = `r mv_mlma_split.warm$b[4]`, 95% CI: `r mv_mlma_split.warm$ci.lb[4]` to `r mv_mlma_split.warm$ci.ub[4]`, df = `r mv_mlma_split.warm$ddf[4]`, *t*-value = `r mv_mlma_split.warm$zval[4]`,  *p*-value = `r p_value(mv_mlma_split.warm$pval[4])`). 
+
+There was a significant and negative linear effect of temperature on both reproduction and adult lifespan at warmer temperatures (`r mv_mlma_split.warm.report$b[3]`  and `r mv_mlma_split.warm.report$b[4]` respectively, see Table 3 for estimates). However, reproductive traits were more strongly impacted by increased temperature changes than adult lifespan (contrast = `r mv_mlma_split.warm$b[4]`, 95% CI: `r mv_mlma_split.warm$ci.lb[4]` to `r mv_mlma_split.warm$ci.ub[4]`, df = `r mv_mlma_split.warm$ddf[4]`, *t*-value = `r mv_mlma_split.warm$zval[4]`,  *p*-value = `r p_value(mv_mlma_split.warm$pval[4])`). Figure 5 shows the predicted linear effects of temperature on reproduction and adult lifespan for observed treatment temperatures warmer than their reference temperature.  
 
 
-Interestingly, studies that observed larger changes in reproduction also observed correlated changes in longevity (between study correlation = `r mv_mlma_split.warm$phi`, 95% CI: `r cis_warm$ci.lb[1]` to `r cis_warm$ci.ub[1]`), however, at the within study-level there was a much weaker correlation (within-study correlation = `r mv_mlma_3$rho`, 95% CI: `r cis_warm$ci.lb[2]` to `r cis_warm$ci.ub[2]`)
+Interestingly, Figure 6 shows that studies which observed larger changes in reproduction also observed correlated changes in longevity (between study correlation = `r mv_mlma_split.warm$phi`, 95% CI: `r cis_warm$ci.lb[1]` to `r cis_warm$ci.ub[1]`), however, at the within study-level there was a much weaker correlation (within-study correlation = `r mv_mlma_split.warm$rho`, 95% CI: `r cis_warm$ci.lb[2]` to `r cis_warm$ci.ub[2]`)
 
 ```{r, tbl-warm-lin}
 #| label: tbl-warm-lin
@@ -530,24 +532,24 @@ table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "L
 flextable(table)
 ```
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% text to edit %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 # cool analysis
-Reproductive traits were more strongly impacted by increased temperature changes than adult lifespan when controlling for temperature (contrast = `r mv_mlma_split.warm$b[4]`, 95% CI: `r mv_mlma_split.warm$ci.lb[4]` to `r mv_mlma_split.warm$ci.ub[4]`, df = `r mv_mlma_split.warm$ddf[4]`, *t*-value = `r mv_mlma_split.warm$zval[4]`,  *p*-value = `r p_value(mv_mlma_split.warm$pval[4])`). 
 
+For treatment temperatures that were cooler than the reference we found a significant and negative quadratic relationship between temperature and lifespan (est. `r mv_mlma_split.cool_quad.report$b[3]`, 95% CI: `r mv_mlma_split.cool_quad.report$ci.lb[3]` to `r mv_mlma_split.cool_quad.report$ci.ub[3]`). Adult lifespan is estimated to increase with cooler temperatures with the optimum predicted lifespan to be approximately 12$^o$C cooler than the reference temperature. In contrast, we found a significant linear relationship between temperature and reproduction (est. `r mv_mlma_split.cool_quad.report$b[2]`, 95% CI: `r mv_mlma_split.cool_quad.report$ci.lb[2]` to `r mv_mlma_split.cool_quad.report$ci.ub[2]`). However, we found no significant quadratic relationship between temperature and reproduction (see Table 4 for estimates). Figure 7 shows the predicted relationship between temperature and reproduction and adult lifespan for observed treatment temperatures cooler than their reference temperature.   
 
-Interestingly, studies that observed larger changes in reproduction also observed correlated changes in longevity (between study correlation = `r mv_mlma_split.warm$phi`, 95% CI: `r cis_warm$ci.lb[1]` to `r cis_warm$ci.ub[1]`), however, at the within study-level there was a much weaker correlation (within-study correlation = `r mv_mlma_3$rho`, 95% CI: `r cis_warm$ci.lb[2]` to `r cis_warm$ci.ub[2]`)
+We found that studies that observed larger changes in reproduction also observed correlated changes in longevity (between study correlation = `r mv_mlma_split.cool$phi`, 95% CI: `r cis_cool.q$ci.lb[1]` to `r cis_cool.q$ci.ub[1]`), however, at the within study-level there was a much weaker correlation (within-study correlation = `r mv_mlma_split.cool_quad$rho`, 95% CI: `r cis_cool.q$ci.lb[2]` to `r cis_cool.q$ci.ub[2]`)
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% text to edit %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 ```{r, tbl-cool-quad}
 #| label: tbl-cool-quad
 #| tbl-cap: Quadratic effects of temperature on mean effect size for longevity and reproduction when treatment temperatures are cooler than reference temperatures.
-table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "Linear Treatment Temperature (centered) - Longevity",  "Quadratic Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction",  "Quadratic Treatment Temperature (centered) - Reproduction"),
-                    Est. = round(mv_mlma_split.cool_quad.inter$b, 4),
-                    `L 95% CI` = round(mv_mlma_split.cool_quad.inter$ci.lb, 4),
-                    `U 95% CI` = round(mv_mlma_split.cool_quad.inter$ci.ub, 4),
-                    `df` = round(mv_mlma_split.cool_quad.inter$ddf,2),
-                    `p-value` = sapply(round(mv_mlma_split.cool_quad.inter$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", 
+                                   "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction",  
+                                   "Quadratic Treatment Temperature (centered) - Longevity",   "Quadratic Treatment Temperature (centered) - Reproduction"),
+                    Est. = round(c(mv_mlma_split.cool_quad.inter$b[1:2],mv_mlma_split.cool_quad.report$b[1:4]), 4),
+                    `L 95% CI` = round(c(mv_mlma_split.cool_quad.inter$ci.lb[1:2],mv_mlma_split.cool_quad.report$ci.lb[1:4]), 4),
+                    `U 95% CI` = round(c(mv_mlma_split.cool_quad.inter$ci.ub[1:2],mv_mlma_split.cool_quad.report$ci.ub[1:4]), 4),
+                    `df` = round(c(mv_mlma_split.cool_quad.inter$ddf[1:2],mv_mlma_split.cool_quad.report$ddf[1:4]),2),
+                    `p-value` = sapply(round(c(mv_mlma_split.cool_quad.inter$pval[1:2],mv_mlma_split.cool_quad.report$pval[1:4]),4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
 flextable(table)
 ```
 
