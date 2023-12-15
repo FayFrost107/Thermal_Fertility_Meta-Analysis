@@ -772,8 +772,71 @@ sdata <- subset(data_warm, es > minq & es < maxq)
 }
 ```
 
+```{r, tbl-warm-lin-sa}
+#| label: tbl-warm-lin-sa
+#| tbl-cap: Linear effects of temperature on mean effect size for longevity and reproduction when treatment temperatures are warmer than reference temperatures (sensitivity analysis with 10% outliers removed).
+table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction"),
+                    Est. = round(mlma_sa_warm$b, 4),
+                    `L 95% CI` = round(mlma_sa_warm$ci.lb, 4),
+                    `U 95% CI` = round(mlma_sa_warm$ci.ub, 4),
+                    `df` = round(mlma_sa_warm$ddf,2),
+                    `p-value` = sapply(round(mlma_sa_warm$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
+```
 
+```{r, sa_multivariate_cool}
+#| echo: false
+#| warning: false
+#| include: false
 
+rerun3=FALSE
+if(rerun3){
+  
+
+minq <- quantile(data_cool$es, 0.05)
+maxq <- quantile(data_cool$es, 0.95)
+
+sdata <- subset(data_cool, es > minq & es < maxq)
+
+## make V matrix for sensitivity data
+ V_2 <- make_VCV_matrix(data = sdata, cluster = "trial",  V = "v", rho = 0.5)
+
+ V2 <- metaAidR::make_VCV_matrix(data = sdata, matrix = V_2, cluster = "shared_control",  V = "v", rho = 0.5)
+
+ # Check of PD
+  corpcor::is.positive.definite(V2) # FALSE
+
+# Can bend it to make it PD
+  V2 <- Matrix::nearPD(V2)$mat
+
+# Check of PD
+  corpcor::is.positive.definite(V2) # TRUE
+  
+  mlma_sa_cool <-  rma.mv(es ~ -1 + outcome:poly(c_treattemp, degree=2, raw=TRUE), V = V2,   
+                                   random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
+                                   struc = "UN", data = sdata, test = "t", dfs = "contain")
+  
+  saveRDS(mlma_sa, here("output", "models", "mlma_sa_cool.rds"))
+  saveRDS(sdata, here("output", "Output data", "mlma_sa_cool.data.rds"))
+} else {
+  mlma_sa_cool <- readRDS(here("output", "models", "mlma_sa_cool.rds"))
+  mlma_sa_cooldata <- readRDS(here("output", "Output data", "mlma_sa_cool.data.rds"))
+}
+```
+
+```{r, tbl-cool-quad-sa}
+#| label: tbl-cool-quad-sa
+#| tbl-cap: quadratic effects of temperature on mean effect size for longevity and reproduction when treatment temperatures are cooler than reference temperatures (sensitivity analysis with 10% outliers removed).
+table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", 
+                                   "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction",  
+                                   "Quadratic Treatment Temperature (centered) - Longevity",   "Quadratic Treatment Temperature (centered) - Reproduction"),
+                    Est. = round(c(mlma_sa_cool$b[1:2],mv_mlma_split.cool_quad.report$b[1:4]), 4),
+                    `L 95% CI` = round(c(mlma_sa_cool$ci.lb[1:2],mv_mlma_split.cool_quad.report$ci.lb[1:4]), 4),
+                    `U 95% CI` = round(c(mlma_sa_cool$ci.ub[1:2],mv_mlma_split.cool_quad.report$ci.ub[1:4]), 4),
+                    `df` = round(c(mlma_sa_cool$ddf[1:2],mv_mlma_split.cool_quad.report$ddf[1:4]),2),
+                    `p-value` = sapply(round(c(mlma_sa_cool$pval[1:2],mv_mlma_split.cool_quad.report$pval[1:4]),4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
+```
 
 
 ```{r, plot-highorder-polynomials}
