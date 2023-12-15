@@ -511,7 +511,7 @@ saveRDS(meta_year, here("Output", "models", "longevity", "meta_long_year.rds"))
 
 
 # Sensitivty Analysis
-# Preform a sensitivity analysis by removing the smallest and largest 2.5% of effect sizes.
+# Preform a sensitivity analysis by removing the smallest and largest 5% of effect sizes.
 
 
 minq <- quantile(rdata$es, 0.05)
@@ -611,6 +611,7 @@ table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Bo
                     `U 95% CI` = round(meta_sa_sex$ci.ub, 4),
                     `p-value` = sapply(round(meta_sa_sex$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
 flextable(table)
+
 ```
 
 
@@ -636,12 +637,13 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, li
   scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
   scale_linetype_manual(values = c("solid", "dashed")) +
   theme_bw() + 
-  labs(title = "Predicted emperature effect on longevity",
+  labs(title = "Predicted Temperature effect on longevity",
        x = "Temperature devaition from 25C",
        y = "Effect size",
        color = "Sex exposed",  # Set the title of the color legend
        fill = "Sex exposed",
        linetype = "Sex exposed")   # Set the title of the fill legend (for ribbons)
+
 ```
 
 
@@ -722,6 +724,59 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.an
        color = "Life stage",  # Set the title of the color legend
        fill = "Life stage",
        linetype = "Life stage")   # Set the title of the fill legend (for ribbons)
+```
+
+```{r, sa.remove.24}
+
+#| echo: false
+#| warning: false
+#| include: false
+
+if(rerun){
+  expose.data <- subset(rdata, Exposure.duration != "< 24 hours")
+#minq <- quantile(expose.data$es, 0.05)   
+#maxq <- quantile(expose.data$es, 0.95)
+
+#sdata <- subset(expose.data, es > minq & es < maxq)
+
+  sdata <- expose.data
+saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long_exposure.rds"))
+
+
+## Treatment temperature as a cubic effect (sesnsitivity analysis)
+
+# re-cmpute the covariance matrix for subsetted data
+VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+
+
+# re-run cubic model
+meta_sa_exposure <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=3, raw=TRUE), random=                                list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+
+saveRDS(meta_sa_exposure, here("Output", "models", "longevity", "meta_sa_long_exposure.rds"))
+} else {
+  meta_sa_exposure <- readRDS(here("Output", "models", "longevity", "meta_sa_long_exposure.rds"))
+  sa_exposure <- readRDS(here("Output", "Output data", "longevity", "sensitivity_data_long_exposure.rds"))
+}
+
+
+```
+
+```{r}
+#| label: fig-short.exposureremoved
+#| fig-cap: Bubble plot of effect size of longevity when controlling for temperature with < 24 hour exposure observations removed. 
+p <- bubble_plot(meta_sa_exposure, mod = "c_treattemp", group="study_code")
+p+coord_cartesian(ylim=c(-10,10)) + labs(x = "Temperature deviation from 25C")
+```
+
+```{r, tbl-saexposure}
+#| label: tbl-saexposure
+#| tbl-cap: Non-linear effects of temperature on mean effect size of longevity when  < 24 hour exposure times removed.
+table <- data.frame(Parameters = c("Longevity (mean)", "Linear Treatment Temperature (centered) - Longevity","Quadratic Treatment Temperature (centered) - Longevity", "Cubic Treatment Temperature (centered) - Longevity" ),
+                    Est. = round(meta_sa_exposure$b, 4),
+                    `L 95% CI` = round(meta_sa_exposure$ci.lb, 4),
+                    `U 95% CI` = round(meta_sa_exposure$ci.ub, 4),
+                    `p-value` = sapply(round(meta_sa_exposure$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
 ```
 
 
