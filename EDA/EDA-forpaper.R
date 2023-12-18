@@ -109,3 +109,29 @@ exp_counts <- unique_exp %>%
 exp_counts
 
 
+# sex exposed
+unique_sex.exp <- sub %>%
+  distinct(Experiment.code, Sex.exposed)
+
+# Count the number of sex exposed for each study
+sex.exp_counts <- unique_sex.exp %>%
+  group_by(Sex.exposed) %>%
+  summarize(UniqueStudies = n())
+
+sex.exp_counts
+
+# experiment codes that are wrong (have been used for multiple experiments)
+unique_sex.exp$Experiment.code[which(duplicated(unique_sex.exp$Experiment.code) == TRUE)]
+
+# life stage
+unique_ls <- sub %>%
+  distinct(Experiment.code, Life.stage.of.animal)
+
+# Count the number of life stages  for each study
+ls_counts <- unique_ls %>%
+  group_by(Life.stage.of.animal) %>%
+  summarize(UniqueStudies = n())
+
+ls_counts
+
+
