@@ -109,9 +109,12 @@ exp_counts <- unique_exp %>%
 exp_counts
 
 
+repdata <- subset(sub, Trait.category == "Reproduction")
+londata <- subset(sub, Trait.category == "Longevity")
+
 # sex exposed
-unique_sex.exp <- sub %>%
-  distinct(Experiment.code, Sex.exposed)
+unique_sex.exp <- londata %>%
+  distinct(Effect.size.code, Sex.exposed)
 
 # Count the number of sex exposed for each study
 sex.exp_counts <- unique_sex.exp %>%
