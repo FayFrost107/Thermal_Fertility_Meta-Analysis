@@ -223,6 +223,7 @@ if(rerun){
   # treat temp^3 centered
   meta_trait_treat3 <- rma.mv(es, VCV_shared,  mod= ~ poly(c_treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
   saveRDS(meta_trait_treat3, here("Output", "models", "longevity", "mv_long_ctemp3.rds"))
+  r2_ml(meta_trait_treat3)
   
     # treat temp^4 centered
   meta_trait_treat4 <- rma.mv(es, VCV_shared,  mod= ~ poly(c_treattemp, degree=4, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")

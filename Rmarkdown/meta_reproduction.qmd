@@ -222,6 +222,7 @@ saveRDS(meta_trait_treattemp, here("Output", "models", "reproduction", "mv_rep_c
 # treat temp^2 centered
 meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 saveRDS(meta_trait_treat2, here("Output", "models", "reproduction", "mv_rep_ctemp2.rds"))
+r2_ml(meta_trait_treat2)
 
 # treat temp^3 centered
 meta_trait_treat3 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=3, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
