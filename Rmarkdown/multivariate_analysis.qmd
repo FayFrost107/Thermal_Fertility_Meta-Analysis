@@ -763,12 +763,27 @@ sdata <- subset(data_warm, es > minq & es < maxq)
   mlma_sa_warm <-  rma.mv(es ~ outcome*c_treattemp, V = V2,   
                              random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
                              struc = "UN", data = sdata, test = "t", dfs = "contain")
+
+  mlma_sa_warm.report <- rma.mv(es ~ -1 + outcome + outcome:c_treattemp, V = V2,   
+                                   random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
+                                   struc = "UN", data = sdata, test = "t", dfs = "contain")
   
-  saveRDS(mlma_sa, here("output", "models", "mlma_sa_warm.rds"))
+  saveRDS(mlma_sa_warm, here("output", "models", "mlma_sa_warm.rds"))
+  saveRDS(mlma_sa_warm.report, here("output", "models", "mlma_sa_warm.report.rds"))
   saveRDS(sdata, here("output", "Output data", "mlma_sa_warm.data.rds"))
+  
+  cis_phi_warm.sa <- as.data.frame(confint(mlma_sa_warm, phi = 1))
+  cis_rho_warm.sa <- as.data.frame(confint(mlma_sa_warm, rho = 1))
+  cis_warm.sa <- rbind(cis_phi_warm.sa, cis_rho_warm.sa)
+  
+  write.csv(cis_warm.sa, here("output", "tables", "mlma_sa.warm_cis.csv"))
+  
+
 } else {
   mlma_sa_warm <- readRDS(here("output", "models", "mlma_sa_warm.rds"))
   mlma_sa_warmdata <- readRDS(here("output", "Output data", "mlma_sa_warm.data.rds"))
+  mlma_sa_warm.report <-  readRDS(here("output", "models", "mlma_sa_warm.report.rds"))
+  cis_warm.sa <- read.csv(here("output", "tables", "mlma_sa.warm_cis.csv"))
 }
 ```
 
@@ -776,13 +791,20 @@ sdata <- subset(data_warm, es > minq & es < maxq)
 #| label: tbl-warm-lin-sa
 #| tbl-cap: Linear effects of temperature on mean effect size for longevity and reproduction when treatment temperatures are warmer than reference temperatures (sensitivity analysis with 10% outliers removed).
 table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction"),
-                    Est. = round(mlma_sa_warm$b, 4),
-                    `L 95% CI` = round(mlma_sa_warm$ci.lb, 4),
-                    `U 95% CI` = round(mlma_sa_warm$ci.ub, 4),
-                    `df` = round(mlma_sa_warm$ddf,2),
-                    `p-value` = sapply(round(mlma_sa_warm$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+                    Est. = round(mlma_sa_warm.report$b, 4),
+                    `L 95% CI` = round(mlma_sa_warm.report$ci.lb, 4),
+                    `U 95% CI` = round(mlma_sa_warm.report$ci.ub, 4),
+                    `df` = round(mlma_sa_warm.report$ddf,2),
+                    `p-value` = sapply(round(mlma_sa_warm.report$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
 flextable(table)
 ```
+
+# Sensitivity warm 
+
+We found weaker, but qualitatively similar correlations, after removing outliers (between-study correlation = `r mlma_sa_warm$phi`, 95% CI: `r cis_warm.sa$ci.lb[1]` to `r cis_warm.sa$ci.ub[1]` within-study correlation= `r mlma_sa_warm$rho`, 95% CI: `r cis_warm.sa$ci.lb[2]` to `r cis_warm.sa$ci.ub[2]`) 
+
+
+
 
 ```{r, sa_multivariate_cool}
 #| echo: false
@@ -812,15 +834,47 @@ sdata <- subset(data_cool, es > minq & es < maxq)
 # Check of PD
   corpcor::is.positive.definite(V2) # TRUE
   
+  ## Sensitivity analysis. Cool. Quadratic model. 
   mlma_sa_cool <-  rma.mv(es ~ -1 + outcome:poly(c_treattemp, degree=2, raw=TRUE), V = V2,   
                                    random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
                                    struc = "UN", data = sdata, test = "t", dfs = "contain")
   
-  saveRDS(mlma_sa, here("output", "models", "mlma_sa_cool.rds"))
+  
+  
+# For tvalues and pvalues of absolute values of intercepts
+mlma_sa_cool.inter <- rma.mv(es ~ -1 + outcome*poly(c_treattemp, degree=2, raw=TRUE), V = V2,   
+                                   random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
+                                   struc = "UN", data = sdata, test = "t", dfs = "contain")
+
+
+# for reported table (absolute values), for absolute values of nonlinear terms
+mlma_sa_cool.report <- rma.mv(es ~ -1 + outcome:poly(c_treattemp, degree=2, raw=TRUE), V = V2,   
+                                   random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
+                                   struc = "UN", data = sdata, test = "t", dfs = "contain")
+
+
+
+  saveRDS(mlma_sa_cool, here("output", "models", "mlma_sa_cool.rds"))
+  saveRDS(mlma_sa_cool.inter, here("output", "models", "mlma_sa_cool.inter.rds"))
+  saveRDS(mlma_sa_cool.report, here("output", "models", "mlma_sa_cool.report.rds"))
   saveRDS(sdata, here("output", "Output data", "mlma_sa_cool.data.rds"))
+  
+
+  cis_phi_cool.sa <- as.data.frame(confint(mlma_sa_cool, phi = 1))
+  cis_rho_cool.sa <- as.data.frame(confint(mlma_sa_cool, rho = 1))
+  cis_cool.sa <- rbind(cis_phi_cool.sa, cis_rho_cool.sa)
+  
+  write.csv(cis_cool.sa, here("output", "tables", "mlma_sa.cool_cis.csv"))
+  
+
+  
 } else {
   mlma_sa_cool <- readRDS(here("output", "models", "mlma_sa_cool.rds"))
+  mlma_sa_cool.report <- readRDS(here("output", "models", "mlma_sa_cool.report.rds"))
+  mlma_sa_cool.inter <- readRDS(here("output", "models", "mlma_sa_cool.inter.rds"))
   mlma_sa_cooldata <- readRDS(here("output", "Output data", "mlma_sa_cool.data.rds"))
+ 
+  cis_cool.sa <- read.csv(here("output", "tables", "mlma_sa.cool_cis.csv"))
 }
 ```
 
@@ -830,13 +884,19 @@ sdata <- subset(data_cool, es > minq & es < maxq)
 table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", 
                                    "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction",  
                                    "Quadratic Treatment Temperature (centered) - Longevity",   "Quadratic Treatment Temperature (centered) - Reproduction"),
-                    Est. = round(c(mlma_sa_cool$b[1:2],mv_mlma_split.cool_quad.report$b[1:4]), 4),
-                    `L 95% CI` = round(c(mlma_sa_cool$ci.lb[1:2],mv_mlma_split.cool_quad.report$ci.lb[1:4]), 4),
-                    `U 95% CI` = round(c(mlma_sa_cool$ci.ub[1:2],mv_mlma_split.cool_quad.report$ci.ub[1:4]), 4),
-                    `df` = round(c(mlma_sa_cool$ddf[1:2],mv_mlma_split.cool_quad.report$ddf[1:4]),2),
-                    `p-value` = sapply(round(c(mlma_sa_cool$pval[1:2],mv_mlma_split.cool_quad.report$pval[1:4]),4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+                    Est. = round(c(mlma_sa_cool.inter$b[1:2], mlma_sa_cool.report$b[1:4]), 4),
+                    `L 95% CI` = round(c(mlma_sa_cool.inter$ci.lb[1:2], mlma_sa_cool.report$ci.lb[1:4]), 4),
+                    `U 95% CI` = round(c(mlma_sa_cool.inter$ci.ub[1:2], mlma_sa_cool.report$ci.ub[1:4]), 4),
+                    `df` = round(c(mlma_sa_cool.inter$ddf[1:2], mlma_sa_cool.report$ddf[1:4]),2),
+                    `p-value` = sapply(round(c(mlma_sa_cool.inter$pval[1:2], mlma_sa_cool.report$pval[1:4]),4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
 flextable(table)
 ```
+
+
+# Sensitivity cool (quadratic)
+
+We found qualitatively similar correlations, after removing outliers (between-study correlation = `r mlma_sa_cool$phi`, 95% CI: `r cis_cool.sa$ci.lb[1]` to `r cis_cool.sa$ci.ub[1]` within-study correlation= `r mlma_sa_cool$rho`, 95% CI: `r cis_cool.sa$ci.lb[2]` to `r cis_cool.sa$ci.ub[2]`) 
+
 
 
 ```{r, plot-highorder-polynomials}
