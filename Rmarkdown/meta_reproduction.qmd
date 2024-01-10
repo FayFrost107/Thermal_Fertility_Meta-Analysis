@@ -314,10 +314,10 @@ VCV_shared_sex <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$sha
 
 
 meta_treat_sex <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed, 
-                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML")
+                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML", test="t")
 
 meta_treat_sex_nointer <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed-1, 
-                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML")
+                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML", test="t")
 
 saveRDS(meta_treat_sex, here("Output", "models", "reproduction", "meta_treat_rep_sex.rds"))
 saveRDS(meta_treat_sex_nointer, here("Output", "models", "reproduction", "meta_treat_rep_sex_nointer.rds"))
@@ -341,10 +341,10 @@ ls_data <- subset(ls_data, Life.stage.of.animal != "Embryo")
 VCV_shared_life <- impute_covariance_matrix(vi=ls_data$v, cluster = ls_data$shared_control, r=0.5)
 
 meta_treat_ls <- rma.mv(es, VCV_shared_life,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Life.stage.of.animal,
-                        random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML")
+                        random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML", test="t")
 
 meta_treat_ls_nointer <- rma.mv(es, VCV_shared_life,  mod= ~ -1 + poly(c_treattemp, degree=2, raw=TRUE)*Life.stage.of.animal,
-                        random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML")
+                        random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML", test="t")
 
 saveRDS(meta_treat_ls, here("Output", "models", "reproduction", "meta_treat_rep_ls.rds"))
 saveRDS(meta_treat_ls_nointer, here("Output", "models", "reproduction", "meta_treat_rep_ls_nointer.rds"))
@@ -640,7 +640,7 @@ VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_con
 
 # re-run quadratic model
 meta_sa_sex_nointer <- rma.mv(es, VCV_shared_sa,  mod= ~ -1 + poly(c_treattemp, degree=2, raw=TRUE) * Sex.exposed, 
-                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
 
 saveRDS(meta_sa_sex_nointer, here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
 
@@ -718,7 +718,7 @@ VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_con
 
 # re-run quadratic model
 meta_sa_ls_nointer <- rma.mv(es, VCV_shared_sa,  mod= ~ -1 + poly(c_treattemp, degree=2, raw=TRUE) * Life.stage.of.animal, 
-                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
 
 saveRDS(meta_sa_ls_nointer, here("Output", "models", "reproduction", "meta_sa_rep_ls.rds"))
 } else {

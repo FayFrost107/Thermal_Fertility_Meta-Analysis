@@ -343,11 +343,11 @@ if(rerun){
   VCV_shared_life <- impute_covariance_matrix(vi=ls_data$v, cluster = ls_data$shared_control, r=0.5)
   
   meta_treat_ls <- rma.mv(es, VCV_shared_life,  mod= ~poly(c_treattemp, degree=3, raw=TRUE)*Life.stage.of.animal,
-                          random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML")
+                          random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML", test="t")
   
   
   meta_treat_ls_nointer <- rma.mv(es, VCV_shared_life,  mod= ~ -1 + poly(c_treattemp, degree=3, raw=TRUE)*Life.stage.of.animal,
-                           random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML")
+                           random= list(~ 1|study_code,  ~1|obs), data= ls_data, method= "REML", test="t")
 
 
   saveRDS(meta_treat_ls, here("Output", "models", "longevity", "meta_treat_long_ls.rds"))
