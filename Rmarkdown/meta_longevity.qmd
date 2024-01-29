@@ -860,3 +860,60 @@ ggplot(ctemp_data, aes(x = c_treattemp)) +
 
 
 ```
+
+
+
+
+
+```{r, pestsubanalysis}
+
+if(rerun){
+  pest.only <- subset(rdata, Agricultural.importance == "Pest")
+
+  VCV_pest.only <- impute_covariance_matrix(vi=pest.only$v, cluster = pest.only$shared_control, r=0.5)
+  
+  V2 <- VCV_pest.only
+ 
+  mlma_pest.only <- rma.mv(es, V2,  mod = ~poly(c_treattemp, degree=3, raw=TRUE), 
+                        random= list(~ 1|study_code,  ~1|obs), data= pest.only, method= "REML", test="t")
+ 
+ saveRDS(mlma_pest.only, here("output", "models", "longevity", "mlma_pest.only.rds"))
+} else {
+  
+  mlma_pest.only <- readRDS(here("output", "models", "longevity", "mlma_pest.only.rds"))
+}
+
+```
+
+
+```{r, pestfixedfactor}
+
+if(rerun){
+  
+  # initial categories
+  table(rdata$Agricultural.importance)
+  
+  ## Recode everything not pest as "Not Pest"
+  pestdata <- rdata
+  pestdata$Agricultural.importance[which(pestdata$Agricultural.importance != "Pest")] <- "Not Pest"
+  
+  # recoded counts of categories
+  table(pestdata$Agricultural.importance)
+  
+
+  V2 <- impute_covariance_matrix(vi=pestdata$v, cluster = pestdata$shared_control, r=0.5)
+  
+  mlma_pest.fixed <- rma.mv(es, V2,  mod = ~ -1 + Agricultural.importance + poly(c_treattemp, degree=3, raw=TRUE), 
+                        random= list(~ 1|study_code,  ~1|obs), data= pestdata, method= "REML", test="t")
+ 
+  saveRDS(mlma_pest.fixed, here("output", "models", "longevity", "mlma_pest.fixed.rds"))
+} else {
+  mlma_pest.fixed <- readRDS(here("output", "models", "longevity", "mlma_pest.fixed.rds"))
+}
+
+```
+
+
+
+
+

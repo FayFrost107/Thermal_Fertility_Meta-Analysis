@@ -192,31 +192,6 @@ mv_pi <- mod_results(mv_mlma_3, mod = "outcome", group = "Paper.code")
 
 
 
-```{r, eval=FALSE, pest_sub_analysis}
-pest <- subset(data_long_final, Agricultural.importance == "Pest")
-
- V_2 <- make_VCV_matrix(data = pest, cluster = "trial",  V = "v", rho = 0.5)
-
- V2 <- metaAidR::make_VCV_matrix(data = pest, matrix = V_2, cluster = "shared_control",  V = "v", rho = 0.5)
-
- # Check of PD
-  corpcor::is.positive.definite(V2) # FALSE
-
-# Can bend it to make it PD
-  V2 <- Matrix::nearPD(V2)$mat
-
-# Check of PD
-  corpcor::is.positive.definite(V2) # TRUE
-   
- mv_mlma_pest <- rma.mv(es ~ -1 + outcome + outcome:poly(c_treattemp, degree=3, raw=TRUE), V = V2,    
-               random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
-                             ~outcome - 1 | Paper.code),  # This should estimate a study level random effect for each outcome.
-               struc = "UN", data = pest, test = "t", dfs = "contain")
- 
- saveRDS(mv_mlma_pest, here("output", "models", "mv_mlma_pest.rds"))
-
-```
-
 # Multivariate meta-analysis and meta-regression
 
 Reproductive traits were more strongly impacted by temperature changes than longevity when controlling for temperature (contrast = `r mv_mlma_2$b[2]`, 95% CI: `r mv_mlma_2$ci.lb[2]` to `r mv_mlma_2$ci.ub[2]`, df = `r mv_mlma_2$ddf[2]`, *p*-value = `r p_value(mv_mlma_2$pval[2])`). At 25$^o$C, longevity was reduced by `r mv_mlma_3$b[1]` SD units relative to the control (95% CI: `r mv_mlma_3$ci.lb[1]` to `r mv_mlma_3$ci.ub[1]`, df = `r mv_mlma_3$ddf[1]`, *p*-value = `r p_value(mv_mlma_3$pval[1])`). In contrast, reproduction was significantly reduced by `r mv_mlma_3$b[2]` SD units relative to the control (95% CI: `r mv_mlma_3$ci.lb[2]` to `r mv_mlma_3$ci.ub[2]`, df = `r mv_mlma_3$ddf[2]`, *p*-value = `r p_value(mv_mlma_3$pval[2])`). However, there was high heterogeneity in both traits with prediction intervals spanning `r min(mv_pi$mod_table$lowerPR)` to `r max(mv_pi$mod_table$upperPR)` (@fig-fig1). 
@@ -1047,4 +1022,75 @@ ggplot(data = mlma_cool_long, aes(x = c_treattemp)) +
   guides(color = guide_legend(title = "Polynomial degree", ncol = 2))
 
 
+```
+
+
+
+
+
+```{r,pestonly}
+
+if(rerun){
+ 
+ pest.only <- subset(data_long_final, Agricultural.importance == "Pest")
+
+ V_2 <- make_VCV_matrix(data = pest.only, cluster = "trial",  V = "v", rho = 0.5)
+
+ V2 <- metaAidR::make_VCV_matrix(data = pest.only, matrix = V_2, cluster = "shared_control",  V = "v", rho = 0.5)
+
+ # Check of PD
+  corpcor::is.positive.definite(V2) # FALSE
+
+# Can bend it to make it PD
+  V2 <- Matrix::nearPD(V2)$mat
+
+# Check of PD
+  corpcor::is.positive.definite(V2) # TRUE
+   
+ mv_mlma_pest.only <- rma.mv(es ~ -1 + outcome + outcome:poly(c_treattemp, degree=3, raw=TRUE), V = V2,    
+               random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),  
+               struc = "UN", data = pest.only, test = "t", dfs = "contain")
+ 
+ saveRDS(mv_mlma_pest.only, here("output", "models", "mv_mlma_pest.only.rds"))
+} else {
+  mv_mlma_pest.only <- readRDS(here("output", "models", "mv_mlma_pest.only.rds"))
+}
+```
+
+```{r, eval=FALSE, pestonly}
+
+if(rerun){
+# initial categories
+  table(data_long_final$Agricultural.importance)
+  
+  ## Recode everything not pest as "Not Pest"
+  pestdata <- data_long_final
+  pestdata$Agricultural.importance[which(pestdata$Agricultural.importance != "Pest")] <- "Not Pest"
+  
+  # recoded counts of categories
+  table(pestdata$Agricultural.importance)
+  
+
+
+ V_2 <- make_VCV_matrix(data = pestdata, cluster = "trial",  V = "v", rho = 0.5)
+
+ V2 <- metaAidR::make_VCV_matrix(data = pestdata, matrix = V_2, cluster = "shared_control",  V = "v", rho = 0.5)
+
+ # Check of PD
+  corpcor::is.positive.definite(V2) # FALSE
+
+# Can bend it to make it PD
+  V2 <- Matrix::nearPD(V2)$mat
+
+# Check of PD
+  corpcor::is.positive.definite(V2) # TRUE
+   
+ mv_mlma_pest.fixed <- rma.mv(es ~ -1 + Agricultural.importance + outcome + outcome:poly(c_treattemp, degree=3, raw=TRUE), V = V2,    
+               random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),  
+               struc = "UN", data = pestdata, test = "t", dfs = "contain")
+ 
+ saveRDS(mv_mlma_pest.fixed, here("output", "models", "mv_mlma_pest.fixed.rds"))
+} else {
+  mv_mlma_pest.fixed <- readRDS(here("output", "models", "mv_mlma_pest.fixed.rds")
+}
 ```
