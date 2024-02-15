@@ -291,6 +291,21 @@ p <- bubble_plot(meta_trait_treat2, mod = "c_treattemp", group="study_code")
 p+coord_cartesian(ylim=c(-10,10)) + labs(x = "Temperature deviation from 25C")
 ```
 
+```{r}
+
+# Calculating the y value for the peak of the curve
+
+f = function(x) {
+  (-0.0112*x^2)+(-0.0526*x)-0.5552
+}
+
+# find the maximum of f(x) within the interval [-25, 25]
+ans = optimize(f, interval = c(-25,25), maximum=TRUE)
+x_max= ans$maximum
+x_max+25 # Value in degrees
+
+```
+
 
 ### How does sex exposed and life stage of exposure effect reproduction?
 
