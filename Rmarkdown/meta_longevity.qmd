@@ -17,6 +17,8 @@ fig-prefix: "Figure"
 tbl-prefix: "Table"
 ---
   
+### Setup
+  
 ```{r, packages}
 #| echo: false
 #| warning: false
@@ -86,9 +88,7 @@ saveRDS(rdata, here("Output", "Output data", "longevity", "data_full_longevity.r
 ```
 
 
-
-# Results   
-
+### Results   
 
 ```{r}
 #| echo: false
@@ -138,7 +138,7 @@ meta3 <- rma.mv(es, VCV_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1
   }
 ```
 
-# Random effects models
+### Random effects models
 
 ### Intercept only model
 
@@ -186,9 +186,9 @@ if(rerun){
 We then fit the models with different combinations of random effects. The best fitting model according to AIC used only study_ID and observation_ID as random effects with `r round(i2_ml(meta4)[2],2)`% and  `r round(i2_ml(meta4)[3],2)`% estimated heterogeneity respectively. We used this random effects model as a base for our meta-regression models. 
 
 
-# Meta-Regressions 
+### Meta-Regressions 
 
-## How does temperature affect longevity?
+### How does temperature affect longevity?
 
 ```{r, regressionmodels}
 #| echo: false
@@ -292,7 +292,8 @@ p <- bubble_plot(meta_trait_treat3, mod = "c_treattemp", group="study_code")
 p+coord_cartesian(ylim=c(-10,10)) + labs(x = "Temperature deviation from 25C")
 ```
 
-# How does sex exposed and life stage of exposure effect longevity?
+
+### How does sex exposed and life stage of exposure effect longevity?
 
 ```{r, lifestagesex}
 #| echo: false
@@ -366,7 +367,6 @@ if(rerun){
 ```
 
 
-
 ### sex exposed
 
 The relationship between temperature and longevity did not depend on whether both males and females were exposed to experimental temperatures (N= `r length(which(new_data$Sex.exposed == "Both"))` effect sizes), or whether just females were exposed to experimental temperatures (N= `r length(which(new_data$Sex.exposed == "Female"))` effect sizes) (Interaction between the quadratic effect of (centered) temperature and sex exposed category, z=`r meta_treat_sex$zval[8]`, *p*-value = `r p_value(meta_treat_sex$pval[8])`).   
@@ -384,7 +384,7 @@ flextable(table)
 
 ```{r, fig-figsex}
 #| label: fig-figsex
-#| fig-cap: Predicited models of sex exposed and temeprature effects on longevity.  
+#| fig-cap: Predicted models of sex exposed and temeprature effects on longevity.  
 
 preds.rep.sex <- predict(meta_treat_sex, addx=TRUE)
 sex_rep_data <- new_data
@@ -405,7 +405,7 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, li
   scale_linetype_manual(values = c("solid", "dashed")) +
   theme_bw() + 
   labs(title = "Predicted emperature effect on longevity",
-       x = "Temperature devaition from 25C",
+       x = "Temperature deviation from 25C",
        y = "Effect size",
        color = "Sex exposed",  # Set the title of the color legend
        fill = "Sex exposed",
@@ -423,15 +423,16 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = es, col = Sex.exposed)) +
   scale_fill_manual(values = c("purple", "orange")) + 
   theme_bw() + 
   labs(title = "Observed temperature effect on longevity",
-       x = "Temperature devaition from 25C",
+       x = "Temperature deviation from 25C",
        y = "Effect size",
        color = "Sex exposed")   # Set the title of the fill legend (for ribbons)
 
 ```
 
+
 ### life stage of animal
 
-The relationship between temperature and reproduction did not depend on whether subjects were exposed as adults only (N= `r length(which(ls_data$Life.stage.of.animal == "Adult"))` effect sizes), or across multiple life stages (N= `r length(which(ls_data$Life.stage.of.animal == "Immature"))`effect sizes) (Interaction between the quadratic effect of (centered) temperature and life stage category, z=`r meta_treat_ls$zval[8]`, *p*-value = `r p_value(meta_treat_ls$pval[8])`), Table (@tbl-ls). 
+The relationship between temperature and longevity did not depend on whether subjects were exposed as adults only (N= `r length(which(ls_data$Life.stage.of.animal == "Adult"))` effect sizes), or across multiple life stages (N= `r length(which(ls_data$Life.stage.of.animal == "Immature"))`effect sizes) (Interaction between the quadratic effect of (centered) temperature and life stage category, z=`r meta_treat_ls$zval[8]`, *p*-value = `r p_value(meta_treat_ls$pval[8])`), Table (@tbl-ls). 
 
 ```{r, tbl-ls}
 #| label: tbl-ls
@@ -447,7 +448,7 @@ flextable(table)
 
 ```{r, fig-figls}
 #| label: fig-figls
-#| fig-cap: Predicited models of sex exposed and temeprature effects on longevity.  
+#| fig-cap: Predicted models of sex exposed and temeprature effects on longevity.  
 
 preds.rep.ls <- predict(meta_treat_ls, addx=TRUE)
 ls_rep_data <- ls_data
@@ -468,7 +469,7 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.an
   scale_linetype_manual(values = c("solid", "dashed")) +
   theme_bw() + 
   labs(title = "Predicted temperature effect on longevity",
-       x = "Observed temperature devaition from 25C",
+       x = "Observed temperature deviation from 25C",
        y = "Effect size",
        color = "Life stage",  # Set the title of the color legend
        fill = "Life stage",
@@ -488,14 +489,97 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = es, col = Life.stage.of.anim
   theme_bw() + 
   coord_cartesian(ylim = c(-10,1))+
   labs(title = "Observed temperature effect on longevity",
-       x = "Temperature devaition from 25C",
+       x = "Temperature deviation from 25C",
        y = "Effect size",
        color = "Life stage")   # Set the title of the fill legend (for ribbons)
 
 
 ```
 
-# Publication Bias
+
+### Pest status
+
+
+```{r, pestsubanalysis}
+
+if(rerun){
+  pest.only <- subset(rdata, Agricultural.importance == "Pest")
+
+  VCV_pest.only <- impute_covariance_matrix(vi=pest.only$v, cluster = pest.only$shared_control, r=0.5)
+  
+  V2 <- VCV_pest.only
+ 
+  mlma_pest.only <- rma.mv(es, V2,  mod = ~poly(c_treattemp, degree=3, raw=TRUE), 
+                        random= list(~ 1|study_code,  ~1|obs), data= pest.only, method= "REML", test="t")
+ 
+ saveRDS(mlma_pest.only, here("output", "models", "longevity", "mlma_pest.only.rds"))
+} else {
+  
+  mlma_pest.only <- readRDS(here("output", "models", "longevity", "mlma_pest.only.rds"))
+}
+
+```
+
+
+```{r, pestfixedfactor}
+
+if(rerun){
+  
+  # initial categories
+  table(rdata$Agricultural.importance)
+  
+  ## Recode everything not pest as "Not Pest"
+  pestdata <- rdata
+  pestdata$Agricultural.importance[which(pestdata$Agricultural.importance != "Pest")] <- "Not Pest"
+  
+  # recoded counts of categories
+  table(pestdata$Agricultural.importance)
+  
+
+  V2 <- impute_covariance_matrix(vi=pestdata$v, cluster = pestdata$shared_control, r=0.5)
+  
+  mlma_pest.fixed <- rma.mv(es, V2,  mod = ~poly(c_treattemp, degree=2, raw=TRUE)*Agricultural.importance, 
+                        random= list(~ 1|study_code,  ~1|obs), data= pestdata, method= "REML", test="t")
+ 
+  saveRDS(mlma_pest.fixed, here("output", "models", "longevity", "mlma_pest.fixed.rds"))
+} else {
+  mlma_pest.fixed <- readRDS(here("output", "models", "longevity", "mlma_pest.fixed.rds"))
+}
+
+```
+
+```{r, fig-figpest}
+#| label: fig-figpest
+#| fig-cap: Predicted Non-linear effects of temperature and pest status on mean effect size of longevity. 
+preds.rep.pest <- predict(mlma_pest.fixed, addx=TRUE)
+pest_rep_data <- pestdata
+
+pest_rep_data$pred <- preds.rep.pest$pred  
+pest_rep_data$pred.lb <- preds.rep.pest$pi.lb
+pest_rep_data$pred.ub <- preds.rep.pest$pi.ub
+pest_rep_data$c.lb <- preds.rep.pest$ci.lb
+pest_rep_data$c.ub <- preds.rep.pest$ci.ub
+
+library(ggplot2)
+
+ggplot(data = pest_rep_data, aes(x = c_treattemp, y = pred, col = Agricultural.importance, linetype = Agricultural.importance)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Agricultural.importance), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  theme_bw() + 
+    coord_cartesian(ylim = c(-10,1))+
+  labs(title = "Predicted temperature effect on longevity",
+       x = "Observed temperature deviation from 25C",
+       y = "Effect size",
+       color = "Pest staus",  # Set the title of the color legend
+       fill = "Pest status",
+       linetype = "Pest staus")   # Set the title of the fill legend (for ribbons)
+```
+
+
+### Publication Bias
 
 ```{r}
 #| echo: false
@@ -522,9 +606,9 @@ sdata <- subset(rdata, es > minq & es < maxq)
 saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long.rds"))
 
 
-## Treatment temperature as a cubic effect (sesnsitivity analysis)
+## Treatment temperature as a cubic effect (sensitivity analysis)
 
-# re-cmpute the covariance matrix for subsetted data
+# re-compute the covariance matrix for subsetted data
 VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
 
 
@@ -552,7 +636,10 @@ q <- bubble_plot(meta_year, mod = "Publication.year", group="study_code") +
 q+ coord_cartesian(ylim=c(-20,10))
 ```
 
-## Treatment temperature
+
+### Sensitivity Analysis
+
+### Treatment temperature
 
 ```{r, tbl-sactemp}
 #| label: tbl-sactemp
@@ -566,8 +653,7 @@ flextable(table)
 ```
 
 
-
-## Sex exposed
+### Sex exposed
 
 ```{r}
 #| echo: false
@@ -618,7 +704,7 @@ flextable(table)
 
 ```{r, fig-figsexsa}
 #| label: fig-figsexsa
-#| fig-cap: Predicited models of sex exposed and temeprature effects on longevity.  
+#| fig-cap: Predicted models of sex exposed and temeprature effects on longevity.  
 
 preds.rep.sex <- predict(meta_sa_sex, addx=TRUE)
 sex_rep_data <- sa_rep_sexdata
@@ -639,7 +725,7 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, li
   scale_linetype_manual(values = c("solid", "dashed")) +
   theme_bw() + 
   labs(title = "Predicted Temperature effect on longevity",
-       x = "Temperature devaition from 25C",
+       x = "Temperature deviation from 25C",
        y = "Effect size",
        color = "Sex exposed",  # Set the title of the color legend
        fill = "Sex exposed",
@@ -648,9 +734,7 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, li
 ```
 
 
-
-## Life-stage
-
+### Life-stage
 
 ```{r}
 #| echo: false
@@ -683,7 +767,7 @@ saveRDS(meta_sa_ls_nointer, here("Output", "models", "longevity", "meta_sa_long_
 
 ```
 
-The relationship between temperature and reproduction did not depend on life stage category after removing outliers (Interaction between the quadratic effect of (centered) temperature and life stage category, z=`r meta_sa_ls$zval[8]`, *p*-value = `r p_value(meta_sa_ls$pval[8])`), Table (@tbl-sals).
+The relationship between temperature and longevity did not depend on life stage category after removing outliers (Interaction between the quadratic effect of (centered) temperature and life stage category, z=`r meta_sa_ls$zval[8]`, *p*-value = `r p_value(meta_sa_ls$pval[8])`), Table (@tbl-sals).
 
 ```{r, tbl-sals}
 #| label: tbl-sals
@@ -698,7 +782,7 @@ flextable(table)
 
 ```{r, fig-figlssa}
 #| label: fig-figlssa
-#| fig-cap: Predicited models of sex exposed and temeprature effects on longevity.  
+#| fig-cap: Predicted models of sex exposed and temeprature effects on longevity.  
 
 preds.rep.ls <- predict(meta_sa_ls, addx=TRUE)
 ls_rep_data <- sa_rep_lsdata
@@ -720,12 +804,80 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.an
   theme_bw() + 
     coord_cartesian(ylim = c(-7,3))+
   labs(title = "Predicted temperature effect on longevity",
-       x = "Observed temperature devaition from 25C",
+       x = "Observed temperature deviation from 25C",
        y = "Effect size",
        color = "Life stage",  # Set the title of the color legend
        fill = "Life stage",
        linetype = "Life stage")   # Set the title of the fill legend (for ribbons)
 ```
+
+
+### Pest status
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+if(rerun){
+minq <- quantile(new_data$es, 0.05)   
+maxq <- quantile(new_data$es, 0.95)
+
+sdata <- subset(new_data, es > minq & es < maxq)
+saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_rep_sex.rds"))
+
+sdata$Agricultural.importance[which(sdata$Agricultural.importance != "Pest")] <- "Not Pest"
+
+## Treatment temperature as a quadratic effect (sensitivity analysis)
+
+# re-compute the covariance matrix for subsetted data
+VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+
+
+# re-run quadratic model
+
+  mlma_sa_pest.fixed <- rma.mv(es, VCV_shared_sa,  mod = ~poly(c_treattemp, degree=2, raw=TRUE)*Agricultural.importance, 
+                          random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
+ 
+  saveRDS(mlma_sa_pest.fixed, here("output", "models", "longevity", "mlma_sa_pest.fixed.rds"))
+} else {
+  mlma_pest.fixed <- readRDS(here("output", "models", "longevity", "mlma_pest.fixed.rds"))
+}
+
+```
+
+```{r, fig-figpestsa}
+#| label: fig-figpestsa
+#| fig-cap: Predicted Non-linear effects of temperature and pest status on mean effect size of longevity (after removing outliers). 
+preds.rep.pest <- predict(mlma_sa_pest.fixed, addx=TRUE)
+pest_rep_data <- sdata
+
+pest_rep_data$pred <- preds.rep.pest$pred  
+pest_rep_data$pred.lb <- preds.rep.pest$pi.lb
+pest_rep_data$pred.ub <- preds.rep.pest$pi.ub
+pest_rep_data$c.lb <- preds.rep.pest$ci.lb
+pest_rep_data$c.ub <- preds.rep.pest$ci.ub
+
+library(ggplot2)
+
+ggplot(data = pest_rep_data, aes(x = c_treattemp, y = pred, col = Agricultural.importance, linetype = Agricultural.importance)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Agricultural.importance), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  theme_bw() + 
+    coord_cartesian(ylim = c(-6,1))+
+  labs(title = "Predicted temperature effect on longevity",
+       x = "Observed temperature deviation from 25C",
+       y = "Effect size",
+       color = "Pest staus",  # Set the title of the color legend
+       fill = "Pest status",
+       linetype = "Pest staus")   # Set the title of the fill legend (for ribbons)
+```
+
+
+### Chronic exposure only
 
 ```{r, sa.remove.24}
 
@@ -735,6 +887,7 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.an
 
 if(rerun){
   expose.data <- subset(rdata, Exposure.duration != "< 24 hours")
+  expose.data <- subset(expose.data, Exposure.duration != "1 to 5 days")
 #minq <- quantile(expose.data$es, 0.05)   
 #maxq <- quantile(expose.data$es, 0.95)
 
@@ -744,14 +897,16 @@ if(rerun){
 saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long_exposure.rds"))
 
 
-## Treatment temperature as a cubic effect (sesnsitivity analysis)
+## Treatment temperature as a cubic effect (sensitivity analysis)
 
-# re-cmpute the covariance matrix for subsetted data
+# re-compute the covariance matrix for subsetted data
+sdata$shared_control <- factor(sdata$Effect.size.code)
 VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
 
 
 # re-run cubic model
-meta_sa_exposure <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=3, raw=TRUE), random=                                list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+meta_sa_exposure <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=3, raw=TRUE), 
+                           random=list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
 
 saveRDS(meta_sa_exposure, here("Output", "models", "longevity", "meta_sa_long_exposure.rds"))
 } else {
@@ -780,6 +935,8 @@ table <- data.frame(Parameters = c("Longevity (mean)", "Linear Treatment Tempera
 flextable(table)
 ```
 
+
+### Other polynomials
 
 ```{r, higherorderpoly}
 
@@ -860,60 +1017,5 @@ ggplot(ctemp_data, aes(x = c_treattemp)) +
 
 
 ```
-
-
-
-
-
-```{r, pestsubanalysis}
-
-if(rerun){
-  pest.only <- subset(rdata, Agricultural.importance == "Pest")
-
-  VCV_pest.only <- impute_covariance_matrix(vi=pest.only$v, cluster = pest.only$shared_control, r=0.5)
-  
-  V2 <- VCV_pest.only
- 
-  mlma_pest.only <- rma.mv(es, V2,  mod = ~poly(c_treattemp, degree=3, raw=TRUE), 
-                        random= list(~ 1|study_code,  ~1|obs), data= pest.only, method= "REML", test="t")
- 
- saveRDS(mlma_pest.only, here("output", "models", "longevity", "mlma_pest.only.rds"))
-} else {
-  
-  mlma_pest.only <- readRDS(here("output", "models", "longevity", "mlma_pest.only.rds"))
-}
-
-```
-
-
-```{r, pestfixedfactor}
-
-if(rerun){
-  
-  # initial categories
-  table(rdata$Agricultural.importance)
-  
-  ## Recode everything not pest as "Not Pest"
-  pestdata <- rdata
-  pestdata$Agricultural.importance[which(pestdata$Agricultural.importance != "Pest")] <- "Not Pest"
-  
-  # recoded counts of categories
-  table(pestdata$Agricultural.importance)
-  
-
-  V2 <- impute_covariance_matrix(vi=pestdata$v, cluster = pestdata$shared_control, r=0.5)
-  
-  mlma_pest.fixed <- rma.mv(es, V2,  mod = ~ -1 + Agricultural.importance + poly(c_treattemp, degree=3, raw=TRUE), 
-                        random= list(~ 1|study_code,  ~1|obs), data= pestdata, method= "REML", test="t")
- 
-  saveRDS(mlma_pest.fixed, here("output", "models", "longevity", "mlma_pest.fixed.rds"))
-} else {
-  mlma_pest.fixed <- readRDS(here("output", "models", "longevity", "mlma_pest.fixed.rds"))
-}
-
-```
-
-
-
 
 
