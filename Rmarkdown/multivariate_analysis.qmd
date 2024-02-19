@@ -707,6 +707,11 @@ ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred.3, col = outcome, li
        linetype = "outcome") 
 ```
 
+
+### Sensitivity analysis- removing outliers
+
+### Warm subset
+
 ```{r, sa_multivariate_warm}
 #| echo: false
 #| warning: false
@@ -774,12 +779,10 @@ table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "L
 flextable(table)
 ```
 
-# Sensitivity warm 
-
 We found weaker, but qualitatively similar correlations, after removing outliers (between-study correlation = `r mlma_sa_warm$phi`, 95% CI: `r cis_warm.sa$ci.lb[1]` to `r cis_warm.sa$ci.ub[1]` within-study correlation= `r mlma_sa_warm$rho`, 95% CI: `r cis_warm.sa$ci.lb[2]` to `r cis_warm.sa$ci.ub[2]`) 
 
 
-
+### Cool subset
 
 ```{r, sa_multivariate_cool}
 #| echo: false
@@ -868,11 +871,120 @@ flextable(table)
 ```
 
 
-# Sensitivity cool (quadratic)
-
 We found qualitatively similar correlations, after removing outliers (between-study correlation = `r mlma_sa_cool$phi`, 95% CI: `r cis_cool.sa$ci.lb[1]` to `r cis_cool.sa$ci.ub[1]` within-study correlation= `r mlma_sa_cool$rho`, 95% CI: `r cis_cool.sa$ci.lb[2]` to `r cis_cool.sa$ci.ub[2]`) 
 
 
+### Sensitivity analysis- chronic exposure only
+
+# Warm subset
+
+```{r, sa_chronic_multivariate_warm}
+#| echo: false
+#| warning: false
+#| include: false
+
+rerun3=FALSE
+if(rerun3){
+  expose.data <- subset(data_warm, Exposure.duration != "< 24 hours")
+  expose.data <- subset(expose.data, Exposure.duration != "1 to 5 days") # 82 datapoints removed
+
+## make V matrix for sensitivity data
+ V_2 <- make_VCV_matrix(data = expose.data, cluster = "trial",  V = "v", rho = 0.5)
+
+ V2 <- metaAidR::make_VCV_matrix(data = expose.data, matrix = V_2, cluster = "shared_control",  V = "v", rho = 0.5)
+
+ # Check of PD
+  corpcor::is.positive.definite(V2) # FALSE
+
+# Can bend it to make it PD
+  V2 <- Matrix::nearPD(V2)$mat
+
+# Check of PD
+  corpcor::is.positive.definite(V2) # TRUE
+  
+  mlma_sa_chronic_warm <-  rma.mv(es ~ outcome*c_treattemp, V = V2,   
+                             random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
+                             struc = "UN", data = expose.data, test = "t", dfs = "contain")
+
+  mlma_sa_chronic_warm.report <- rma.mv(es ~ -1 + outcome + outcome:c_treattemp, V = V2,   
+                                   random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
+                                   struc = "UN", data = expose.data, test = "t", dfs = "contain")
+  
+  saveRDS(mlma_sa_chronic_warm, here("output", "models", "mlma_sa_chronic_warm.rds"))
+  saveRDS(mlma_sa_chronic_warm.report, here("output", "models", "mlma_sa_chronic_warm.report.rds"))
+  saveRDS(expose.data, here("output", "Output data", "mlma_sa_chronic_warm.data.rds"))
+  
+  cis_phi_warm.sa_chronic <- as.data.frame(confint(mlma_sa_chronic_warm, phi = 1))
+  cis_rho_warm.sa_chronic <- as.data.frame(confint(mlma_sa_chronic_warm, rho = 1))
+  cis_warm.sa_chronic <- rbind(cis_phi_warm.sa_chronic, cis_rho_warm.sa_chronic)
+  
+  write.csv(cis_warm.sa_chronic, here("output", "tables", "mlma_sa_chronic.warm_cis.csv"))
+  
+
+} else {
+  mlma_sa_chronic_warm <- readRDS(here("output", "models", "mlma_sa_chronic_warm.rds"))
+  mlma_sa_chronic_warmdata <- readRDS(here("output", "Output data", "mlma_sa_chronic_warm.data.rds"))
+  mlma_sa_chronic_warm.report <-  readRDS(here("output", "models", "mlma_sa_chronic_warm.report.rds"))
+  cis_warm.sa_chronic <- read.csv(here("output", "tables", "mlma_sa_chronic.warm_cis.csv"))
+}
+```
+
+
+# Cool subset
+
+```{r, sa_chronic_multivariate_cool}
+#| echo: false
+#| warning: false
+#| include: false
+
+rerun3=FALSE
+if(rerun3){
+  expose.data <- subset(data_cool, Exposure.duration != "< 24 hours")
+  expose.data <- subset(expose.data, Exposure.duration != "1 to 5 days") # 40 datapoints removed
+
+## make V matrix for sensitivity data
+ V_2 <- make_VCV_matrix(data = expose.data, cluster = "trial",  V = "v", rho = 0.5)
+
+ V2 <- metaAidR::make_VCV_matrix(data = expose.data, matrix = V_2, cluster = "shared_control",  V = "v", rho = 0.5)
+
+ # Check of PD
+  corpcor::is.positive.definite(V2) # FALSE
+
+# Can bend it to make it PD
+  V2 <- Matrix::nearPD(V2)$mat
+
+# Check of PD
+  corpcor::is.positive.definite(V2) # TRUE
+  
+  mlma_sa_chronic_cool <-  rma.mv(es ~ outcome*c_treattemp, V = V2,   
+                             random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
+                             struc = "UN", data = expose.data, test = "t", dfs = "contain")
+
+  mlma_sa_chronic_cool.report <- rma.mv(es ~ -1 + outcome + outcome:c_treattemp, V = V2,   
+                                   random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
+                                   struc = "UN", data = expose.data, test = "t", dfs = "contain")
+  
+  saveRDS(mlma_sa_chronic_cool, here("output", "models", "mlma_sa_chronic_cool.rds"))
+  saveRDS(mlma_sa_chronic_cool.report, here("output", "models", "mlma_sa_chronic_cool.report.rds"))
+  saveRDS(expose.data, here("output", "Output data", "mlma_sa_chronic_cool.data.rds"))
+  
+  cis_phi_cool.sa_chronic <- as.data.frame(confint(mlma_sa_chronic_cool, phi = 1))
+  cis_rho_cool.sa_chronic <- as.data.frame(confint(mlma_sa_chronic_cool, rho = 1))
+  cis_cool.sa_chronic <- rbind(cis_phi_warm.sa_chronic, cis_rho_cool.sa_chronic)
+  
+  write.csv(cis_cool.sa_chronic, here("output", "tables", "mlma_sa_chronic.cool_cis.csv"))
+  
+
+} else {
+  mlma_sa_chronic_cool <- readRDS(here("output", "models", "mlma_sa_chronic_cool.rds"))
+  mlma_sa_chronic_cooldata <- readRDS(here("output", "Output data", "mlma_sa_chronic_cool.data.rds"))
+  mlma_sa_chronic_cool.report <-  readRDS(here("output", "models", "mlma_sa_chronic_cool.report.rds"))
+  cis_cool.sa_chronic <- read.csv(here("output", "tables", "mlma_sa_chronic.cool_cis.csv"))
+}
+```
+
+
+### Higher-order polynomials
 
 ```{r, plot-highorder-polynomials}
 
@@ -1025,8 +1137,7 @@ ggplot(data = mlma_cool_long, aes(x = c_treattemp)) +
 ```
 
 
-
-
+### Pest sub-analysis
 
 ```{r,pestonly}
 
