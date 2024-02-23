@@ -617,11 +617,11 @@ VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_con
 meta_sa_year <- rma.mv(es, VCV_shared_sa,  mod= ~Publication.year,  
                     random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
 
-saveRDS(meta_sa_year, here("Output", "models", "reproduction", "meta_sa_year.rds"))
+saveRDS(meta_sa_year, here("Output", "models", "reproduction", "meta_rep_sa_year.rds"))
 } else {
   meta_year <- readRDS(here("Output", "models", "reproduction", "meta_rep_year.rds"))
   sdata <- readRDS(here("Output", "Output data", "reproduction", "sensitivity_data_rep.rds"))
-  meta_sa_year <- readRDS(here("Output", "models", "reproduction", "meta_sa_year.rds"))
+  meta_sa_year <- readRDS(here("Output", "models", "reproduction", "meta_rep_sa_year.rds"))
 }
 
 ```
@@ -685,6 +685,34 @@ bubble_plot(meta_sa_precision, mod = "precision", group="study_code")
 ### Sensitivity Analysis
 
 ### Treatment temperature
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+if(rerun){
+minq <- quantile(new_data$es, 0.05)   
+maxq <- quantile(new_data$es, 0.95)
+
+sdata <- subset(new_data, es > minq & es < maxq)
+saveRDS(sdata, here("Output", "Output data", "reproduction", "data_rep_sa.rds"))
+
+# re-compute the covariance matrix for subsetted data
+VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+
+# Quadratic model
+meta_sa_treat2 <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), 
+                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+
+saveRDS(meta_sa_treat2, here("Output", "models", "reproduction", "meta_sa_treat2.rds"))
+} else {
+  meta_sa_treat2 <- readRDS(here("Output", "models", "reproduction", "meta_sa_treat2.rds"))
+  sa_data <- readRDS(here("Output", "Output data", "reproduction", "data_rep_sa.rds"))
+}
+
+```
+
 
 ```{r, tbl-sactemp}
 #| label: tbl-sactemp
