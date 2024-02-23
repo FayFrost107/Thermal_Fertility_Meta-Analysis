@@ -455,7 +455,7 @@ flextable(table)
 
 ```{r, fig-figls}
 #| label: fig-figls
-#| fig-cap: Predicited Non-linear effects of temperature and life stage of the animal on mean effect size of reproduction. 
+#| fig-cap: Predicted Non-linear effects of temperature and life stage of the animal on mean effect size of reproduction. 
 preds.rep.ls <- predict(meta_treat_ls, addx=TRUE)
 ls_rep_data <- ls_data
 
@@ -544,15 +544,17 @@ if(rerun){
                           random= list(~ 1|study_code,  ~1|obs), data= pestdata, method= "REML", test="t")
  
   saveRDS(mlma_pest.fixed, here("output", "models", "reproduction", "mlma_pest.fixed.rds"))
+  saveRDS(pestdata, here("Output", "Output data",  "data_rep_pest.rds"))
 } else {
   mlma_pest.fixed <- readRDS(here("output", "models", "reproduction", "mlma_pest.fixed.rds"))
+  pestdata <- readRDS(here("Output", "Output data", "data_rep_pest.rds"))
 }
 
 ```
 
 ```{r, fig-figpest}
 #| label: fig-figpest
-#| fig-cap: Predicited Non-linear effects of temperature and pest status on mean effect size of reproduction. 
+#| fig-cap: Predicted Non-linear effects of temperature and pest status on mean effect size of reproduction. 
 preds.rep.pest <- predict(mlma_pest.fixed, addx=TRUE)
 pest_rep_data <- pestdata
 
@@ -664,7 +666,7 @@ flextable(table)
 
 ```{r}
 #| label: fig-ctemp_vs_sactemp
-#| fig-cap: Predicited models of sex exposed and temeprature effects on reproduction.  
+#| fig-cap: Predicted models of sex exposed and temeprature effects on reproduction.  
 
 preds.ctemp <- predict(meta_trait_treat2, addx=TRUE)
 preds.sa.ctemp <- predict(meta_sa_treat2, addx=TRUE)
@@ -883,7 +885,7 @@ minq <- quantile(new_data$es, 0.05)
 maxq <- quantile(new_data$es, 0.95)
 
 sdata <- subset(new_data, es > minq & es < maxq)
-saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep_sex.rds"))
+saveRDS(sdata, here("Output", "Output data", "reproduction", "pest_rep_sa_data.rds"))
 
 sdata$Agricultural.importance[which(sdata$Agricultural.importance != "Pest")] <- "Not Pest"
 
@@ -899,27 +901,28 @@ VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_con
                           random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
  
   saveRDS(mlma_sa_pest.fixed, here("output", "models", "reproduction", "mlma_sa_pest.fixed.rds"))
+  saveRDS(sdata, here("output", "Output data", "reproduction", "pest_rep_sa_data.rds"))
 } else {
-  mlma_pest.fixed <- readRDS(here("output", "models", "reproduction", "mlma_pest.fixed.rds"))
+  mlma_sa_pest.fixed <- readRDS(here("output", "models", "reproduction", "mlma_sa_pest.fixed.rds"))
+  pest_rep_sa_data <- readRDS(here("Output", "Output data", "reproduction", "pest_rep_sa_data.rds"))
 }
 
 ```
 
 ```{r, fig-figpestsa}
 #| label: fig-figpestsa
-#| fig-cap: Predicited Non-linear effects of temperature and pest status on mean effect size of reproduction (after removing outliers). 
-preds.rep.pest <- predict(mlma_sa_pest.fixed, addx=TRUE)
-pest_rep_data <- sdata
+#| fig-cap: Predicted Non-linear effects of temperature and pest status on mean effect size of reproduction (after removing outliers). 
+preds.rep.sa.pest <- predict(mlma_sa_pest.fixed, addx=TRUE)
 
-pest_rep_data$pred <- preds.rep.pest$pred  
-pest_rep_data$pred.lb <- preds.rep.pest$pi.lb
-pest_rep_data$pred.ub <- preds.rep.pest$pi.ub
-pest_rep_data$c.lb <- preds.rep.pest$ci.lb
-pest_rep_data$c.ub <- preds.rep.pest$ci.ub
+pest_rep_sa_data$pred <- preds.rep.sa.pest$pred  
+pest_rep_sa_data$pred.lb <- preds.rep.sa.pest$pi.lb
+pest_rep_sa_data$pred.ub <- preds.rep.sa.pest$pi.ub
+pest_rep_sa_data$c.lb <- preds.rep.sa.pest$ci.lb
+pest_rep_sa_data$c.ub <- preds.rep.sa.pest$ci.ub
 
 library(ggplot2)
 
-ggplot(data = pest_rep_data, aes(x = c_treattemp, y = pred, col = Agricultural.importance, linetype = Agricultural.importance)) +
+ggplot(data = pest_rep_sa_data, aes(x = c_treattemp, y = pred, col = Agricultural.importance, linetype = Agricultural.importance)) +
   geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Agricultural.importance), alpha = 0.15) +
   geom_line() +
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
