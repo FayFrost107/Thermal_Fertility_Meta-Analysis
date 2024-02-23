@@ -664,7 +664,7 @@ if(rerun){
 meta_precision <- rma.mv(es, VCV_shared,  mod= ~precision,  
                     random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 
-saveRDS(meta_precision, here("Output", "models", "longevity", "meta_rep_precision.rds"))
+saveRDS(meta_precision, here("Output", "models", "longevity", "meta_long_precision.rds"))
 
 
 # Sensitivity Analysis
@@ -674,7 +674,7 @@ minq <- quantile(rdata$es, 0.05)
 maxq <- quantile(rdata$es, 0.95)
 
 sdata <- subset(rdata, es > minq & es < maxq)
-saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_rep.rds"))
+saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long.rds"))
 
 # re-compute the covariance matrix for subsetted data
 VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
@@ -685,8 +685,8 @@ meta_sa_precision <- rma.mv(es, VCV_shared_sa,  mod= ~precision,
 
 saveRDS(meta_sa_precision, here("Output", "models", "longevity", "meta_sa_precision.rds"))
 } else {
-  meta_precision <- readRDS(here("Output", "models", "longevity", "meta_rep_precision.rds"))
-  sdata <- readRDS(here("Output", "Output data", "longevity", "sensitivity_data_rep.rds"))
+  meta_precision <- readRDS(here("Output", "models", "longevity", "meta_long_precision.rds"))
+  sdata <- readRDS(here("Output", "Output data", "longevity", "sensitivity_data_long.rds"))
   meta_sa_precision <- readRDS(here("Output", "models", "longevity", "meta_sa_precision.rds"))
 }
 
@@ -720,7 +720,7 @@ VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_con
 meta_sa_treat2 <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), 
                          random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
 
-saveRDS(meta_trait_treat2, here("Output", "models", "longevity", "meta_sa_treat2.rds"))
+saveRDS(meta_sa_treat2, here("Output", "models", "longevity", "meta_sa_treat2.rds"))
 } else {
   meta_sa_treat2 <- readRDS(here("Output", "models", "longevity", "meta_sa_treat2.rds"))
   sa_data <- readRDS(here("Output", "Output data", "longevity", "sensitivity_data_long_sex.rds"))
@@ -957,9 +957,8 @@ minq <- quantile(new_data$es, 0.05)
 maxq <- quantile(new_data$es, 0.95)
 
 sdata <- subset(new_data, es > minq & es < maxq)
-saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_rep_sex.rds"))
-
 sdata$Agricultural.importance[which(sdata$Agricultural.importance != "Pest")] <- "Not Pest"
+saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_pest.rds"))
 
 # re-compute the covariance matrix for subsetted data
 VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
@@ -973,7 +972,7 @@ saveRDS(mlma_sa_pest.fixed, here("output", "models", "longevity", "mlma_sa_pest.
 saveRDS(sdata, here("output", "Output data", "longevity", "pest_rep_sa_data.rds"))
 } else {
   mlma_sa_pest.fixed <- readRDS(here("output", "models", "longevity", "mlma_sa_pest.fixed.rds"))
-  pest_rep_sa_data <- readRDS(here("Output", "Output data", "longevity", "pest_rep_sa_data.rds"))
+  pest_sa_data <- readRDS(here("Output", "Output data", "longevity", "sensitivity_data_pest.rds"))
 }
 
 ```
