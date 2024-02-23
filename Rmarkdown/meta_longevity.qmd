@@ -558,8 +558,10 @@ if(rerun){
                         random= list(~ 1|study_code,  ~1|obs), data= pestdata, method= "REML", test="t")
  
   saveRDS(mlma_pest.fixed, here("output", "models", "longevity", "mlma_pest.fixed.rds"))
+  saveRDS(pestdata, here("Output", "Output data",  "longevity", "data_rep_pest.rds"))
 } else {
   mlma_pest.fixed <- readRDS(here("output", "models", "longevity", "mlma_pest.fixed.rds"))
+  pestdata <- readRDS(here("Output", "Output data", "longevity", "data_rep_pest.rds"))
 }
 
 ```
@@ -597,12 +599,14 @@ ggplot(data = pest_rep_data, aes(x = c_treattemp, y = pred, col = Agricultural.i
 
 ### Publication Bias
 
+### Effect of year
+
 ```{r}
 #| echo: false
 #| warning: false
 #| include: false
 
-## Publication Bias.
+## Effect of year
 
 if(rerun){
 meta_year <- rma.mv(es, VCV_shared,  mod= ~Publication.year,  
@@ -614,27 +618,23 @@ saveRDS(meta_year, here("Output", "models", "longevity", "meta_long_year.rds"))
 # Sensitivity Analysis
 # Preform a sensitivity analysis by removing the smallest and largest 5% of effect sizes.
 
-
 minq <- quantile(rdata$es, 0.05)
 maxq <- quantile(rdata$es, 0.95)
 
 sdata <- subset(rdata, es > minq & es < maxq)
 saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long.rds"))
 
-
-## Treatment temperature as a quadratic effect
-
 # re-compute the covariance matrix for subsetted data
 VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
 
-meta_sa_year2 <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), 
-                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+meta_sa_year <- rma.mv(es, VCV_shared_sa,  mod= ~Publication.year,  
+                    random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
 
-saveRDS(meta_sa_year2, here("Output", "models", "longevity", "meta_sa_year2.rds"))
+saveRDS(meta_sa_year, here("Output", "models", "longevity", "meta_sa_year.rds"))
 } else {
   meta_year <- readRDS(here("Output", "models", "longevity", "meta_long_year.rds"))
   sdata <- readRDS(here("Output", "Output data", "longevity", "sensitivity_data_long.rds"))
-  meta_sa_year2 <- readRDS(here("Output", "models", "longevity", "meta_sa_year2.rds"))
+  meta_sa_year <- readRDS(here("Output", "models", "longevity", "meta_sa_year.rds"))
 }
 ```
 
@@ -649,6 +649,52 @@ q <- bubble_plot(meta_year, mod = "Publication.year", group="study_code") +
   labs(x = "Year of Publication")
 q+ coord_cartesian(ylim=c(-20,10))
 ```
+
+### Effect of study precision
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+#| eval: false
+
+### Study precision
+
+if(rerun){
+meta_precision <- rma.mv(es, VCV_shared,  mod= ~precision,  
+                    random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+
+saveRDS(meta_precision, here("Output", "models", "longevity", "meta_rep_precision.rds"))
+
+
+# Sensitivity Analysis
+# Preform a sensitivity analysis by removing the smallest and largest 10% of effect sizes.
+
+minq <- quantile(rdata$es, 0.05)
+maxq <- quantile(rdata$es, 0.95)
+
+sdata <- subset(rdata, es > minq & es < maxq)
+saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_rep.rds"))
+
+# re-compute the covariance matrix for subsetted data
+VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+
+# model
+meta_sa_precision <- rma.mv(es, VCV_shared_sa,  mod= ~precision,  
+                    random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+
+saveRDS(meta_sa_precision, here("Output", "models", "longevity", "meta_sa_precision.rds"))
+} else {
+  meta_precision <- readRDS(here("Output", "models", "longevity", "meta_rep_precision.rds"))
+  sdata <- readRDS(here("Output", "Output data", "longevity", "sensitivity_data_rep.rds"))
+  meta_sa_precision <- readRDS(here("Output", "models", "longevity", "meta_sa_precision.rds"))
+}
+
+plot(sdata$es, sdata$precision)
+bubble_plot(meta_sa_precision, mod = "precision", group="study_code")
+
+```
+
 
 
 ### Sensitivity Analysis
@@ -924,8 +970,10 @@ mlma_sa_pest.fixed <- rma.mv(es, VCV_shared_sa,  mod = ~poly(c_treattemp, degree
                           random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
  
 saveRDS(mlma_sa_pest.fixed, here("output", "models", "longevity", "mlma_sa_pest.fixed.rds"))
+saveRDS(sdata, here("output", "Output data", "longevity", "pest_rep_sa_data.rds"))
 } else {
-  mlma_pest.fixed <- readRDS(here("output", "models", "longevity", "mlma_pest.fixed.rds"))
+  mlma_sa_pest.fixed <- readRDS(here("output", "models", "longevity", "mlma_sa_pest.fixed.rds"))
+  pest_rep_sa_data <- readRDS(here("Output", "Output data", "longevity", "pest_rep_sa_data.rds"))
 }
 
 ```
