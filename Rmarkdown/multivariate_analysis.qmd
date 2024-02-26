@@ -970,7 +970,7 @@ if(rerun3){
   
   cis_phi_cool.sa_chronic <- as.data.frame(confint(mlma_sa_chronic_cool, phi = 1))
   cis_rho_cool.sa_chronic <- as.data.frame(confint(mlma_sa_chronic_cool, rho = 1))
-  cis_cool.sa_chronic <- rbind(cis_phi_warm.sa_chronic, cis_rho_cool.sa_chronic)
+  cis_cool.sa_chronic <- rbind(cis_phi_cool.sa_chronic, cis_rho_cool.sa_chronic)
   
   write.csv(cis_cool.sa_chronic, here("output", "tables", "mlma_sa_chronic.cool_cis.csv"))
   
