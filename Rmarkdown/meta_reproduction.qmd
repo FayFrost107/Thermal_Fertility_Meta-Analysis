@@ -287,8 +287,32 @@ flextable(table)
 ```{r, fig-treat2}
 #| label: fig-treat2
 #| fig-cap: Bubble plot of effect size of reproduction when controlling for temperature. 
-p <- bubble_plot(meta_trait_treat2, mod = "c_treattemp", group="study_code")
-p+coord_cartesian(ylim=c(-10,10)) + labs(x = "Temperature deviation from 25C")
+
+preds.rep <- predict(meta_trait_treat2, addx=TRUE)
+rep_data <- rdata
+
+rep_data$pred <- preds.rep$pred  
+rep_data$pred.lb <- preds.rep$pi.lb
+rep_data$pred.ub <- preds.rep$pi.ub
+rep_data$c.lb <- preds.rep$ci.lb
+rep_data$c.ub <- preds.rep$ci.ub
+
+ggplot(rep_data, aes(x = c_treattemp, y = pred)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub), alpha = 0.15) +
+  geom_line() +
+  geom_line(aes(y=pred.lb), linetype="dotted") +
+  geom_line(aes(y=pred.ub), linetype="dotted") +
+  geom_hline(yintercept=0) +
+  geom_point(rdata, mapping=aes(x = c_treattemp, y = es, size=precision), shape=21, fill="white", 
+             stroke=0.2, alpha=0.5, show.legend = FALSE) +
+  scale_size(range = c(1, 5)) +
+  theme_bw() +
+  coord_cartesian(ylim=c(-12,6)) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
+  labs(x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction") 
+# Save as pdf (6x8)
+
 ```
 
 ```{r}
@@ -413,25 +437,27 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, li
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
   scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
   scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
+  coord_cartesian(ylim = c(-10,1)) +
   theme_bw() + 
   labs(title = "Predicted temperature effect on reproduction",
-       x = "Temperature devaition from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
        color = "Sex exposed",  # Set the title of the color legend
        fill = "Sex exposed",
        linetype = "Sex exposed")   # Set the title of the fill legend (for ribbons)
-
+# Save as pdf (6x6)
 
 #### observed data
 
 ggplot(data = sex_rep_data, aes(x = c_treattemp, y = es, col = Sex.exposed)) +
-  geom_point( alpha=0.5)+
+  geom_point(alpha=0.5)+
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
   scale_fill_manual(values = c("purple", "orange")) + 
   theme_bw() + 
   labs(title = "Observed temperature effect on reproduction",
-       x = "Temperature devaition from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
        color = "Sex exposed")   # Set the title of the fill legend (for ribbons)
 
 ```
@@ -473,11 +499,12 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.an
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
   scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
   scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
   theme_bw() + 
-    coord_cartesian(ylim = c(-10,1))+
+  coord_cartesian(ylim = c(-10,1)) +
   labs(title = "Predicted temperature effect on reproduction",
-       x = "Observed temperature devaition from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
        color = "Life stage",  # Set the title of the color legend
        fill = "Life stage",
        linetype = "Life stage")   # Set the title of the fill legend (for ribbons)
@@ -490,11 +517,12 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = es, col = Life.stage.of.anim
   geom_point( alpha=0.5)+
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
   scale_fill_manual(values = c("purple", "orange")) + 
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
   theme_bw() + 
-  coord_cartesian(ylim = c(-10,1))+
+  coord_cartesian(ylim = c(-10,1)) +
   labs(title = "Observed temperature effect on reproduction",
-       x = "Temperature devaition from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
        color = "Life stage")   # Set the title of the fill legend (for ribbons)
 
 
@@ -572,14 +600,15 @@ ggplot(data = pest_rep_data, aes(x = c_treattemp, y = pred, col = Agricultural.i
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
   scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
   scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
   theme_bw() + 
-    coord_cartesian(ylim = c(-10,1))+
+  coord_cartesian(ylim = c(-10,1)) +
   labs(title = "Predicted temperature effect on reproduction",
-       x = "Observed temperature deviation from 25C",
-       y = "Effect size",
-       color = "Pest staus",  # Set the title of the color legend
-       fill = "Pest status",
-       linetype = "Pest staus")   # Set the title of the fill legend (for ribbons)
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
+       color = "Agricultural.importance",  # Set the title of the color legend
+       fill = "Agricultural.importance",
+       linetype = "Agricultural.importance")   # Set the title of the fill legend (for ribbons)
 ```
 
 
@@ -753,10 +782,11 @@ library(ggplot2)
 p <- ggplot(data = ctemp_data, aes(x = c_treattemp, y = pred, col="Full data", fill = "Full data", linetype = "Full data")) +
   geom_ribbon(aes(ymin = c.lb, ymax = c.ub), alpha = 0.15) +
   geom_line() +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
   theme_bw() + 
   labs(title = "Predicted temperature effect on reproduction",
-       x = "Temperature deviation from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
        color = "Full data",  # Set the title of the color legend
        fill = "Full data",
        linetype = "Full data")   
@@ -768,8 +798,8 @@ p +
   scale_fill_manual(name = "Model", values = c("purple", "orange")) +    # Set colors for the ribbons
   scale_linetype_manual(name = "Model", values = c("solid", "dashed")) +
   labs(title = "Predicted temperature effect on reproduction",
-       x = "Temperature deviation from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
        color = "Sensitivity data",  # Set the title of the color legend
        fill = "Sensitivity data",
        linetype = "Sensitivity data")
@@ -846,10 +876,12 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, li
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
   scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
   scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
+  coord_cartesian(ylim = c(-7,1)) +
   theme_bw() + 
   labs(title = "Predicted temperature effect on reproduction",
-       x = "Temperature devaition from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
        color = "Sex exposed",  # Set the title of the color legend
        fill = "Sex exposed",
        linetype = "Sex exposed")   # Set the title of the fill legend (for ribbons)
@@ -871,9 +903,9 @@ sdata <- subset(ls_data, es > minq & es < maxq)
 saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep_ls.rds"))
 
 
-## Treatment temperature as a quadratic effect (sesnsitivity analysis)
+## Treatment temperature as a quadratic effect (sensitivity analysis)
 
-# re-cmpute the covariance matrix for subsetted data
+# re-compute the covariance matrix for subsetted data
 VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
 
 
@@ -924,11 +956,12 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.an
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
   scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
   scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
   theme_bw() + 
-    coord_cartesian(ylim = c(-10,1))+
+  coord_cartesian(ylim = c(-7,1)) +
   labs(title = "Predicted temperature effect on reproduction",
-       x = "Observed temperature devaition from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
        color = "Life stage",  # Set the title of the color legend
        fill = "Life stage",
        linetype = "Life stage")   # Set the title of the fill legend (for ribbons)
@@ -988,14 +1021,15 @@ ggplot(data = pest_rep_sa_data, aes(x = c_treattemp, y = pred, col = Agricultura
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
   scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
   scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
   theme_bw() + 
-    coord_cartesian(ylim = c(-6,1))+
+  coord_cartesian(ylim = c(-7,1))+
   labs(title = "Predicted temperature effect on reproduction",
-       x = "Observed temperature deviation from 25C",
-       y = "Effect size",
-       color = "Pest staus",  # Set the title of the color legend
-       fill = "Pest status",
-       linetype = "Pest staus")   # Set the title of the fill legend (for ribbons)
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
+       color = "Agricultural.importance",  # Set the title of the color legend
+       fill = "Agricultural.importance",
+       linetype = "Agricultural.importance")   # Set the title of the fill legend (for ribbons)
 ```
 
 
