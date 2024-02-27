@@ -535,18 +535,27 @@ data_cool2 <- subset(data, warm.cool == "Cool")
 
 
 #| fig-cap: Zoomed Between study correlation for reproduction and longevity- warm
-data_warm2  %>%  group_by(Experiment.code)  %>% reframe(es_repro = mean(es_reproduction), es_long = mean(es_longevity), mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + 
-                    geom_point(alpha = 1/10) + labs(x = "SMD (Reproduction)", y = "SMD (Longevity)", size =  "Sampling Variance") +
-                    theme_bw() +
-                    coord_cartesian(xlim=c(-5,2.5), ylim = c(-5,2.5)) +
-                    labs(title = "Between-study correlation- warm")
+data_warm2  %>%  group_by(Paper.code)  %>% reframe(es_repro = mean(es_reproduction), es_long = mean(es_longevity), 
+  mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + 
+  geom_point(alpha = 1/10, show.legend = FALSE) + 
+  scale_size(range = c(2, 15)) +
+  labs(x = "Average effect size (Reproduction)", y = "Average effect size (Adult lifespan)") +
+  theme_bw() +
+  coord_cartesian(xlim=c(-10,4), ylim = c(-6,1)) +
+  labs(title = "Between-study correlation- warm")
+# export as pdf (6x6)
 
 #| fig-cap: Zoomed Between study correlation for reproduction and longevity- cool
-data_cool2  %>%  group_by(Experiment.code)  %>% reframe(es_repro = mean(es_reproduction), es_long = mean(es_longevity), mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + 
-                    geom_point(alpha = 1/10) + labs(x = "SMD (Reproduction)", y = "SMD (Longevity)", size =  "Sampling Variance") +
-                    theme_bw() +
-                    coord_cartesian(xlim=c(-5,5), ylim = c(-5,5))+
-                    labs(title = "Between-study correlation- cool")
+data_cool2  %>%  group_by(Paper.code)  %>% reframe(es_repro = mean(es_reproduction), es_long = mean(es_longevity), 
+  mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + 
+  geom_point(alpha = 1/10, show.legend = FALSE) + 
+  scale_size(range = c(2, 15)) +
+  labs(x = "Average effect size (Reproduction)", y = "Average effect size (Adult lifespan)") +
+  theme_bw() +
+  coord_cartesian(xlim=c(-8,6), ylim = c(-4,10)) +
+  labs(title = "Between-study correlation- cool")
+# export as pdf (6x6)
+
 ```
 
 
@@ -571,13 +580,15 @@ ggplot(data = mlma_warm_data, aes(x = c_treattemp, y = pred, col = outcome, line
   scale_color_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) +
   scale_fill_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) + 
   scale_linetype_manual(values = c("solid", "dashed"), labels = c("Longevity", "Reproduciton"), name="Trait") +
+  scale_x_continuous(breaks=c(-5, 0, 5, 10, 15, 20), labels=c("20", "25", "30", "35", "40", "45")) +
   theme_bw() + 
   labs(title = "Predicted temperature effect- warm",
-       x = "Temperature deviation from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in life history trait",
        color = "Trait",
        fill = "Trait",
        linetype = "Trait")
+# Save as pdf (6x8)
 
 # Cool
 preds.mlma.cool <- predict(mv_mlma_split.cool, addx=TRUE)
@@ -595,13 +606,16 @@ ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred, col = outcome, line
   scale_color_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) +
   scale_fill_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) + 
   scale_linetype_manual(values = c("solid", "dashed"), labels = c("Longevity", "Reproduciton"), name="Trait") +
+  scale_x_continuous(breaks=c(-25, -20, -15, -10, -5, 0), labels=c("0", "5", "10", "15", "20", "25")) +
   theme_bw() + 
   labs(title = "Predicted temperature effect- cool",
-       x = "Temperature deviation from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in life history trait",
        color = "Trait", 
        fill = "Trait",
        linetype = "Trait") 
+# Save as pdf (6x8)
+
 ```
 
 
@@ -623,13 +637,15 @@ ggplot(data = mlma_warm_data, aes(x = c_treattemp, y = pred.2, col = outcome, li
   scale_color_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) +
   scale_fill_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) + 
   scale_linetype_manual(values = c("solid", "dashed"), labels = c("Longevity", "Reproduciton"), name="Trait") +
+  scale_x_continuous(breaks=c(-5, 0, 5, 10, 15, 20), labels=c("20", "25", "30", "35", "40", "45")) +
   theme_bw() + 
   labs(title = "Predicted temperature effect- warm",
-       x = "Temperature deviation from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in life history trait",
        color = "Trait", 
        fill = "Trait",
        linetype = "Trait") 
+# Save as pdf (6x8)
 
 # Cool
 preds.mlma.cool.2 <- predict(mv_mlma_split.cool_quad, addx=TRUE)
@@ -646,13 +662,16 @@ ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred.2, col = outcome, li
   scale_color_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) +
   scale_fill_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) + 
   scale_linetype_manual(values = c("solid", "dashed"), labels = c("Longevity", "Reproduciton"), name="Trait") +
+  scale_x_continuous(breaks=c(-25, -20, -15, -10, -5, 0), labels=c("0", "5", "10", "15", "20", "25")) +
   theme_bw() + 
   labs(title = "Predicted temperature effect- cool",
-       x = "Temperature deviation from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in life history trait",
        color = "Trait", 
        fill = "Trait",
        linetype = "Trait") 
+# Save as pdf (6x8)
+
 ```
 
 
