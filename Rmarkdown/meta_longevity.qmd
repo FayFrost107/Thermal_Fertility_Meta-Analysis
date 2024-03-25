@@ -26,7 +26,7 @@ tbl-prefix: "Table"
 #| eval: true
 #install.packages("pacman")
 #devtools::install_github("daniel1noble/metaAidR", force=TRUE)
-pacman::p_load(tidyverse, ggplot2, rotl, multcomp, dplyr, clubSandwich, tidyr,  metafor, ape, phytools, corrplot, metaAidR, orchaRd, latex2exp, flextable)
+pacman::p_load(tidyverse, here, ggplot2, rotl, multcomp, dplyr, clubSandwich, tidyr,  metafor, ape, phytools, corrplot, metaAidR, orchaRd, latex2exp, flextable)
 # source functions
 source(here("R", "func.R"))
 options(digits = 6)
@@ -735,11 +735,8 @@ bubble_plot(meta_sa_precision, mod = "precision", group="study_code")
 #| include: false
 
 if(rerun){
-minq <- quantile(new_data$es, 0.05)   
-maxq <- quantile(new_data$es, 0.95)
-
-sdata <- subset(new_data, es > minq & es < maxq)
-saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long_sex.rds"))
+sdata <- subset(rdata, es > -10 & es < 10) # Removes 36 data points
+saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long.rds"))
 
 # re-compute the covariance matrix for subsetted data
 VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
@@ -751,7 +748,7 @@ meta_sa_treat2 <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=2, r
 saveRDS(meta_sa_treat2, here("Output", "models", "longevity", "meta_sa_treat2.rds"))
 } else {
   meta_sa_treat2 <- readRDS(here("Output", "models", "longevity", "meta_sa_treat2.rds"))
-  sa_data <- readRDS(here("Output", "Output data", "longevity", "sensitivity_data_long_sex.rds"))
+  sa_data <- readRDS(here("Output", "Output data", "longevity", "sensitivity_data_long.rds"))
 }
 
 ```
@@ -831,10 +828,8 @@ p +
 #| include: false
 
 if(rerun){
-minq <- quantile(new_data$es, 0.05)   
-maxq <- quantile(new_data$es, 0.95)
-
-sdata <- subset(new_data, es > minq & es < maxq)
+sexdata <- readRDS(here("Output", "Output data",  "data_long_sex.rds"))
+sdata <- subset(sexdata, es > -10 & es < 10) # Removes 36 data points
 saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long_sex.rds"))
 
 # re-compute the covariance matrix for subsetted data
@@ -847,7 +842,7 @@ meta_sa_sex <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=2, raw=
 saveRDS(meta_sa_sex, here("Output", "models", "longevity", "meta_sa_long_sex.rds"))
 } else {
   meta_sa_sex <- readRDS(here("Output", "models", "longevity", "meta_sa_long_sex.rds"))
-  sa_rep_sexdata <- readRDS(here("Output", "Output data", "longevity", "sensitivity_data_long_sex.rds"))
+  sa_long_sexdata <- readRDS(here("Output", "Output data", "longevity", "sensitivity_data_long_sex.rds"))
 }
 
 ```
@@ -909,10 +904,8 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, li
 #| include: false
 
 if(rerun){
-minq <- quantile(ls_data$es, 0.05)   
-maxq <- quantile(ls_data$es, 0.95)
-
-sdata <- subset(ls_data, es > minq & es < maxq)
+ls_data <- readRDS(here("Output", "Output data", "data_long_ls.rds"))
+sdata <- subset(ls_data, es > -10 & es < 10) # Removes 36 data points
 saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long_ls.rds"))
 
 # re-compute the covariance matrix for subsetted data
@@ -984,10 +977,7 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.an
 #| include: false
 
 if(rerun){
-minq <- quantile(new_data$es, 0.05)   
-maxq <- quantile(new_data$es, 0.95)
-
-sdata <- subset(new_data, es > minq & es < maxq)
+sdata <- subset(rdata, es > -10 & es < 10) # Removes 36 data points
 sdata$Agricultural.importance[which(sdata$Agricultural.importance != "Pest")] <- "Not Pest"
 saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_pest.rds"))
 
