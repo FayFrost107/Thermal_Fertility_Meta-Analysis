@@ -26,7 +26,7 @@ tbl-prefix: "Table"
 #| eval: true
 #install.packages("pacman")
 #devtools::install_github("daniel1noble/metaAidR", force=TRUE)
-pacman::p_load(tidyverse, here, ggplot2, rotl, multicomp, dplyr, clubSandwich, tidyr,  metafor, ape, phytools, corrplot, metaAidR, orchaRd, latex2exp, flextable)
+pacman::p_load(tidyverse, ggplot2, rotl, multcomp, dplyr, clubSandwich, tidyr,  metafor, ape, phytools, corrplot, metaAidR, orchaRd, latex2exp, flextable)
 # source functions
 source(here("R", "func.R"))
 options(digits = 6)

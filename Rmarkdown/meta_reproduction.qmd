@@ -26,7 +26,7 @@ tbl-prefix: "Table"
 #| eval: true
 #install.packages("pacman")
 #devtools::install_github("daniel1noble/metaAidR", force=TRUE)
-pacman::p_load(tidyverse, here, ggplot2, rotl, multicomp, dplyr, clubSandwich, tidyr,  metafor, ape, phytools, corrplot, metaAidR, orchaRd, latex2exp, flextable)
+pacman::p_load(tidyverse, here, ggplot2, rotl, multcomp, dplyr, clubSandwich, tidyr,  metafor, ape, phytools, corrplot, metaAidR, orchaRd, latex2exp, flextable)
 # source functions
 source(here("R", "func.R"))
 options(digits = 6)
@@ -711,7 +711,7 @@ bubble_plot(meta_sa_precision, mod = "precision", group="study_code")
 
 
 
-### Sensitivity Analysis
+### Sensitivity Analysis (removing effect sizes below -10)
 
 ### Treatment temperature
 
@@ -721,10 +721,7 @@ bubble_plot(meta_sa_precision, mod = "precision", group="study_code")
 #| include: false
 
 if(rerun){
-minq <- quantile(new_data$es, 0.05)   
-maxq <- quantile(new_data$es, 0.95)
-
-sdata <- subset(new_data, es > minq & es < maxq)
+sdata <- subset(rdata, es > -10 & es < 10) # Removes 61 (negative) data points
 saveRDS(sdata, here("Output", "Output data", "reproduction", "data_rep_sa.rds"))
 
 # re-compute the covariance matrix for subsetted data
@@ -816,11 +813,8 @@ p +
 #| include: false
 
 if(rerun){
-minq <- quantile(new_data$es, 0.05)   
-maxq <- quantile(new_data$es, 0.95)
-
-sdata <- subset(new_data, es > minq & es < maxq)
-saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep_sex.rds"))
+sdata <- subset(new_data, es > -10 & es < 10) # Removes 61 (negative) data points
+saveRDS(sdata, here("Output", "Output data", "reproduction", "data_rep_sa_sex.rds"))
 
 
 ## Treatment temperature as a quadratic effect (sensitivity analysis)
@@ -830,14 +824,18 @@ VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_con
 
 
 # re-run quadratic model
+meta_sa_sex <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(c_treattemp, degree=2, raw=TRUE) * Sex.exposed, 
+                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
 meta_sa_sex_nointer <- rma.mv(es, VCV_shared_sa,  mod= ~ -1 + poly(c_treattemp, degree=2, raw=TRUE) * Sex.exposed, 
                          random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
 
-saveRDS(meta_sa_sex_nointer, here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
+saveRDS(meta_sa_sex, here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
+saveRDS(meta_sa_sex_nointer, here("Output", "models", "reproduction", "meta_sa_rep_sex_nointer.rds"))
 
 } else {
-  meta_sa_sex_nointer <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
-  sa_rep_sexdata <- readRDS(here("Output", "Output data", "reproduction", "sensitivity_data_rep_sex.rds"))
+  meta_sa_sex <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
+  meta_sa_sex_nointer <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_sex_nointer.rds"))
+  sa_rep_sexdata <- readRDS(here("Output", "Output data", "reproduction", "data_rep_sa_sex.rds"))
 }
 
 ```
@@ -859,25 +857,25 @@ flextable(table)
 #| label: fig-figsexsa
 #| fig-cap: Predicted models of sex exposed and temperature effects on reproduction (after removing outliers).  
 
-preds.rep.sex <- predict(meta_sa_sex_nointer, addx=TRUE)
+preds.rep.sex <- predict(meta_sa_sex, addx=TRUE)
 sex_rep_data <- sa_rep_sexdata
 
-sex_rep_data$pred <- preds.rep.sex$pred  
-sex_rep_data$pred.lb <- preds.rep.sex$pi.lb
-sex_rep_data$pred.ub <- preds.rep.sex$pi.ub
-sex_rep_data$c.lb <- preds.rep.sex$ci.lb
-sex_rep_data$c.ub <- preds.rep.sex$ci.ub
+sa_rep_sexdata$pred <- preds.rep.sex$pred  
+sa_rep_sexdata$pred.lb <- preds.rep.sex$pi.lb
+sa_rep_sexdata$pred.ub <- preds.rep.sex$pi.ub
+sa_rep_sexdata$c.lb <- preds.rep.sex$ci.lb
+sa_rep_sexdata$c.ub <- preds.rep.sex$ci.ub
 
 library(ggplot2)
 
-ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, linetype = Sex.exposed)) +
+ggplot(data = sa_rep_sexdata, aes(x = c_treattemp, y = pred, col = Sex.exposed, linetype = Sex.exposed)) +
   geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Sex.exposed), alpha = 0.15) +
   geom_line() +
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
   scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
   scale_linetype_manual(values = c("solid", "dashed")) +
   scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
-  coord_cartesian(ylim = c(-7,1)) +
+  coord_cartesian(ylim = c(-10,1)) +
   theme_bw() + 
   labs(title = "Predicted temperature effect on reproduction",
        x = "Experimental temperature (°C)",
@@ -896,27 +894,25 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, li
 #| include: false
 
 if(rerun){
-minq <- quantile(ls_data$es, 0.05)   
-maxq <- quantile(ls_data$es, 0.95)
+sdata <- subset(ls_data, es > -10 & es < 10) # Removes 58 (negative) data points
+saveRDS(sdata, here("Output", "Output data", "reproduction", "data_rep_sa_ls.rds"))
 
-sdata <- subset(ls_data, es > minq & es < maxq)
-saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep_ls.rds"))
-
-
-## Treatment temperature as a quadratic effect (sensitivity analysis)
 
 # re-compute the covariance matrix for subsetted data
 VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
 
-
 # re-run quadratic model
+meta_sa_ls <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(c_treattemp, degree=2, raw=TRUE) * Life.stage.of.animal, 
+                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
 meta_sa_ls_nointer <- rma.mv(es, VCV_shared_sa,  mod= ~ -1 + poly(c_treattemp, degree=2, raw=TRUE) * Life.stage.of.animal, 
                          random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
 
-saveRDS(meta_sa_ls_nointer, here("Output", "models", "reproduction", "meta_sa_rep_ls.rds"))
+saveRDS(meta_sa_ls, here("Output", "models", "reproduction", "meta_sa_rep_ls.rds"))
+saveRDS(meta_sa_ls_nointer, here("Output", "models", "reproduction", "meta_sa_rep_ls_nointer.rds"))
 } else {
   meta_sa_ls <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_ls.rds"))
-  sa_rep_lsdata <- readRDS(here("Output", "Output data", "reproduction", "sensitivity_data_rep_ls.rds"))
+  meta_sa_ls_nointer <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_ls_nointer.rds"))
+  sa_rep_lsdata <- readRDS(here("Output", "Output data", "reproduction", "data_rep_sa_ls.rds"))
 }
 
 ```
@@ -975,29 +971,22 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.an
 #| include: false
 
 if(rerun){
-minq <- quantile(new_data$es, 0.05)   
-maxq <- quantile(new_data$es, 0.95)
-
-sdata <- subset(new_data, es > minq & es < maxq)
-saveRDS(sdata, here("Output", "Output data", "reproduction", "pest_rep_sa_data.rds"))
-
+sdata <- subset(rdata, es > -10 & es < 10) # Removes 61 (negative) data points
 sdata$Agricultural.importance[which(sdata$Agricultural.importance != "Pest")] <- "Not Pest"
-
-## Treatment temperature as a quadratic effect (sensitivity analysis)
+saveRDS(sdata, here("Output", "Output data", "reproduction", "data_rep_sa_pest.rds"))
 
 # re-compute the covariance matrix for subsetted data
 VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
 
 # re-run quadratic model
-
-  mlma_sa_pest.fixed <- rma.mv(es, VCV_shared_sa,  mod = ~poly(c_treattemp, degree=2, raw=TRUE)*Agricultural.importance, 
+mlma_sa_pest <- rma.mv(es, VCV_shared_sa,  mod = ~poly(c_treattemp, degree=2, raw=TRUE)*Agricultural.importance, 
                           random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
  
-  saveRDS(mlma_sa_pest.fixed, here("output", "models", "reproduction", "mlma_sa_pest.fixed.rds"))
-  saveRDS(sdata, here("output", "Output data", "reproduction", "pest_rep_sa_data.rds"))
+saveRDS(mlma_sa_pest, here("output", "models", "reproduction", "mlma_sa_pest.rds"))
+saveRDS(sdata, here("output", "Output data", "reproduction", "data_rep_sa_pest.rds"))
 } else {
-  mlma_sa_pest.fixed <- readRDS(here("output", "models", "reproduction", "mlma_sa_pest.fixed.rds"))
-  pest_rep_sa_data <- readRDS(here("Output", "Output data", "reproduction", "pest_rep_sa_data.rds"))
+  mlma_sa_pest <- readRDS(here("output", "models", "reproduction", "mlma_sa_pest.rds"))
+  pest_rep_sa_data <- readRDS(here("Output", "Output data", "reproduction", "data_rep_sa_pest.rds"))
 }
 
 ```
@@ -1044,12 +1033,9 @@ ggplot(data = pest_rep_sa_data, aes(x = c_treattemp, y = pred, col = Agricultura
 if(rerun){
   expose.data <- subset(rdata, Exposure.duration != "< 24 hours")
   expose.data <- subset(expose.data, Exposure.duration != "1 to 5 days")
-#minq <- quantile(expose.data$es, 0.05)   
-#maxq <- quantile(expose.data$es, 0.95)
 
-#sdata <- subset(expose.data, es > minq & es < maxq)
-
-  sdata <- expose.data
+#sdata <- subset(rdata, es > -10 & es < 10)
+sdata <- expose.data
 saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep_exposure.rds"))
 
 
