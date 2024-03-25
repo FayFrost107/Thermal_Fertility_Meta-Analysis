@@ -248,7 +248,7 @@ data  %>%  group_by(Experiment.code)  %>% summarise(es_repro = mean(es_reproduct
 
 
 # Sensitivity Analysis 
-This removes the smallest and largest 5% effect sizes (so 10% of the data in total). The plot above shows only the experiments that have outlying effect sizes not the specific effect size itself.
+This removes any effect sizes above 10 or below -10. The plot above shows only the experiments that have outlying effect sizes not the specific effect size itself.
 
 
 ```{r, sa_multivariate}
@@ -258,12 +258,7 @@ This removes the smallest and largest 5% effect sizes (so 10% of the data in tot
 
 rerun3=FALSE
 if(rerun3){
-  
-
-minq <- quantile(data_long_final$es, 0.05)
-maxq <- quantile(data_long_final$es, 0.95)
-
-sdata <- subset(data_long_final, es > minq & es < maxq)
+sdata <- subset(data_long_final, es > -10 & es < 10) # Removes 44 effect sizes
 
 ## make V matrix for sensitivity data
  V_2 <- make_VCV_matrix(data = sdata, cluster = "trial",  V = "v", rho = 0.5)
@@ -738,12 +733,9 @@ ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred.3, col = outcome, li
 
 rerun3=FALSE
 if(rerun3){
-  
 
-minq <- quantile(data_warm$es, 0.05)
-maxq <- quantile(data_warm$es, 0.95)
-
-sdata <- subset(data_warm, es > minq & es < maxq)
+data_warm <- subset(data_long_final, warm.cool == "Warm") # 790 obs
+sdata <- subset(data_warm, es > -10 & es < 10) # 763 obs
 
 ## make V matrix for sensitivity data
  V_2 <- make_VCV_matrix(data = sdata, cluster = "trial",  V = "v", rho = 0.5)
@@ -811,11 +803,8 @@ We found weaker, but qualitatively similar correlations, after removing outliers
 rerun3=FALSE
 if(rerun3){
   
-
-minq <- quantile(data_cool$es, 0.05)
-maxq <- quantile(data_cool$es, 0.95)
-
-sdata <- subset(data_cool, es > minq & es < maxq)
+data_cool <- subset(data_long_final, warm.cool == "Cool") # 794 obs
+sdata <- subset(data_cool, es > -10 & es < 10) # 777 obs
 
 ## make V matrix for sensitivity data
  V_2 <- make_VCV_matrix(data = sdata, cluster = "trial",  V = "v", rho = 0.5)
@@ -836,19 +825,15 @@ sdata <- subset(data_cool, es > minq & es < maxq)
                                    random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
                                    struc = "UN", data = sdata, test = "t", dfs = "contain")
   
-  
-  
 # For tvalues and pvalues of absolute values of intercepts
 mlma_sa_cool.inter <- rma.mv(es ~ -1 + outcome*poly(c_treattemp, degree=2, raw=TRUE), V = V2,   
                                    random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
                                    struc = "UN", data = sdata, test = "t", dfs = "contain")
 
-
 # for reported table (absolute values), for absolute values of nonlinear terms
 mlma_sa_cool.report <- rma.mv(es ~ -1 + outcome:poly(c_treattemp, degree=2, raw=TRUE), V = V2,   
                                    random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
                                    struc = "UN", data = sdata, test = "t", dfs = "contain")
-
 
 
   saveRDS(mlma_sa_cool, here("output", "models", "mlma_sa_cool.rds"))
