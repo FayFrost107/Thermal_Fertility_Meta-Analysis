@@ -346,9 +346,9 @@ x_max+25 # Value in degrees
 if(rerun){
 new_data <- rdata
 
-new_data$Sex.exposed[which(new_data$Sex.exposed == "Male")] <- "Both"
 new_data$Sex.exposed[which(new_data$Sex.exposed == "Parthenogenetic")] <- "Female"
 
+new_data <- subset(new_data, Sex.exposed != "Male")
 new_data <- subset(new_data, Sex.exposed != "Unsure")
 
 VCV_shared_sex <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$shared_control, r=0.5)
