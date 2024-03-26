@@ -462,6 +462,45 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = es, col = Sex.exposed)) +
 
 ```
 
+### Sensitivity test- is the sex exposed effect driven by acute temperature treatments?
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+## Remove acute temperature effect sizes
+
+if(rerun){
+new_data <- rdata
+
+new_data$shared_control <- factor(new_data$Effect.size.code)
+new_data$study_code <- factor(new_data$Paper.code)  
+new_data$obs <- factor(c(1:nrow(new_data))) 
+
+new_data$Sex.exposed[which(new_data$Sex.exposed == "Parthenogenetic")] <- "Female"
+new_data <- subset(new_data, Sex.exposed != "Male")
+new_data <- subset(new_data, Sex.exposed != "Unsure")
+new_data <- subset(new_data, Exposure.duration != "< 24 hours")
+new_data <- subset(new_data, Exposure.duration != "1 to 5 days")
+
+VCV_shared_sex <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$shared_control, r=0.5)
+
+meta_sex_chronic <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed, 
+                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML", test="t")
+
+saveRDS(meta_sex_chronic, here("Output", "models", "reproduction", "meta_sex_chronic.rds"))
+saveRDS(new_data, here("Output", "Output data",  "data_sex_chronic.rds"))
+
+} else {
+  meta_sex_chronic <- readRDS(here("Output", "models", "reproduction", "meta_sex_chronic.rds"))
+  data_sex_chronic <- readRDS(here("Output", "Output data", "data_sex_chronic.rds"))
+  }
+
+
+```
+
+
 ### life stage of animal
 
 The relationship between temperature and reproduction depended on whether subjects were exposed as adults only (N= `r length(which(ls_data$Life.stage.of.animal == "Adult"))` effect sizes), or across multiple life stages (N= `r length(which(ls_data$Life.stage.of.animal == "Immature"))`effect sizes) (Interaction between the quadratic effect of (centered) temperature and life stage category, z=`r meta_treat_ls$zval[6]`, *p*-value = `r p_value(meta_treat_ls$pval[6])`), Table (@tbl-ls): the decline in reproduction above and below 25C is steeper when subjects were exposed across multiple life stages. 
