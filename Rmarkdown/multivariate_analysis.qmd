@@ -133,6 +133,8 @@ if(rerun){
 }
 
 mv_mlma_1
+
+mv_mlma_1_rbust <- robust(mv_mlma_1, cluster = data_long_final$Paper.code, clubSandwich = TRUE)
 # Now that we have the MLMA model we can start to estimate different fixed effects and ask if these fixed effects that impact ES for longevity and reproduction differ between the two. 
 if(rerun){
 mv_mlma_2 <- rma.mv(es ~ outcome*c_treattemp, V = V,    # This should compare whether the linear effect of temperature differs between the two outcomes when we allow for intercept, but without intercept  it will test whether there is a linear effect of temperature on each outcome separately and estimate that effect
