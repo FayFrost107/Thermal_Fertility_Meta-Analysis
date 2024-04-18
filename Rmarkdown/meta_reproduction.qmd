@@ -636,104 +636,6 @@ ggplot(data = pest_rep_data, aes(x = c_treattemp, y = pred, col = Agricultural.i
 ```
 
 
-### Publication Bias
-
-### Effect of year
-
-```{r}
-#| echo: false
-#| warning: false
-#| include: false
-
-### Effect of year
-
-if(rerun){
-meta_year <- rma.mv(es, VCV_shared,  mod= ~Publication.year,  
-                    random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
-
-saveRDS(meta_year, here("Output", "models", "reproduction", "meta_rep_year.rds"))
-
-
-# Sensitivity Analysis
-# Preform a sensitivity analysis by removing the smallest and largest 10% of effect sizes.
-
-minq <- quantile(rdata$es, 0.05)
-maxq <- quantile(rdata$es, 0.95)
-
-sdata <- subset(rdata, es > minq & es < maxq)
-saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep.rds"))
-
-# re-compute the covariance matrix for subsetted data
-VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
-
-# model
-meta_sa_year <- rma.mv(es, VCV_shared_sa,  mod= ~Publication.year,  
-                    random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
-
-saveRDS(meta_sa_year, here("Output", "models", "reproduction", "meta_rep_sa_year.rds"))
-} else {
-  meta_year <- readRDS(here("Output", "models", "reproduction", "meta_rep_year.rds"))
-  sdata <- readRDS(here("Output", "Output data", "reproduction", "sensitivity_data_rep.rds"))
-  meta_sa_year <- readRDS(here("Output", "models", "reproduction", "meta_rep_sa_year.rds"))
-}
-
-```
-
-We found no significant effect of year on effect suggesting that there was no presence of publication bias (*p*-value = `r meta_year$pval[2]`)
-
-
-```{r, fig-year}
-q <- bubble_plot(meta_sa_year, mod = "Publication.year", group="study_code") +
-  labs(x = "Year of Publication")
-q+ coord_cartesian(ylim=c(-10,5))
-```
-
-### Effect of study precision
-
-```{r}
-#| echo: false
-#| warning: false
-#| include: false
-#| eval: false
-
-### Study precision
-
-if(rerun){
-meta_precision <- rma.mv(es, VCV_shared,  mod= ~precision,  
-                    random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
-
-saveRDS(meta_precision, here("Output", "models", "reproduction", "meta_rep_precision.rds"))
-
-
-# Sensitivity Analysis
-# Preform a sensitivity analysis by removing the smallest and largest 10% of effect sizes.
-
-minq <- quantile(rdata$es, 0.05)
-maxq <- quantile(rdata$es, 0.95)
-
-sdata <- subset(rdata, es > minq & es < maxq)
-saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep.rds"))
-
-# re-compute the covariance matrix for subsetted data
-VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
-
-# model
-meta_sa_precision <- rma.mv(es, VCV_shared_sa,  mod= ~precision,  
-                    random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
-
-saveRDS(meta_sa_precision, here("Output", "models", "reproduction", "meta_sa_precision.rds"))
-} else {
-  meta_precision <- readRDS(here("Output", "models", "reproduction", "meta_rep_precision.rds"))
-  sdata <- readRDS(here("Output", "Output data", "reproduction", "sensitivity_data_rep.rds"))
-  meta_sa_precision <- readRDS(here("Output", "models", "reproduction", "meta_sa_precision.rds"))
-}
-
-plot(sdata$es, sdata$precision)
-bubble_plot(meta_sa_precision, mod = "precision", group="study_code")
-
-```
-
-
 
 ### Sensitivity Analysis (removing effect sizes below -10)
 
@@ -1202,6 +1104,84 @@ if(rerun){
   meta_pest_chronic <- readRDS(here("output", "models", "reproduction", "meta_pest_chronic.rds"))
   pestdata_chronic <- readRDS(here("Output", "Output data", "reproduction", "data_pest_chronic.rds"))
 }
+
+```
+
+
+
+### Publication Bias
+
+### Effect of year
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+### Effect of year
+
+if(rerun){
+meta_year <- rma.mv(es, VCV_shared,  mod= ~Publication.year,  
+                    random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+saveRDS(meta_year, here("Output", "models", "reproduction", "meta_rep_year.rds"))
+
+# After removing outliers
+sdata <- subset(rdata, es > -10 & es < 10) # Removes 61 (negative) data points
+VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+
+meta_sa_year <- rma.mv(es, VCV_shared_sa,  mod= ~Publication.year,  
+                    random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+saveRDS(meta_sa_year, here("Output", "models", "reproduction", "meta_rep_sa_year.rds"))
+
+} else {
+  meta_year <- readRDS(here("Output", "models", "reproduction", "meta_rep_year.rds"))
+  sdata <- readRDS(here("Output", "Output data", "reproduction", "sensitivity_data_rep.rds"))
+  meta_sa_year <- readRDS(here("Output", "models", "reproduction", "meta_rep_sa_year.rds"))
+}
+
+```
+
+We found no significant effect of year on effect suggesting that there was no presence of publication bias (*p*-value = `r meta_year$pval[2]`)
+
+
+```{r, fig-year}
+q <- bubble_plot(meta_sa_year, mod = "Publication.year", group="study_code") +
+  labs(x = "Year of Publication")
+q+ coord_cartesian(ylim=c(-10,5))
+```
+
+### Effect of study precision
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+#| eval: false
+
+### Study precision
+
+if(rerun){
+meta_precision <- rma.mv(es, VCV_shared,  mod= ~precision,  
+                    random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+saveRDS(meta_precision, here("Output", "models", "reproduction", "meta_rep_precision.rds"))
+
+# After removing outliers
+sdata <- subset(rdata, es > -10 & es < 10) # Removes 61 (negative) data points
+saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep.rds"))
+VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+
+meta_sa_precision <- rma.mv(es, VCV_shared_sa,  mod= ~precision,  
+                    random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+saveRDS(meta_sa_precision, here("Output", "models", "reproduction", "meta_sa_precision.rds"))
+
+} else {
+  meta_precision <- readRDS(here("Output", "models", "reproduction", "meta_rep_precision.rds"))
+  sdata <- readRDS(here("Output", "Output data", "reproduction", "sensitivity_data_rep.rds"))
+  meta_sa_precision <- readRDS(here("Output", "models", "reproduction", "meta_sa_precision.rds"))
+}
+
+plot(sdata$es, sdata$precision)
+bubble_plot(meta_sa_precision, mod = "precision", group="study_code")
 
 ```
 
