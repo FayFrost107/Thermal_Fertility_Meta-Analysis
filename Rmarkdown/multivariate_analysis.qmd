@@ -1,6 +1,6 @@
 ---
 title: "Multivariate Meta-Analysis for Longevity and Reproduction"
-author: "Daniel Noble & Fay Frost"
+author: "Fay Frost, Daniel Noble, & Liam Dougherty"
 format: docx
 execute:
   freeze: auto  # re-render only when source changes

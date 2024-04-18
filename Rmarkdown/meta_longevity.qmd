@@ -1,6 +1,6 @@
 ---
 title: "Multivariate Meta-Analysis for Longevity"
-author: "Daniel Noble & Fay Frost"
+author: "Fay Frost, Daniel Noble, & Liam Dougherty"
 format: docx
 execute:
   freeze: auto  # re-render only when source changes
@@ -1030,7 +1030,9 @@ ggplot(data = pest_rep_data, aes(x = c_treattemp, y = pred, col = Agricultural.i
 ```
 
 
-### Chronic exposure only
+### Sensitivity analysis: long-term exposure only
+
+# Temperature effect
 
 ```{r, sa.remove.24}
 
@@ -1039,14 +1041,10 @@ ggplot(data = pest_rep_data, aes(x = c_treattemp, y = pred, col = Agricultural.i
 #| include: false
 
 if(rerun){
-  expose.data <- subset(rdata, Exposure.duration != "< 24 hours")
-  expose.data <- subset(expose.data, Exposure.duration != "1 to 5 days")
-#minq <- quantile(expose.data$es, 0.05)   
-#maxq <- quantile(expose.data$es, 0.95)
+expose.data <- subset(rdata, Exposure.duration != "< 24 hours")
+expose.data <- subset(expose.data, Exposure.duration != "1 to 5 days")
 
-#sdata <- subset(expose.data, es > minq & es < maxq)
-
-  sdata <- expose.data
+sdata <- expose.data
 saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long_exposure.rds"))
 
 # re-compute the covariance matrix for subsetted data
@@ -1082,6 +1080,77 @@ table <- data.frame(Parameters = c("Longevity (mean)", "Linear Treatment Tempera
                     `p-value` = sapply(round(meta_sa_exposure$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
 flextable(table)
 ```
+
+
+# Life stage
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+## Remove acute temperature effect sizes
+
+if(rerun){
+ls_data <- rdata
+  
+ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Juvenile")] <- "Immature"
+ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Larvae")] <- "Immature"
+ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Mix")] <- "Immature"
+ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Pupae")] <- "Immature"
+ls_data <- subset(ls_data, Life.stage.of.animal != "Egg")
+ls_data <- subset(ls_data, Life.stage.of.animal != "Embryo")
+
+ls_data_chronic <- subset(ls_data, Exposure.duration != "< 24 hours")
+ls_data_chronic <- subset(ls_data_chronic, Exposure.duration != "1 to 5 days")
+
+VCV_shared_ls <- impute_covariance_matrix(vi=ls_data_chronic$v, cluster = ls_data_chronic$shared_control, r=0.5)
+
+meta_ls_chronic <- rma.mv(es, VCV_shared_ls,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Life.stage.of.animal, 
+                         random= list(~ 1|study_code,  ~1|obs), data= ls_data_chronic, method= "REML", test="t")
+
+saveRDS(meta_ls_chronic, here("Output", "models", "longevity", "meta_ls_chronic.rds"))
+saveRDS(ls_data_chronic, here("Output", "Output data", "longevity", "ls_data_chronic.rds"))
+
+} else {
+  meta_ls_chronic <- readRDS(here("Output", "models", "longevity", "meta_ls_chronic.rds"))
+  ls_data_chronic <- readRDS(here("Output", "Output data", "longevity", "ls_data_chronic.rds"))
+  }
+
+
+```
+
+
+# Pest staus
+
+```{r}
+
+if(rerun){
+
+  ## Recode everything not pest as "Not Pest"
+  pestdata <- rdata
+  pestdata$shared_control <- factor(pestdata$Effect.size.code)
+  pestdata$study_code <- factor(pestdata$Paper.code)  
+  pestdata$obs <- factor(c(1:nrow(pestdata)))
+  pestdata$Agricultural.importance[which(pestdata$Agricultural.importance != "Pest")] <- "Not Pest"
+
+  pestdata_chronic <- subset(pestdata, Exposure.duration != "< 24 hours")
+  pestdata_chronic <- subset(pestdata_chronic, Exposure.duration != "1 to 5 days")
+  
+  V2 <- impute_covariance_matrix(vi=pestdata_chronic$v, cluster = pestdata_chronic$shared_control, r=0.5)
+  
+  meta_pest_chronic <- rma.mv(es, V2,  mod = ~poly(c_treattemp, degree=2, raw=TRUE)*Agricultural.importance, 
+                          random= list(~ 1|study_code,  ~1|obs), data= pestdata_chronic, method= "REML", test="t")
+ 
+  saveRDS(meta_pest_chronic, here("output", "models", "longevity", "meta_pest_chronic.rds"))
+  saveRDS(pestdata_chronic, here("Output", "Output data", "longevity", "data_pest_chronic.rds"))
+} else {
+  meta_pest_chronic <- readRDS(here("output", "models", "longevity", "meta_pest_chronic.rds"))
+  pestdata_chronic <- readRDS(here("Output", "Output data", "longevity", "data_pest_chronic.rds"))
+}
+
+```
+
 
 
 ### Other polynomials

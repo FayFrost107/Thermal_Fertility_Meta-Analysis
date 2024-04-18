@@ -1,6 +1,6 @@
 ---
 title: "Results for Reproduction Meta-Analysis"
-author: "Daniel Noble & Fay Frost"
+author: "Fay Frost, Daniel Noble, & Liam Dougherty"
 format: docx
 execute:
   freeze: auto  # re-render only when source changes
@@ -466,43 +466,6 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = es, col = Sex.exposed)) +
 
 ```
 
-### Sensitivity test- is the sex exposed effect driven by acute temperature treatments?
-
-```{r}
-#| echo: false
-#| warning: false
-#| include: false
-
-## Remove acute temperature effect sizes
-
-if(rerun){
-new_data <- rdata
-
-new_data$shared_control <- factor(new_data$Effect.size.code)
-new_data$study_code <- factor(new_data$Paper.code)  
-new_data$obs <- factor(c(1:nrow(new_data))) 
-
-new_data$Sex.exposed[which(new_data$Sex.exposed == "Parthenogenetic")] <- "Female"
-new_data <- subset(new_data, Sex.exposed != "Male")
-new_data <- subset(new_data, Sex.exposed != "Unsure")
-new_data <- subset(new_data, Exposure.duration != "< 24 hours")
-new_data <- subset(new_data, Exposure.duration != "1 to 5 days")
-
-VCV_shared_sex <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$shared_control, r=0.5)
-
-meta_sex_chronic <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed, 
-                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML", test="t")
-
-saveRDS(meta_sex_chronic, here("Output", "models", "reproduction", "meta_sex_chronic.rds"))
-saveRDS(new_data, here("Output", "Output data",  "data_sex_chronic.rds"))
-
-} else {
-  meta_sex_chronic <- readRDS(here("Output", "models", "reproduction", "meta_sex_chronic.rds"))
-  data_sex_chronic <- readRDS(here("Output", "Output data", "data_sex_chronic.rds"))
-  }
-
-
-```
 
 
 ### life stage of animal
@@ -928,8 +891,8 @@ ggplot(data = sa_rep_sexdata, aes(x = c_treattemp, y = pred, col = Sex.exposed, 
        linetype = "Sex exposed")   # Set the title of the fill legend (for ribbons)
 ```
 
-### Life-stage
 
+### Life-stage
 
 ```{r}
 #| echo: false
@@ -1065,7 +1028,9 @@ ggplot(data = pest_rep_sa_data, aes(x = c_treattemp, y = pred, col = Agricultura
 ```
 
 
-### Chronic exposure only
+### Sensitivity analysis: long-term exposure only
+
+# Temperature effect
 
 ```{r, sa.remove.24}
 
@@ -1102,6 +1067,8 @@ saveRDS(meta_sa_exposure, here("Output", "models", "reproduction", "meta_sa_rep_
 
 ```
 
+# Temperature plot
+
 ```{r}
 #| label: fig-short.exposureremoved
 #| fig-cap: Bubble plot of effect size of longevity when controlling for temperature with < 24 hour exposure observations removed. 
@@ -1118,6 +1085,108 @@ table <- data.frame(Parameters = c("Reproduction (mean)", "Linear Treatment Temp
                     `p-value` = sapply(round(meta_sa_exposure$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
 flextable(table)
 ```
+
+
+### Sex exposed
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+## Remove acute temperature effect sizes
+
+if(rerun){
+new_data <- rdata
+
+new_data$shared_control <- factor(new_data$Effect.size.code)
+new_data$study_code <- factor(new_data$Paper.code)  
+new_data$obs <- factor(c(1:nrow(new_data))) 
+
+new_data$Sex.exposed[which(new_data$Sex.exposed == "Parthenogenetic")] <- "Female"
+new_data <- subset(new_data, Sex.exposed != "Male")
+new_data <- subset(new_data, Sex.exposed != "Unsure")
+new_data <- subset(new_data, Exposure.duration != "< 24 hours")
+new_data <- subset(new_data, Exposure.duration != "1 to 5 days")
+
+VCV_shared_sex <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$shared_control, r=0.5)
+
+meta_sex_chronic <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed, 
+                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML", test="t")
+
+saveRDS(meta_sex_chronic, here("Output", "models", "reproduction", "meta_sex_chronic.rds"))
+saveRDS(new_data, here("Output", "Output data",  "data_sex_chronic.rds"))
+
+} else {
+  meta_sex_chronic <- readRDS(here("Output", "models", "reproduction", "meta_sex_chronic.rds"))
+  data_sex_chronic <- readRDS(here("Output", "Output data", "data_sex_chronic.rds"))
+  }
+
+
+```
+
+# Life stage
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+## Remove acute temperature effect sizes
+
+if(rerun){
+new_data <- ls_data
+
+new_data <- subset(new_data, Exposure.duration != "< 24 hours")
+new_data <- subset(new_data, Exposure.duration != "1 to 5 days")
+
+VCV_shared_ls <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$shared_control, r=0.5)
+
+meta_ls_chronic <- rma.mv(es, VCV_shared_ls,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Life.stage.of.animal, 
+                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML", test="t")
+
+saveRDS(meta_ls_chronic, here("Output", "models", "reproduction", "meta_ls_chronic.rds"))
+saveRDS(new_data, here("Output", "Output data",  "data_ls_chronic.rds"))
+
+} else {
+  meta_ls_chronic <- readRDS(here("Output", "models", "reproduction", "meta_ls_chronic.rds"))
+  data_ls_chronic <- readRDS(here("Output", "Output data", "data_ls_chronic.rds"))
+  }
+
+
+```
+
+
+# Pest staus
+
+```{r}
+
+if(rerun){
+
+  ## Recode everything not pest as "Not Pest"
+  pestdata <- rdata
+  pestdata$shared_control <- factor(pestdata$Effect.size.code)
+  pestdata$study_code <- factor(pestdata$Paper.code)  
+  pestdata$obs <- factor(c(1:nrow(pestdata)))
+  pestdata$Agricultural.importance[which(pestdata$Agricultural.importance != "Pest")] <- "Not Pest"
+
+  pestdata_chronic <- subset(pestdata, Exposure.duration != "< 24 hours")
+  pestdata_chronic <- subset(pestdata_chronic, Exposure.duration != "1 to 5 days")
+  
+  V2 <- impute_covariance_matrix(vi=pestdata_chronic$v, cluster = pestdata_chronic$shared_control, r=0.5)
+  
+  meta_pest_chronic <- rma.mv(es, V2,  mod = ~poly(c_treattemp, degree=2, raw=TRUE)*Agricultural.importance, 
+                          random= list(~ 1|study_code,  ~1|obs), data= pestdata_chronic, method= "REML", test="t")
+ 
+  saveRDS(meta_pest_chronic, here("output", "models", "reproduction", "meta_pest_chronic.rds"))
+  saveRDS(pestdata_chronic, here("Output", "Output data",  "reproduction", "data_pest_chronic.rds"))
+} else {
+  meta_pest_chronic <- readRDS(here("output", "models", "reproduction", "meta_pest_chronic.rds"))
+  pestdata_chronic <- readRDS(here("Output", "Output data", "reproduction", "data_pest_chronic.rds"))
+}
+
+```
+
 
 
 ### Other polynomials
