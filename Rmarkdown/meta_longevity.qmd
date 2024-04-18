@@ -331,6 +331,27 @@ x_max+25 # Value in degrees
 
 ```
 
+# Sensitivity analysis- Robust variance estimation
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+# Check robustness of the results.
+
+if(rerun){
+meta_trait_treat2_robust <- robust(meta_trait_treat2, cluster = rdata$study_code, clubSandwich=TRUE)
+saveRDS(meta_trait_treat2_robust, here("Output", "models", "longevity", "meta_trait_treat2_robust.rds"))
+
+} else {
+  meta_trait_treat2_robust <- readRDS(here("Output", "models", "longevity", "meta_trait_treat2_robust.rds"))
+}
+
+```
+
+
 
 ### How does sex exposed and life stage of exposure effect longevity?
 

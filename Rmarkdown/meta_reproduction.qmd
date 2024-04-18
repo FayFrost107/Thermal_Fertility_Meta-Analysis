@@ -222,11 +222,7 @@ saveRDS(meta_trait_treattemp, here("Output", "models", "reproduction", "mv_rep_c
 
 
 # treat temp^2 centered
-meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
-
-# Check robustness of the results.
-meta_trait_treat2 <- robust(meta_trait_treat2, cluster = rdata$study_code, clubSandwich=TRUE)
-
+meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML", test="t")
 saveRDS(meta_trait_treat2, here("Output", "models", "reproduction", "mv_rep_ctemp2.rds"))
 r2_ml(meta_trait_treat2)
 
@@ -333,6 +329,28 @@ x_max= ans$maximum
 x_max+25 # Value in degrees
 
 ```
+
+
+# Sensitivity analysis- Robust variance estimation
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+# Check robustness of the results.
+
+if(rerun){
+meta_trait_treat2_robust <- robust(meta_trait_treat2, cluster = rdata$study_code, clubSandwich=TRUE)
+saveRDS(meta_trait_treat2_robust, here("Output", "models", "reproduction", "meta_trait_treat2_robust.rds"))
+
+} else {
+  meta_trait_treat2_robust <- readRDS(here("Output", "models", "reproduction", "meta_trait_treat2_robust.rds"))
+}
+
+```
+
 
 
 ### How does sex exposed and life stage of exposure effect reproduction?

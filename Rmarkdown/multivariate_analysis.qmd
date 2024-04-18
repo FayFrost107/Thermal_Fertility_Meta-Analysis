@@ -134,7 +134,7 @@ if(rerun){
 
 mv_mlma_1
 
-mv_mlma_1_rbust <- robust(mv_mlma_1, cluster = data_long_final$Paper.code, clubSandwich = TRUE)
+
 # Now that we have the MLMA model we can start to estimate different fixed effects and ask if these fixed effects that impact ES for longevity and reproduction differ between the two. 
 if(rerun){
 mv_mlma_2 <- rma.mv(es ~ outcome*c_treattemp, V = V,    # This should compare whether the linear effect of temperature differs between the two outcomes when we allow for intercept, but without intercept  it will test whether there is a linear effect of temperature on each outcome separately and estimate that effect
@@ -299,6 +299,9 @@ When removing the 10% largest and smallest effect sizes, the following effect si
 sort(setdiff(data_long_final$trial, sdata$trial))
 
 ```
+
+
+### Splitting analysis: warm versus cool
 
 
 ```{r, splittingwamrcool}
@@ -484,8 +487,6 @@ saveRDS(mv_mlma_split.cool_4, here("output", "models", "mv_mlma_split.cool_4.rds
 }
 ```
 
-
-# Splitting analysis: warm versus cool
 
 There was a significant and negative linear effect of temperature on both reproduction and adult lifespan at warmer temperatures (`r mv_mlma_split.warm.report$b[3]`  and `r mv_mlma_split.warm.report$b[4]` respectively, see Table 3 for estimates). However, reproductive traits were more strongly impacted by increased temperature changes than adult lifespan (contrast = `r mv_mlma_split.warm$b[4]`, 95% CI: `r mv_mlma_split.warm$ci.lb[4]` to `r mv_mlma_split.warm$ci.ub[4]`, df = `r mv_mlma_split.warm$ddf[4]`, *t*-value = `r mv_mlma_split.warm$zval[4]`,  *p*-value = `r p_value(mv_mlma_split.warm$pval[4])`). Figure 5 shows the predicted linear effects of temperature on reproduction and adult lifespan for observed treatment temperatures warmer than their reference temperature.  
 
@@ -722,6 +723,37 @@ ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred.3, col = outcome, li
        fill = "outcome",
        linetype = "outcome") 
 ```
+
+
+# Sensitivity analysis- Robust variance estimation
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+# Check robustness of the results.
+
+  if(rerun){
+
+  data_warm <- subset(data_long_final, warm.cool == "Warm")
+  data_cool <- subset(data_long_final, warm.cool == "Cool")
+  
+  mv_mlma_split.warm_rbust <- robust(mv_mlma_split.warm, cluster = data_warm$Paper.code, clubSandwich = TRUE)
+  mv_mlma_split.cool_quad_rbust <- robust(mv_mlma_split.cool_quad, cluster = data_cool$Paper.code, clubSandwich = TRUE)
+  
+
+saveRDS(meta_trait_treat2_robust, here("Output", "models", "longevity", "meta_trait_treat2_robust.rds"))
+
+} else {
+  meta_trait_treat2_robust <- readRDS(here("Output", "models", "longevity", "meta_trait_treat2_robust.rds"))
+}
+
+```
+
+
+
 
 
 ### Sensitivity analysis- removing outliers
