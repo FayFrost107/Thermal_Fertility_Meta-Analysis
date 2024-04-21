@@ -1042,6 +1042,36 @@ saveRDS(ls_data_chronic, here("Output", "Output data", "longevity", "ls_data_chr
 
 ```
 
+```{r, fig-figls}
+#| label: fig-figls
+#| fig-cap: Predicted models of life stage and temeprature effects on longevity.  
+
+preds.long.ls <- predict(meta_ls_chronic, addx=TRUE)
+
+ls_data_chronic$pred <- preds.long.ls$pred  
+ls_data_chronic$pred.lb <- preds.long.ls$pi.lb
+ls_data_chronic$pred.ub <- preds.long.ls$pi.ub
+ls_data_chronic$c.lb <- preds.long.ls$ci.lb
+ls_data_chronic$c.ub <- preds.long.ls$ci.ub
+
+library(ggplot2)
+
+ggplot(data = ls_data_chronic, aes(x = c_treattemp, y = pred, col = Life.stage.of.animal, linetype = Life.stage.of.animal)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Life.stage.of.animal), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
+  theme_bw() + 
+  labs(title = "Predicted temperature effect on longevity",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in adult lifespan",
+       color = "Life stage",  # Set the title of the color legend
+       fill = "Life stage",
+       linetype = "Life stage")   # Set the title of the fill legend (for ribbons)
+```
+
 
 # Pest staus
 

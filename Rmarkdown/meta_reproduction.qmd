@@ -1045,6 +1045,38 @@ saveRDS(new_data, here("Output", "Output data",  "data_sex_chronic.rds"))
 
 ```
 
+```{r, fig-figsexsa}
+#| label: fig-figsexsa
+#| fig-cap: Predicted models of sex exposed and temperature effects on reproduction (after removing outliers).  
+
+preds.rep.sex <- predict(meta_sex_chronic, addx=TRUE)
+chronic_rep_sexdata <- new_data
+
+chronic_rep_sexdata$pred <- preds.rep.sex$pred  
+chronic_rep_sexdata$pred.lb <- preds.rep.sex$pi.lb
+chronic_rep_sexdata$pred.ub <- preds.rep.sex$pi.ub
+chronic_rep_sexdata$c.lb <- preds.rep.sex$ci.lb
+chronic_rep_sexdata$c.ub <- preds.rep.sex$ci.ub
+
+library(ggplot2)
+
+ggplot(data = chronic_rep_sexdata, aes(x = c_treattemp, y = pred, col = Sex.exposed, linetype = Sex.exposed)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Sex.exposed), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
+  coord_cartesian(ylim = c(-10,1)) +
+  theme_bw() + 
+  labs(title = "Predicted temperature effect on reproduction",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
+       color = "Sex exposed",  # Set the title of the color legend
+       fill = "Sex exposed",
+       linetype = "Sex exposed")   # Set the title of the fill legend (for ribbons)
+```
+
 # Life stage
 
 ```{r}
@@ -1107,6 +1139,36 @@ if(rerun){
 
 ```
 
+```{r, fig-figsexsa}
+#| label: fig-figsexsa
+#| fig-cap: Predicted models of sex exposed and temperature effects on reproduction (after removing outliers).  
+
+preds.rep.pest <- predict(meta_pest_chronic, addx=TRUE)
+
+pestdata_chronic$pred <- preds.rep.pest$pred  
+pestdata_chronic$pred.lb <- preds.rep.pest$pi.lb
+pestdata_chronic$pred.ub <- preds.rep.pest$pi.ub
+pestdata_chronic$c.lb <- preds.rep.pest$ci.lb
+pestdata_chronic$c.ub <- preds.rep.pest$ci.ub
+
+library(ggplot2)
+
+ggplot(data = pestdata_chronic, aes(x = c_treattemp, y = pred, col = Agricultural.importance, linetype = Agricultural.importance))+
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Agricultural.importance), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
+  coord_cartesian(ylim = c(-10,1)) +
+  theme_bw() + 
+  labs(title = "Predicted temperature effect on reproduction",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
+       color = "Agricultural.importance",  # Set the title of the color legend
+       fill = "Agricultural.importance",
+       linetype = "Agricultural.importance")   # Set the title of the fill legend (for ribbons)
+```
 
 
 ### Publication Bias
