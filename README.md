@@ -20,7 +20,8 @@ Data / "Species_Classifications.csv"
 
 is called to enure that all species classifications are accurate.
 
-  Depending on which analysis you are performing the specific phylogentic tree is loaded. This will be one of the three trees in the phylogeny folder
+
+ Depending on which analysis you are performing the specific phylogentic tree is loaded. This will be one of the three trees in the phylogeny folder
   
    - all_long_excHUM251_tree.nex
    - all_reproduction_excHUM251_tree.nex
@@ -33,4 +34,6 @@ is called to enure that all species classifications are accurate.
    - Output / reproduction_meta-analysis_excHUM251.RData
    - Output / longevity_meta-analysis.RData
 
-     The Rdata fil for the survival meta-analysis is not provided as the number of effect sizes is quite small and the models can be run quickly on the fly.  
+     The Rdata file for the survival meta-analysis is not provided as the number of effect sizes is quite small and the models can be run quickly on the fly.
+
+A summary of the completed analysis for temperature effects on reproduction and longevity are given in the Rmarkdown folder. The files "meta_reproduction.qmd" and "meta_longevity.qmd" provide a comprehensive explanation of the final models used in each analysis and the results that were obtained. 
