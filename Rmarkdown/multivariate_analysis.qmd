@@ -1,6 +1,6 @@
 ---
 title: "Multivariate Meta-Analysis for Longevity and Reproduction"
-author: "Daniel Noble & Fay Frost"
+author: "Fay Frost, Daniel Noble, & Liam Dougherty"
 format: docx
 execute:
   freeze: auto  # re-render only when source changes
@@ -133,6 +133,8 @@ if(rerun){
 }
 
 mv_mlma_1
+
+
 # Now that we have the MLMA model we can start to estimate different fixed effects and ask if these fixed effects that impact ES for longevity and reproduction differ between the two. 
 if(rerun){
 mv_mlma_2 <- rma.mv(es ~ outcome*c_treattemp, V = V,    # This should compare whether the linear effect of temperature differs between the two outcomes when we allow for intercept, but without intercept  it will test whether there is a linear effect of temperature on each outcome separately and estimate that effect
@@ -248,7 +250,7 @@ data  %>%  group_by(Experiment.code)  %>% summarise(es_repro = mean(es_reproduct
 
 
 # Sensitivity Analysis 
-This removes the smallest and largest 5% effect sizes (so 10% of the data in total). The plot above shows only the experiments that have outlying effect sizes not the specific effect size itself.
+This removes any effect sizes above 10 or below -10. The plot above shows only the experiments that have outlying effect sizes not the specific effect size itself.
 
 
 ```{r, sa_multivariate}
@@ -258,12 +260,7 @@ This removes the smallest and largest 5% effect sizes (so 10% of the data in tot
 
 rerun3=FALSE
 if(rerun3){
-  
-
-minq <- quantile(data_long_final$es, 0.05)
-maxq <- quantile(data_long_final$es, 0.95)
-
-sdata <- subset(data_long_final, es > minq & es < maxq)
+sdata <- subset(data_long_final, es > -10 & es < 10) # Removes 44 effect sizes
 
 ## make V matrix for sensitivity data
  V_2 <- make_VCV_matrix(data = sdata, cluster = "trial",  V = "v", rho = 0.5)
@@ -302,6 +299,9 @@ When removing the 10% largest and smallest effect sizes, the following effect si
 sort(setdiff(data_long_final$trial, sdata$trial))
 
 ```
+
+
+### Splitting analysis: warm versus cool
 
 
 ```{r, splittingwamrcool}
@@ -488,8 +488,6 @@ saveRDS(mv_mlma_split.cool_4, here("output", "models", "mv_mlma_split.cool_4.rds
 ```
 
 
-# Splitting analysis: warm versus cool
-
 There was a significant and negative linear effect of temperature on both reproduction and adult lifespan at warmer temperatures (`r mv_mlma_split.warm.report$b[3]`  and `r mv_mlma_split.warm.report$b[4]` respectively, see Table 3 for estimates). However, reproductive traits were more strongly impacted by increased temperature changes than adult lifespan (contrast = `r mv_mlma_split.warm$b[4]`, 95% CI: `r mv_mlma_split.warm$ci.lb[4]` to `r mv_mlma_split.warm$ci.ub[4]`, df = `r mv_mlma_split.warm$ddf[4]`, *t*-value = `r mv_mlma_split.warm$zval[4]`,  *p*-value = `r p_value(mv_mlma_split.warm$pval[4])`). Figure 5 shows the predicted linear effects of temperature on reproduction and adult lifespan for observed treatment temperatures warmer than their reference temperature.  
 
 
@@ -535,18 +533,27 @@ data_cool2 <- subset(data, warm.cool == "Cool")
 
 
 #| fig-cap: Zoomed Between study correlation for reproduction and longevity- warm
-data_warm2  %>%  group_by(Experiment.code)  %>% reframe(es_repro = mean(es_reproduction), es_long = mean(es_longevity), mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + 
-                    geom_point(alpha = 1/10) + labs(x = "SMD (Reproduction)", y = "SMD (Longevity)", size =  "Sampling Variance") +
-                    theme_bw() +
-                    coord_cartesian(xlim=c(-5,2.5), ylim = c(-5,2.5)) +
-                    labs(title = "Between-study correlation- warm")
+data_warm2  %>%  group_by(Paper.code)  %>% reframe(es_repro = mean(es_reproduction), es_long = mean(es_longevity), 
+  mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + 
+  geom_point(alpha = 1/10, show.legend = FALSE) + 
+  scale_size(range = c(2, 15)) +
+  labs(x = "Average effect size (Reproduction)", y = "Average effect size (Adult lifespan)") +
+  theme_bw() +
+  coord_cartesian(xlim=c(-10,4), ylim = c(-6,1)) +
+  labs(title = "Between-study correlation- warm")
+# export as pdf (6x6)
 
 #| fig-cap: Zoomed Between study correlation for reproduction and longevity- cool
-data_cool2  %>%  group_by(Experiment.code)  %>% reframe(es_repro = mean(es_reproduction), es_long = mean(es_longevity), mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + 
-                    geom_point(alpha = 1/10) + labs(x = "SMD (Reproduction)", y = "SMD (Longevity)", size =  "Sampling Variance") +
-                    theme_bw() +
-                    coord_cartesian(xlim=c(-5,5), ylim = c(-5,5))+
-                    labs(title = "Between-study correlation- cool")
+data_cool2  %>%  group_by(Paper.code)  %>% reframe(es_repro = mean(es_reproduction), es_long = mean(es_longevity), 
+  mean_v = (v_reproduction + v_longevity)/2) %>% ggplot(aes(x = es_repro, y = es_long, size = mean_v)) + 
+  geom_point(alpha = 1/10, show.legend = FALSE) + 
+  scale_size(range = c(2, 15)) +
+  labs(x = "Average effect size (Reproduction)", y = "Average effect size (Adult lifespan)") +
+  theme_bw() +
+  coord_cartesian(xlim=c(-8,6), ylim = c(-4,10)) +
+  labs(title = "Between-study correlation- cool")
+# export as pdf (6x6)
+
 ```
 
 
@@ -571,13 +578,15 @@ ggplot(data = mlma_warm_data, aes(x = c_treattemp, y = pred, col = outcome, line
   scale_color_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) +
   scale_fill_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) + 
   scale_linetype_manual(values = c("solid", "dashed"), labels = c("Longevity", "Reproduciton"), name="Trait") +
+  scale_x_continuous(breaks=c(-5, 0, 5, 10, 15, 20), labels=c("20", "25", "30", "35", "40", "45")) +
   theme_bw() + 
   labs(title = "Predicted temperature effect- warm",
-       x = "Temperature deviation from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in life history trait",
        color = "Trait",
        fill = "Trait",
        linetype = "Trait")
+# Save as pdf (6x8)
 
 # Cool
 preds.mlma.cool <- predict(mv_mlma_split.cool, addx=TRUE)
@@ -595,13 +604,16 @@ ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred, col = outcome, line
   scale_color_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) +
   scale_fill_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) + 
   scale_linetype_manual(values = c("solid", "dashed"), labels = c("Longevity", "Reproduciton"), name="Trait") +
+  scale_x_continuous(breaks=c(-25, -20, -15, -10, -5, 0), labels=c("0", "5", "10", "15", "20", "25")) +
   theme_bw() + 
   labs(title = "Predicted temperature effect- cool",
-       x = "Temperature deviation from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in life history trait",
        color = "Trait", 
        fill = "Trait",
        linetype = "Trait") 
+# Save as pdf (6x8)
+
 ```
 
 
@@ -623,13 +635,15 @@ ggplot(data = mlma_warm_data, aes(x = c_treattemp, y = pred.2, col = outcome, li
   scale_color_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) +
   scale_fill_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) + 
   scale_linetype_manual(values = c("solid", "dashed"), labels = c("Longevity", "Reproduciton"), name="Trait") +
+  scale_x_continuous(breaks=c(-5, 0, 5, 10, 15, 20), labels=c("20", "25", "30", "35", "40", "45")) +
   theme_bw() + 
   labs(title = "Predicted temperature effect- warm",
-       x = "Temperature deviation from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in life history trait",
        color = "Trait", 
        fill = "Trait",
        linetype = "Trait") 
+# Save as pdf (6x8)
 
 # Cool
 preds.mlma.cool.2 <- predict(mv_mlma_split.cool_quad, addx=TRUE)
@@ -646,13 +660,16 @@ ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred.2, col = outcome, li
   scale_color_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) +
   scale_fill_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduciton")) + 
   scale_linetype_manual(values = c("solid", "dashed"), labels = c("Longevity", "Reproduciton"), name="Trait") +
+  scale_x_continuous(breaks=c(-25, -20, -15, -10, -5, 0), labels=c("0", "5", "10", "15", "20", "25")) +
   theme_bw() + 
   labs(title = "Predicted temperature effect- cool",
-       x = "Temperature deviation from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in life history trait",
        color = "Trait", 
        fill = "Trait",
        linetype = "Trait") 
+# Save as pdf (6x8)
+
 ```
 
 
@@ -707,6 +724,42 @@ ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred.3, col = outcome, li
        linetype = "outcome") 
 ```
 
+
+# Sensitivity analysis- Robust variance estimation
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+# Check robustness of the results.
+
+  if(rerun){
+
+  data_warm <- subset(data_long_final, warm.cool == "Warm")
+  data_cool <- subset(data_long_final, warm.cool == "Cool")
+  
+  mv_mlma_split.warm_rbust <- robust(mv_mlma_split.warm, cluster = data_warm$Paper.code, clubSandwich = TRUE)
+  mv_mlma_split.cool_quad_rbust <- robust(mv_mlma_split.cool_quad, cluster = data_cool$Paper.code, clubSandwich = TRUE)
+  
+
+saveRDS(meta_trait_treat2_robust, here("Output", "models", "longevity", "meta_trait_treat2_robust.rds"))
+
+} else {
+  meta_trait_treat2_robust <- readRDS(here("Output", "models", "longevity", "meta_trait_treat2_robust.rds"))
+}
+
+```
+
+
+
+
+
+### Sensitivity analysis- removing outliers
+
+### Warm subset
+
 ```{r, sa_multivariate_warm}
 #| echo: false
 #| warning: false
@@ -714,12 +767,9 @@ ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred.3, col = outcome, li
 
 rerun3=FALSE
 if(rerun3){
-  
 
-minq <- quantile(data_warm$es, 0.05)
-maxq <- quantile(data_warm$es, 0.95)
-
-sdata <- subset(data_warm, es > minq & es < maxq)
+data_warm <- subset(data_long_final, warm.cool == "Warm") # 790 obs
+sdata <- subset(data_warm, es > -10 & es < 10) # 763 obs
 
 ## make V matrix for sensitivity data
  V_2 <- make_VCV_matrix(data = sdata, cluster = "trial",  V = "v", rho = 0.5)
@@ -774,12 +824,10 @@ table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "L
 flextable(table)
 ```
 
-# Sensitivity warm 
-
 We found weaker, but qualitatively similar correlations, after removing outliers (between-study correlation = `r mlma_sa_warm$phi`, 95% CI: `r cis_warm.sa$ci.lb[1]` to `r cis_warm.sa$ci.ub[1]` within-study correlation= `r mlma_sa_warm$rho`, 95% CI: `r cis_warm.sa$ci.lb[2]` to `r cis_warm.sa$ci.ub[2]`) 
 
 
-
+### Cool subset
 
 ```{r, sa_multivariate_cool}
 #| echo: false
@@ -789,11 +837,8 @@ We found weaker, but qualitatively similar correlations, after removing outliers
 rerun3=FALSE
 if(rerun3){
   
-
-minq <- quantile(data_cool$es, 0.05)
-maxq <- quantile(data_cool$es, 0.95)
-
-sdata <- subset(data_cool, es > minq & es < maxq)
+data_cool <- subset(data_long_final, warm.cool == "Cool") # 794 obs
+sdata <- subset(data_cool, es > -10 & es < 10) # 777 obs
 
 ## make V matrix for sensitivity data
  V_2 <- make_VCV_matrix(data = sdata, cluster = "trial",  V = "v", rho = 0.5)
@@ -814,19 +859,15 @@ sdata <- subset(data_cool, es > minq & es < maxq)
                                    random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
                                    struc = "UN", data = sdata, test = "t", dfs = "contain")
   
-  
-  
 # For tvalues and pvalues of absolute values of intercepts
 mlma_sa_cool.inter <- rma.mv(es ~ -1 + outcome*poly(c_treattemp, degree=2, raw=TRUE), V = V2,   
                                    random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
                                    struc = "UN", data = sdata, test = "t", dfs = "contain")
 
-
 # for reported table (absolute values), for absolute values of nonlinear terms
 mlma_sa_cool.report <- rma.mv(es ~ -1 + outcome:poly(c_treattemp, degree=2, raw=TRUE), V = V2,   
                                    random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
                                    struc = "UN", data = sdata, test = "t", dfs = "contain")
-
 
 
   saveRDS(mlma_sa_cool, here("output", "models", "mlma_sa_cool.rds"))
@@ -868,11 +909,120 @@ flextable(table)
 ```
 
 
-# Sensitivity cool (quadratic)
-
 We found qualitatively similar correlations, after removing outliers (between-study correlation = `r mlma_sa_cool$phi`, 95% CI: `r cis_cool.sa$ci.lb[1]` to `r cis_cool.sa$ci.ub[1]` within-study correlation= `r mlma_sa_cool$rho`, 95% CI: `r cis_cool.sa$ci.lb[2]` to `r cis_cool.sa$ci.ub[2]`) 
 
 
+### Sensitivity analysis- chronic exposure only
+
+# Warm subset
+
+```{r, sa_chronic_multivariate_warm}
+#| echo: false
+#| warning: false
+#| include: false
+
+rerun3=FALSE
+if(rerun3){
+  expose.data <- subset(data_warm, Exposure.duration != "< 24 hours")
+  expose.data <- subset(expose.data, Exposure.duration != "1 to 5 days") # 82 datapoints removed
+
+## make V matrix for sensitivity data
+ V_2 <- make_VCV_matrix(data = expose.data, cluster = "trial",  V = "v", rho = 0.5)
+
+ V2 <- metaAidR::make_VCV_matrix(data = expose.data, matrix = V_2, cluster = "shared_control",  V = "v", rho = 0.5)
+
+ # Check of PD
+  corpcor::is.positive.definite(V2) # FALSE
+
+# Can bend it to make it PD
+  V2 <- Matrix::nearPD(V2)$mat
+
+# Check of PD
+  corpcor::is.positive.definite(V2) # TRUE
+  
+  mlma_sa_chronic_warm <-  rma.mv(es ~ outcome*c_treattemp, V = V2,   
+                             random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
+                             struc = "UN", data = expose.data, test = "t", dfs = "contain")
+
+  mlma_sa_chronic_warm.report <- rma.mv(es ~ -1 + outcome + outcome:c_treattemp, V = V2,   
+                                   random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
+                                   struc = "UN", data = expose.data, test = "t", dfs = "contain")
+  
+  saveRDS(mlma_sa_chronic_warm, here("output", "models", "mlma_sa_chronic_warm.rds"))
+  saveRDS(mlma_sa_chronic_warm.report, here("output", "models", "mlma_sa_chronic_warm.report.rds"))
+  saveRDS(expose.data, here("output", "Output data", "mlma_sa_chronic_warm.data.rds"))
+  
+  cis_phi_warm.sa_chronic <- as.data.frame(confint(mlma_sa_chronic_warm, phi = 1))
+  cis_rho_warm.sa_chronic <- as.data.frame(confint(mlma_sa_chronic_warm, rho = 1))
+  cis_warm.sa_chronic <- rbind(cis_phi_warm.sa_chronic, cis_rho_warm.sa_chronic)
+  
+  write.csv(cis_warm.sa_chronic, here("output", "tables", "mlma_sa_chronic.warm_cis.csv"))
+  
+
+} else {
+  mlma_sa_chronic_warm <- readRDS(here("output", "models", "mlma_sa_chronic_warm.rds"))
+  mlma_sa_chronic_warmdata <- readRDS(here("output", "Output data", "mlma_sa_chronic_warm.data.rds"))
+  mlma_sa_chronic_warm.report <-  readRDS(here("output", "models", "mlma_sa_chronic_warm.report.rds"))
+  cis_warm.sa_chronic <- read.csv(here("output", "tables", "mlma_sa_chronic.warm_cis.csv"))
+}
+```
+
+
+# Cool subset
+
+```{r, sa_chronic_multivariate_cool}
+#| echo: false
+#| warning: false
+#| include: false
+
+rerun3=FALSE
+if(rerun3){
+  expose.data <- subset(data_cool, Exposure.duration != "< 24 hours")
+  expose.data <- subset(expose.data, Exposure.duration != "1 to 5 days") # 40 datapoints removed
+
+## make V matrix for sensitivity data
+ V_2 <- make_VCV_matrix(data = expose.data, cluster = "trial",  V = "v", rho = 0.5)
+
+ V2 <- metaAidR::make_VCV_matrix(data = expose.data, matrix = V_2, cluster = "shared_control",  V = "v", rho = 0.5)
+
+ # Check of PD
+  corpcor::is.positive.definite(V2) # FALSE
+
+# Can bend it to make it PD
+  V2 <- Matrix::nearPD(V2)$mat
+
+# Check of PD
+  corpcor::is.positive.definite(V2) # TRUE
+  
+  mlma_sa_chronic_cool <-  rma.mv(es ~ outcome*c_treattemp, V = V2,   
+                             random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
+                             struc = "UN", data = expose.data, test = "t", dfs = "contain")
+
+  mlma_sa_chronic_cool.report <- rma.mv(es ~ -1 + outcome + outcome:c_treattemp, V = V2,   
+                                   random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
+                                   struc = "UN", data = expose.data, test = "t", dfs = "contain")
+  
+  saveRDS(mlma_sa_chronic_cool, here("output", "models", "mlma_sa_chronic_cool.rds"))
+  saveRDS(mlma_sa_chronic_cool.report, here("output", "models", "mlma_sa_chronic_cool.report.rds"))
+  saveRDS(expose.data, here("output", "Output data", "mlma_sa_chronic_cool.data.rds"))
+  
+  cis_phi_cool.sa_chronic <- as.data.frame(confint(mlma_sa_chronic_cool, phi = 1))
+  cis_rho_cool.sa_chronic <- as.data.frame(confint(mlma_sa_chronic_cool, rho = 1))
+  cis_cool.sa_chronic <- rbind(cis_phi_cool.sa_chronic, cis_rho_cool.sa_chronic)
+  
+  write.csv(cis_cool.sa_chronic, here("output", "tables", "mlma_sa_chronic.cool_cis.csv"))
+  
+
+} else {
+  mlma_sa_chronic_cool <- readRDS(here("output", "models", "mlma_sa_chronic_cool.rds"))
+  mlma_sa_chronic_cooldata <- readRDS(here("output", "Output data", "mlma_sa_chronic_cool.data.rds"))
+  mlma_sa_chronic_cool.report <-  readRDS(here("output", "models", "mlma_sa_chronic_cool.report.rds"))
+  cis_cool.sa_chronic <- read.csv(here("output", "tables", "mlma_sa_chronic.cool_cis.csv"))
+}
+```
+
+
+### Higher-order polynomials
 
 ```{r, plot-highorder-polynomials}
 
@@ -1025,8 +1175,7 @@ ggplot(data = mlma_cool_long, aes(x = c_treattemp)) +
 ```
 
 
-
-
+### Pest sub-analysis
 
 ```{r,pestonly}
 

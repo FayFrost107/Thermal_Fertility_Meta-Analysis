@@ -1,6 +1,6 @@
 ---
 title: "Results for Reproduction Meta-Analysis"
-author: "Daniel Noble & Fay Frost"
+author: "Fay Frost, Daniel Noble, & Liam Dougherty"
 format: docx
 execute:
   freeze: auto  # re-render only when source changes
@@ -17,6 +17,8 @@ fig-prefix: "Figure"
 tbl-prefix: "Table"
 ---
 
+# Setup
+
 ```{r, packages}
 #| echo: false
 #| warning: false
@@ -24,7 +26,7 @@ tbl-prefix: "Table"
 #| eval: true
 #install.packages("pacman")
 #devtools::install_github("daniel1noble/metaAidR", force=TRUE)
-pacman::p_load(tidyverse, here, ggplot2, rotl, multicomp, dplyr, clubSandwich, tidyr,  metafor, ape, phytools, corrplot, metaAidR, orchaRd, latex2exp, flextable)
+pacman::p_load(tidyverse, here, ggplot2, rotl, multcomp, dplyr, clubSandwich, tidyr,  metafor, ape, phytools, corrplot, metaAidR, orchaRd, latex2exp, flextable)
 # source functions
 source(here("R", "func.R"))
 options(digits = 6)
@@ -189,9 +191,9 @@ saveRDS(meta7, here("Output", "models", "reproduction", "mv_rep_7.rds"))
 We then fit the models with different combinations of random effects. The best fitting model according to AIC used only study_ID and observation_ID as random effects with `r round(i2_ml(meta4)[2],2)`% and  `r round(i2_ml(meta4)[3],2)`% estimated heterogeneity respectively. We used this random effects model as a base for our meta-regression models. 
 
 
-# Meta-Regressions 
+### Meta-Regressions 
 
-## How does temperature affect reproduction?
+### How does temperature affect reproduction?
 
 ```{r}
 #| echo: false
@@ -220,7 +222,7 @@ saveRDS(meta_trait_treattemp, here("Output", "models", "reproduction", "mv_rep_c
 
 
 # treat temp^2 centered
-meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+meta_trait_treat2 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML", test="t")
 saveRDS(meta_trait_treat2, here("Output", "models", "reproduction", "mv_rep_ctemp2.rds"))
 r2_ml(meta_trait_treat2)
 
@@ -285,13 +287,74 @@ flextable(table)
 ```{r, fig-treat2}
 #| label: fig-treat2
 #| fig-cap: Bubble plot of effect size of reproduction when controlling for temperature. 
-p <- bubble_plot(meta_trait_treat2, mod = "c_treattemp", group="study_code")
-p+coord_cartesian(ylim=c(-10,10)) + labs(x = "Temperature deviation from 25C")
+
+preds.rep <- predict(meta_trait_treat2, addx=TRUE)
+rep_data <- rdata
+
+rep_data$pred <- preds.rep$pred  
+rep_data$pred.lb <- preds.rep$pi.lb
+rep_data$pred.ub <- preds.rep$pi.ub
+rep_data$c.lb <- preds.rep$ci.lb
+rep_data$c.ub <- preds.rep$ci.ub
+
+ggplot(rep_data, aes(x = c_treattemp, y = pred)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub), alpha = 0.15) +
+  geom_line() +
+  geom_line(aes(y=pred.lb), linetype="dotted") +
+  geom_line(aes(y=pred.ub), linetype="dotted") +
+  geom_hline(yintercept=0) +
+  geom_point(rdata, mapping=aes(x = c_treattemp, y = es, size=precision), shape=21, fill="white", 
+             stroke=0.2, alpha=0.5, show.legend = FALSE) +
+  scale_size(range = c(1, 5)) +
+  theme_bw() +
+  coord_cartesian(ylim=c(-12,6)) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
+  labs(x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction") 
+# Save as pdf (6x8)
+
+```
+
+```{r}
+
+# Calculating the y value for the peak of the curve
+
+f = function(x) {
+  (-0.0112*x^2)+(-0.0526*x)-0.5552
+}
+
+# find the maximum of f(x) within the interval [-25, 25]
+ans = optimize(f, interval = c(-25,25), maximum=TRUE)
+x_max= ans$maximum
+x_max+25 # Value in degrees
+
+```
+
+
+# Sensitivity analysis- Robust variance estimation
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+# Check robustness of the results.
+
+if(rerun){
+meta_trait_treat2_robust <- robust(meta_trait_treat2, cluster = rdata$study_code, clubSandwich=TRUE)
+saveRDS(meta_trait_treat2_robust, here("Output", "models", "reproduction", "meta_trait_treat2_robust.rds"))
+
+} else {
+  meta_trait_treat2_robust <- readRDS(here("Output", "models", "reproduction", "meta_trait_treat2_robust.rds"))
+}
+
 ```
 
 
 
-# How does sex exposed and life stage of exposure effect reproduction?
+### How does sex exposed and life stage of exposure effect reproduction?
+
 ```{r}
 #| echo: false
 #| warning: false
@@ -305,9 +368,9 @@ p+coord_cartesian(ylim=c(-10,10)) + labs(x = "Temperature deviation from 25C")
 if(rerun){
 new_data <- rdata
 
-new_data$Sex.exposed[which(new_data$Sex.exposed == "Male")] <- "Both"
 new_data$Sex.exposed[which(new_data$Sex.exposed == "Parthenogenetic")] <- "Female"
 
+new_data <- subset(new_data, Sex.exposed != "Male")
 new_data <- subset(new_data, Sex.exposed != "Unsure")
 
 VCV_shared_sex <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$shared_control, r=0.5)
@@ -396,28 +459,32 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, li
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
   scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
   scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
+  coord_cartesian(ylim = c(-10,1)) +
   theme_bw() + 
   labs(title = "Predicted temperature effect on reproduction",
-       x = "Temperature devaition from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
        color = "Sex exposed",  # Set the title of the color legend
        fill = "Sex exposed",
        linetype = "Sex exposed")   # Set the title of the fill legend (for ribbons)
-
+# Save as pdf (6x6)
 
 #### observed data
 
 ggplot(data = sex_rep_data, aes(x = c_treattemp, y = es, col = Sex.exposed)) +
-  geom_point( alpha=0.5)+
+  geom_point(alpha=0.5)+
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
   scale_fill_manual(values = c("purple", "orange")) + 
   theme_bw() + 
   labs(title = "Observed temperature effect on reproduction",
-       x = "Temperature devaition from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
        color = "Sex exposed")   # Set the title of the fill legend (for ribbons)
 
 ```
+
+
 
 ### life stage of animal
 
@@ -438,7 +505,7 @@ flextable(table)
 
 ```{r, fig-figls}
 #| label: fig-figls
-#| fig-cap: Predicited Non-linear effects of temperature and life stage of the animal on mean effect size of reproduction. 
+#| fig-cap: Predicted Non-linear effects of temperature and life stage of the animal on mean effect size of reproduction. 
 preds.rep.ls <- predict(meta_treat_ls, addx=TRUE)
 ls_rep_data <- ls_data
 
@@ -456,11 +523,12 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.an
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
   scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
   scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
   theme_bw() + 
-    coord_cartesian(ylim = c(-10,1))+
+  coord_cartesian(ylim = c(-10,1)) +
   labs(title = "Predicted temperature effect on reproduction",
-       x = "Observed temperature devaition from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
        color = "Life stage",  # Set the title of the color legend
        fill = "Life stage",
        linetype = "Life stage")   # Set the title of the fill legend (for ribbons)
@@ -473,85 +541,130 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = es, col = Life.stage.of.anim
   geom_point( alpha=0.5)+
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
   scale_fill_manual(values = c("purple", "orange")) + 
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
   theme_bw() + 
-  coord_cartesian(ylim = c(-10,1))+
+  coord_cartesian(ylim = c(-10,1)) +
   labs(title = "Observed temperature effect on reproduction",
-       x = "Temperature devaition from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
        color = "Life stage")   # Set the title of the fill legend (for ribbons)
 
 
 ```
 
-# Publication Bias
+### Pest status
+
+```{r, pestsubanalysis}
+
+if(rerun){
+  pest.only <- subset(rdata, Agricultural.importance == "Pest")
+
+  VCV_pest.only <- impute_covariance_matrix(vi=pest.only$v, cluster = pest.only$shared_control, r=0.5)
+  
+  V2 <- VCV_pest.only
+ 
+  mlma_pest <- rma.mv(es, V2,  mod = ~poly(c_treattemp, degree=2, raw=TRUE), 
+                        random= list(~ 1|study_code,  ~1|obs), data= pest.only, method= "REML", test="t")
+ 
+ saveRDS(mlma_pest, here("output", "models", "reproduction", "mlma_pest.only.rds"))
+} else {
+  
+  mlma_pest.only <- readRDS(here("output", "models", "reproduction", "mlma_pest.only.rds"))
+}
+
+```
+
+
+```{r, pestfixedfactor}
+
+if(rerun){
+  
+  # initial categories
+  table(rdata$Agricultural.importance)
+  
+  ## Recode everything not pest as "Not Pest"
+  pestdata <- rdata
+  pestdata$Agricultural.importance[which(pestdata$Agricultural.importance != "Pest")] <- "Not Pest"
+  
+  # recoded counts of categories
+  table(pestdata$Agricultural.importance)
+  
+
+  V2 <- impute_covariance_matrix(vi=pestdata$v, cluster = pestdata$shared_control, r=0.5)
+  
+  mlma_pest.fixed <- rma.mv(es, V2,  mod = ~poly(c_treattemp, degree=2, raw=TRUE)*Agricultural.importance, 
+                          random= list(~ 1|study_code,  ~1|obs), data= pestdata, method= "REML", test="t")
+ 
+  saveRDS(mlma_pest.fixed, here("output", "models", "reproduction", "mlma_pest.fixed.rds"))
+  saveRDS(pestdata, here("Output", "Output data",  "reproduction", "data_rep_pest.rds"))
+} else {
+  mlma_pest.fixed <- readRDS(here("output", "models", "reproduction", "mlma_pest.fixed.rds"))
+  pestdata <- readRDS(here("Output", "Output data", "reproduction", "data_rep_pest.rds"))
+}
+
+```
+
+```{r, fig-figpest}
+#| label: fig-figpest
+#| fig-cap: Predicted Non-linear effects of temperature and pest status on mean effect size of reproduction. 
+preds.rep.pest <- predict(mlma_pest.fixed, addx=TRUE)
+pest_rep_data <- pestdata
+
+pest_rep_data$pred <- preds.rep.pest$pred  
+pest_rep_data$pred.lb <- preds.rep.pest$pi.lb
+pest_rep_data$pred.ub <- preds.rep.pest$pi.ub
+pest_rep_data$c.lb <- preds.rep.pest$ci.lb
+pest_rep_data$c.ub <- preds.rep.pest$ci.ub
+
+library(ggplot2)
+
+ggplot(data = pest_rep_data, aes(x = c_treattemp, y = pred, col = Agricultural.importance, linetype = Agricultural.importance)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Agricultural.importance), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
+  theme_bw() + 
+  coord_cartesian(ylim = c(-10,1)) +
+  labs(title = "Predicted temperature effect on reproduction",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
+       color = "Agricultural.importance",  # Set the title of the color legend
+       fill = "Agricultural.importance",
+       linetype = "Agricultural.importance")   # Set the title of the fill legend (for ribbons)
+```
+
+
+
+### Sensitivity Analysis (removing effect sizes below -10)
+
+### Treatment temperature
 
 ```{r}
 #| echo: false
 #| warning: false
 #| include: false
 
-## Publication Bias.
-
 if(rerun){
-meta_year <- rma.mv(es, VCV_shared,  mod= ~Publication.year,  
-                    random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+sdata <- subset(rdata, es > -10 & es < 10) # Removes 61 (negative) data points
+saveRDS(sdata, here("Output", "Output data", "reproduction", "data_rep_sa.rds"))
 
-saveRDS(meta_year, here("Output", "models", "reproduction", "meta_rep_year.rds"))
-
-
-# Sensitivty Analysis
-# Preform a sensitivity analysis by removing the smallest and largest 10% of effect sizes.
-
-
-minq <- quantile(rdata$es, 0.05)
-maxq <- quantile(rdata$es, 0.95)
-
-sdata <- subset(rdata, es > minq & es < maxq)
-saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep.rds"))
-
-
-## Treatment temperature as a quadratic effect (sesnsitivity analysis)
-
-# re-cmpute the covariance matrix for subsetted data
+# re-compute the covariance matrix for subsetted data
 VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
 
-
-# re-run quadratic model
+# Quadratic model
 meta_sa_treat2 <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), 
                          random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
 
-saveRDS(meta_sa_treat2, here("Output", "models", "reproduction", "meta_sa_ctemp2.rds"))
+saveRDS(meta_sa_treat2, here("Output", "models", "reproduction", "meta_sa_treat2.rds"))
 } else {
-  meta_year <- readRDS(here("Output", "models", "reproduction", "meta_rep_year.rds"))
-  sdata <- readRDS(here("Output", "Output data", "reproduction", "sensitivity_data_rep.rds"))
-  meta_sa_treat2 <- readRDS(here("Output", "models", "reproduction", "meta_sa_ctemp2.rds"))
+  meta_sa_treat2 <- readRDS(here("Output", "models", "reproduction", "meta_sa_treat2.rds"))
+  sa_data <- readRDS(here("Output", "Output data", "reproduction", "data_rep_sa.rds"))
 }
 
-
-
 ```
 
-We found no significant effect of year on effect suggesting that there was no presence of publication bias (*p*-value = `r meta_year$pval[2]`)
-
-
-```{r, fig-year}
-q <- bubble_plot(meta_year, mod = "Publication.year", group="study_code") +
-  labs(x = "Year of Publication")
-q+ coord_cartesian(ylim=c(-20,10))
-```
-```{r}
-#| echo: false
-#| warning: false
-#| include: false
-#| eval: false
-
-
-
-```
-
-# Sensitivity Analysis
-
-## Treatment temperature
 
 ```{r, tbl-sactemp}
 #| label: tbl-sactemp
@@ -566,7 +679,7 @@ flextable(table)
 
 ```{r}
 #| label: fig-ctemp_vs_sactemp
-#| fig-cap: Predicited models of sex exposed and temeprature effects on reproduction.  
+#| fig-cap: Predicted models of sex exposed and temeprature effects on reproduction.  
 
 preds.ctemp <- predict(meta_trait_treat2, addx=TRUE)
 preds.sa.ctemp <- predict(meta_sa_treat2, addx=TRUE)
@@ -592,10 +705,11 @@ library(ggplot2)
 p <- ggplot(data = ctemp_data, aes(x = c_treattemp, y = pred, col="Full data", fill = "Full data", linetype = "Full data")) +
   geom_ribbon(aes(ymin = c.lb, ymax = c.ub), alpha = 0.15) +
   geom_line() +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
   theme_bw() + 
   labs(title = "Predicted temperature effect on reproduction",
-       x = "Temperature deviation from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
        color = "Full data",  # Set the title of the color legend
        fill = "Full data",
        linetype = "Full data")   
@@ -607,8 +721,8 @@ p +
   scale_fill_manual(name = "Model", values = c("purple", "orange")) +    # Set colors for the ribbons
   scale_linetype_manual(name = "Model", values = c("solid", "dashed")) +
   labs(title = "Predicted temperature effect on reproduction",
-       x = "Temperature deviation from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
        color = "Sensitivity data",  # Set the title of the color legend
        fill = "Sensitivity data",
        linetype = "Sensitivity data")
@@ -617,7 +731,7 @@ p +
 ```
 
 
-## Sex exposed
+### Sex exposed
 
 ```{r}
 #| echo: false
@@ -625,11 +739,8 @@ p +
 #| include: false
 
 if(rerun){
-minq <- quantile(new_data$es, 0.05)   
-maxq <- quantile(new_data$es, 0.95)
-
-sdata <- subset(new_data, es > minq & es < maxq)
-saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep_sex.rds"))
+sdata <- subset(new_data, es > -10 & es < 10) # Removes 61 (negative) data points
+saveRDS(sdata, here("Output", "Output data", "reproduction", "data_rep_sa_sex.rds"))
 
 
 ## Treatment temperature as a quadratic effect (sensitivity analysis)
@@ -639,14 +750,18 @@ VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_con
 
 
 # re-run quadratic model
+meta_sa_sex <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(c_treattemp, degree=2, raw=TRUE) * Sex.exposed, 
+                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
 meta_sa_sex_nointer <- rma.mv(es, VCV_shared_sa,  mod= ~ -1 + poly(c_treattemp, degree=2, raw=TRUE) * Sex.exposed, 
                          random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
 
-saveRDS(meta_sa_sex_nointer, here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
+saveRDS(meta_sa_sex, here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
+saveRDS(meta_sa_sex_nointer, here("Output", "models", "reproduction", "meta_sa_rep_sex_nointer.rds"))
 
 } else {
-  meta_sa_sex_nointer <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
-  sa_rep_sexdata <- readRDS(here("Output", "Output data", "reproduction", "sensitivity_data_rep_sex.rds"))
+  meta_sa_sex <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
+  meta_sa_sex_nointer <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_sex_nointer.rds"))
+  sa_rep_sexdata <- readRDS(here("Output", "Output data", "reproduction", "data_rep_sa_sex.rds"))
 }
 
 ```
@@ -666,36 +781,38 @@ flextable(table)
 
 ```{r, fig-figsexsa}
 #| label: fig-figsexsa
-#| fig-cap: Predicited models of sex exposed and temeprature effects on reproduction.  
+#| fig-cap: Predicted models of sex exposed and temperature effects on reproduction (after removing outliers).  
 
-preds.rep.sex <- predict(meta_sa_sex_nointer, addx=TRUE)
+preds.rep.sex <- predict(meta_sa_sex, addx=TRUE)
 sex_rep_data <- sa_rep_sexdata
 
-sex_rep_data$pred <- preds.rep.sex$pred  
-sex_rep_data$pred.lb <- preds.rep.sex$pi.lb
-sex_rep_data$pred.ub <- preds.rep.sex$pi.ub
-sex_rep_data$c.lb <- preds.rep.sex$ci.lb
-sex_rep_data$c.ub <- preds.rep.sex$ci.ub
+sa_rep_sexdata$pred <- preds.rep.sex$pred  
+sa_rep_sexdata$pred.lb <- preds.rep.sex$pi.lb
+sa_rep_sexdata$pred.ub <- preds.rep.sex$pi.ub
+sa_rep_sexdata$c.lb <- preds.rep.sex$ci.lb
+sa_rep_sexdata$c.ub <- preds.rep.sex$ci.ub
 
 library(ggplot2)
 
-ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, linetype = Sex.exposed)) +
+ggplot(data = sa_rep_sexdata, aes(x = c_treattemp, y = pred, col = Sex.exposed, linetype = Sex.exposed)) +
   geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Sex.exposed), alpha = 0.15) +
   geom_line() +
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
   scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
   scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
+  coord_cartesian(ylim = c(-10,1)) +
   theme_bw() + 
   labs(title = "Predicted temperature effect on reproduction",
-       x = "Temperature devaition from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
        color = "Sex exposed",  # Set the title of the color legend
        fill = "Sex exposed",
        linetype = "Sex exposed")   # Set the title of the fill legend (for ribbons)
 ```
 
-## Life-stage
 
+### Life-stage
 
 ```{r}
 #| echo: false
@@ -703,27 +820,25 @@ ggplot(data = sex_rep_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, li
 #| include: false
 
 if(rerun){
-minq <- quantile(ls_data$es, 0.05)   
-maxq <- quantile(ls_data$es, 0.95)
-
-sdata <- subset(ls_data, es > minq & es < maxq)
-saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep_ls.rds"))
+sdata <- subset(ls_data, es > -10 & es < 10) # Removes 58 (negative) data points
+saveRDS(sdata, here("Output", "Output data", "reproduction", "data_rep_sa_ls.rds"))
 
 
-## Treatment temperature as a quadratic effect (sesnsitivity analysis)
-
-# re-cmpute the covariance matrix for subsetted data
+# re-compute the covariance matrix for subsetted data
 VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
 
-
 # re-run quadratic model
+meta_sa_ls <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(c_treattemp, degree=2, raw=TRUE) * Life.stage.of.animal, 
+                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
 meta_sa_ls_nointer <- rma.mv(es, VCV_shared_sa,  mod= ~ -1 + poly(c_treattemp, degree=2, raw=TRUE) * Life.stage.of.animal, 
                          random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
 
-saveRDS(meta_sa_ls_nointer, here("Output", "models", "reproduction", "meta_sa_rep_ls.rds"))
+saveRDS(meta_sa_ls, here("Output", "models", "reproduction", "meta_sa_rep_ls.rds"))
+saveRDS(meta_sa_ls_nointer, here("Output", "models", "reproduction", "meta_sa_rep_ls_nointer.rds"))
 } else {
   meta_sa_ls <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_ls.rds"))
-  sa_rep_lsdata <- readRDS(here("Output", "Output data", "reproduction", "sensitivity_data_rep_ls.rds"))
+  meta_sa_ls_nointer <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_ls_nointer.rds"))
+  sa_rep_lsdata <- readRDS(here("Output", "Output data", "reproduction", "data_rep_sa_ls.rds"))
 }
 
 ```
@@ -744,7 +859,7 @@ flextable(table)
 
 ```{r, fig-figlssa}
 #| label: fig-figlssa
-#| fig-cap: Predicited models of sex exposed and temeprature effects on reproduction.  
+#| fig-cap: Predicted models of sex exposed and temeprature effects on reproduction (after removing outliers).  
 
 preds.rep.ls <- predict(meta_sa_ls, addx=TRUE)
 ls_rep_data <- sa_rep_lsdata
@@ -763,15 +878,80 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.an
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
   scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
   scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
   theme_bw() + 
-    coord_cartesian(ylim = c(-10,1))+
+  coord_cartesian(ylim = c(-7,1)) +
   labs(title = "Predicted temperature effect on reproduction",
-       x = "Observed temperature devaition from 25C",
-       y = "Effect size",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
        color = "Life stage",  # Set the title of the color legend
        fill = "Life stage",
        linetype = "Life stage")   # Set the title of the fill legend (for ribbons)
 ```
+
+### Pest status
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+if(rerun){
+sdata <- subset(rdata, es > -10 & es < 10) # Removes 61 (negative) data points
+sdata$Agricultural.importance[which(sdata$Agricultural.importance != "Pest")] <- "Not Pest"
+saveRDS(sdata, here("Output", "Output data", "reproduction", "data_rep_sa_pest.rds"))
+
+# re-compute the covariance matrix for subsetted data
+VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+
+# re-run quadratic model
+mlma_sa_pest <- rma.mv(es, VCV_shared_sa,  mod = ~poly(c_treattemp, degree=2, raw=TRUE)*Agricultural.importance, 
+                          random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
+ 
+saveRDS(mlma_sa_pest, here("output", "models", "reproduction", "mlma_sa_pest.rds"))
+saveRDS(sdata, here("output", "Output data", "reproduction", "data_rep_sa_pest.rds"))
+} else {
+  mlma_sa_pest <- readRDS(here("output", "models", "reproduction", "mlma_sa_pest.rds"))
+  pest_rep_sa_data <- readRDS(here("Output", "Output data", "reproduction", "data_rep_sa_pest.rds"))
+}
+
+```
+
+```{r, fig-figpestsa}
+#| label: fig-figpestsa
+#| fig-cap: Predicted Non-linear effects of temperature and pest status on mean effect size of reproduction (after removing outliers). 
+preds.rep.sa.pest <- predict(mlma_sa_pest.fixed, addx=TRUE)
+
+pest_rep_sa_data$pred <- preds.rep.sa.pest$pred  
+pest_rep_sa_data$pred.lb <- preds.rep.sa.pest$pi.lb
+pest_rep_sa_data$pred.ub <- preds.rep.sa.pest$pi.ub
+pest_rep_sa_data$c.lb <- preds.rep.sa.pest$ci.lb
+pest_rep_sa_data$c.ub <- preds.rep.sa.pest$ci.ub
+
+library(ggplot2)
+
+ggplot(data = pest_rep_sa_data, aes(x = c_treattemp, y = pred, col = Agricultural.importance, linetype = Agricultural.importance)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Agricultural.importance), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
+  theme_bw() + 
+  coord_cartesian(ylim = c(-7,1))+
+  labs(title = "Predicted temperature effect on reproduction",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
+       color = "Agricultural.importance",  # Set the title of the color legend
+       fill = "Agricultural.importance",
+       linetype = "Agricultural.importance")   # Set the title of the fill legend (for ribbons)
+```
+
+
+### Sensitivity analysis: long-term exposure only
+
+# Temperature effect
+
 ```{r, sa.remove.24}
 
 #| echo: false
@@ -780,23 +960,23 @@ ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.an
 
 if(rerun){
   expose.data <- subset(rdata, Exposure.duration != "< 24 hours")
-#minq <- quantile(expose.data$es, 0.05)   
-#maxq <- quantile(expose.data$es, 0.95)
+  expose.data <- subset(expose.data, Exposure.duration != "1 to 5 days")
 
-#sdata <- subset(expose.data, es > minq & es < maxq)
-
-  sdata <- expose.data
+#sdata <- subset(rdata, es > -10 & es < 10)
+sdata <- expose.data
 saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep_exposure.rds"))
 
 
-## Treatment temperature as a cubic effect (sesnsitivity analysis)
+## Treatment temperature as a cubic effect (sensitivity analysis)
 
-# re-cmpute the covariance matrix for subsetted data
+# re-compute the covariance matrix for subsetted data
+sdata$shared_control <- factor(sdata$Effect.size.code)
 VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
 
 
 # re-run cubic model
-meta_sa_exposure <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), random=                                list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+meta_sa_exposure <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), 
+                           random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
 
 saveRDS(meta_sa_exposure, here("Output", "models", "reproduction", "meta_sa_rep_exposure.rds"))
 } else {
@@ -806,6 +986,8 @@ saveRDS(meta_sa_exposure, here("Output", "models", "reproduction", "meta_sa_rep_
 
 
 ```
+
+# Temperature plot
 
 ```{r}
 #| label: fig-short.exposureremoved
@@ -823,6 +1005,251 @@ table <- data.frame(Parameters = c("Reproduction (mean)", "Linear Treatment Temp
                     `p-value` = sapply(round(meta_sa_exposure$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
 flextable(table)
 ```
+
+
+### Sex exposed
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+## Remove acute temperature effect sizes
+
+if(rerun){
+new_data <- rdata
+
+new_data$shared_control <- factor(new_data$Effect.size.code)
+new_data$study_code <- factor(new_data$Paper.code)  
+new_data$obs <- factor(c(1:nrow(new_data))) 
+
+new_data$Sex.exposed[which(new_data$Sex.exposed == "Parthenogenetic")] <- "Female"
+new_data <- subset(new_data, Sex.exposed != "Male")
+new_data <- subset(new_data, Sex.exposed != "Unsure")
+new_data <- subset(new_data, Exposure.duration != "< 24 hours")
+new_data <- subset(new_data, Exposure.duration != "1 to 5 days")
+
+VCV_shared_sex <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$shared_control, r=0.5)
+
+meta_sex_chronic <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed, 
+                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML", test="t")
+
+saveRDS(meta_sex_chronic, here("Output", "models", "reproduction", "meta_sex_chronic.rds"))
+saveRDS(new_data, here("Output", "Output data",  "data_sex_chronic.rds"))
+
+} else {
+  meta_sex_chronic <- readRDS(here("Output", "models", "reproduction", "meta_sex_chronic.rds"))
+  data_sex_chronic <- readRDS(here("Output", "Output data", "data_sex_chronic.rds"))
+  }
+
+
+```
+
+```{r, fig-figsexsa}
+#| label: fig-figsexsa
+#| fig-cap: Predicted models of sex exposed and temperature effects on reproduction (after removing outliers).  
+
+preds.rep.sex <- predict(meta_sex_chronic, addx=TRUE)
+chronic_rep_sexdata <- new_data
+
+chronic_rep_sexdata$pred <- preds.rep.sex$pred  
+chronic_rep_sexdata$pred.lb <- preds.rep.sex$pi.lb
+chronic_rep_sexdata$pred.ub <- preds.rep.sex$pi.ub
+chronic_rep_sexdata$c.lb <- preds.rep.sex$ci.lb
+chronic_rep_sexdata$c.ub <- preds.rep.sex$ci.ub
+
+library(ggplot2)
+
+ggplot(data = chronic_rep_sexdata, aes(x = c_treattemp, y = pred, col = Sex.exposed, linetype = Sex.exposed)) +
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Sex.exposed), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
+  coord_cartesian(ylim = c(-10,1)) +
+  theme_bw() + 
+  labs(title = "Predicted temperature effect on reproduction",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
+       color = "Sex exposed",  # Set the title of the color legend
+       fill = "Sex exposed",
+       linetype = "Sex exposed")   # Set the title of the fill legend (for ribbons)
+```
+
+# Life stage
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+## Remove acute temperature effect sizes
+
+if(rerun){
+new_data <- ls_data
+
+new_data <- subset(new_data, Exposure.duration != "< 24 hours")
+new_data <- subset(new_data, Exposure.duration != "1 to 5 days")
+
+VCV_shared_ls <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$shared_control, r=0.5)
+
+meta_ls_chronic <- rma.mv(es, VCV_shared_ls,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Life.stage.of.animal, 
+                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML", test="t")
+
+saveRDS(meta_ls_chronic, here("Output", "models", "reproduction", "meta_ls_chronic.rds"))
+saveRDS(new_data, here("Output", "Output data",  "data_ls_chronic.rds"))
+
+} else {
+  meta_ls_chronic <- readRDS(here("Output", "models", "reproduction", "meta_ls_chronic.rds"))
+  data_ls_chronic <- readRDS(here("Output", "Output data", "data_ls_chronic.rds"))
+  }
+
+
+```
+
+
+# Pest staus
+
+```{r}
+
+if(rerun){
+
+  ## Recode everything not pest as "Not Pest"
+  pestdata <- rdata
+  pestdata$shared_control <- factor(pestdata$Effect.size.code)
+  pestdata$study_code <- factor(pestdata$Paper.code)  
+  pestdata$obs <- factor(c(1:nrow(pestdata)))
+  pestdata$Agricultural.importance[which(pestdata$Agricultural.importance != "Pest")] <- "Not Pest"
+
+  pestdata_chronic <- subset(pestdata, Exposure.duration != "< 24 hours")
+  pestdata_chronic <- subset(pestdata_chronic, Exposure.duration != "1 to 5 days")
+  
+  V2 <- impute_covariance_matrix(vi=pestdata_chronic$v, cluster = pestdata_chronic$shared_control, r=0.5)
+  
+  meta_pest_chronic <- rma.mv(es, V2,  mod = ~poly(c_treattemp, degree=2, raw=TRUE)*Agricultural.importance, 
+                          random= list(~ 1|study_code,  ~1|obs), data= pestdata_chronic, method= "REML", test="t")
+ 
+  saveRDS(meta_pest_chronic, here("output", "models", "reproduction", "meta_pest_chronic.rds"))
+  saveRDS(pestdata_chronic, here("Output", "Output data",  "reproduction", "data_pest_chronic.rds"))
+} else {
+  meta_pest_chronic <- readRDS(here("output", "models", "reproduction", "meta_pest_chronic.rds"))
+  pestdata_chronic <- readRDS(here("Output", "Output data", "reproduction", "data_pest_chronic.rds"))
+}
+
+```
+
+```{r, fig-figsexsa}
+#| label: fig-figsexsa
+#| fig-cap: Predicted models of sex exposed and temperature effects on reproduction (after removing outliers).  
+
+preds.rep.pest <- predict(meta_pest_chronic, addx=TRUE)
+
+pestdata_chronic$pred <- preds.rep.pest$pred  
+pestdata_chronic$pred.lb <- preds.rep.pest$pi.lb
+pestdata_chronic$pred.ub <- preds.rep.pest$pi.ub
+pestdata_chronic$c.lb <- preds.rep.pest$ci.lb
+pestdata_chronic$c.ub <- preds.rep.pest$ci.ub
+
+library(ggplot2)
+
+ggplot(data = pestdata_chronic, aes(x = c_treattemp, y = pred, col = Agricultural.importance, linetype = Agricultural.importance))+
+  geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Agricultural.importance), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
+  scale_fill_manual(values = c("purple", "orange")) +    # Set colors for the ribbons
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
+  coord_cartesian(ylim = c(-10,1)) +
+  theme_bw() + 
+  labs(title = "Predicted temperature effect on reproduction",
+       x = "Experimental temperature (°C)",
+       y = "Standardised change in reproduction",
+       color = "Agricultural.importance",  # Set the title of the color legend
+       fill = "Agricultural.importance",
+       linetype = "Agricultural.importance")   # Set the title of the fill legend (for ribbons)
+```
+
+
+### Publication Bias
+
+### Effect of year
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+### Effect of year
+
+if(rerun){
+meta_year <- rma.mv(es, VCV_shared,  mod= ~Publication.year,  
+                    random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+saveRDS(meta_year, here("Output", "models", "reproduction", "meta_rep_year.rds"))
+
+# After removing outliers
+sdata <- subset(rdata, es > -10 & es < 10) # Removes 61 (negative) data points
+VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+
+meta_sa_year <- rma.mv(es, VCV_shared_sa,  mod= ~Publication.year,  
+                    random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+saveRDS(meta_sa_year, here("Output", "models", "reproduction", "meta_rep_sa_year.rds"))
+
+} else {
+  meta_year <- readRDS(here("Output", "models", "reproduction", "meta_rep_year.rds"))
+  sdata <- readRDS(here("Output", "Output data", "reproduction", "sensitivity_data_rep.rds"))
+  meta_sa_year <- readRDS(here("Output", "models", "reproduction", "meta_rep_sa_year.rds"))
+}
+
+```
+
+We found no significant effect of year on effect suggesting that there was no presence of publication bias (*p*-value = `r meta_year$pval[2]`)
+
+
+```{r, fig-year}
+q <- bubble_plot(meta_sa_year, mod = "Publication.year", group="study_code") +
+  labs(x = "Year of Publication")
+q+ coord_cartesian(ylim=c(-10,5))
+```
+
+### Effect of study precision
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+#| eval: false
+
+### Study precision
+
+if(rerun){
+meta_precision <- rma.mv(es, VCV_shared,  mod= ~precision,  
+                    random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
+saveRDS(meta_precision, here("Output", "models", "reproduction", "meta_rep_precision.rds"))
+
+# After removing outliers
+sdata <- subset(rdata, es > -10 & es < 10) # Removes 61 (negative) data points
+saveRDS(sdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep.rds"))
+VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+
+meta_sa_precision <- rma.mv(es, VCV_shared_sa,  mod= ~precision,  
+                    random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+saveRDS(meta_sa_precision, here("Output", "models", "reproduction", "meta_sa_precision.rds"))
+
+} else {
+  meta_precision <- readRDS(here("Output", "models", "reproduction", "meta_rep_precision.rds"))
+  sdata <- readRDS(here("Output", "Output data", "reproduction", "sensitivity_data_rep.rds"))
+  meta_sa_precision <- readRDS(here("Output", "models", "reproduction", "meta_sa_precision.rds"))
+}
+
+plot(sdata$es, sdata$precision)
+bubble_plot(meta_sa_precision, mod = "precision", group="study_code")
+
+```
+
+
+
+### Other polynomials
 
 ```{r, higherorderpoly}
 
@@ -891,58 +1318,5 @@ ggplot(ctemp_data, aes(x = c_treattemp)) +
 
 
 ```
-
-
-
-```{r, pestsubanalysis}
-
-if(rerun){
-  pest.only <- subset(rdata, Agricultural.importance == "Pest")
-
-  VCV_pest.only <- impute_covariance_matrix(vi=pest.only$v, cluster = pest.only$shared_control, r=0.5)
-  
-  V2 <- VCV_pest.only
- 
-  mlma_pest <- rma.mv(es, V2,  mod = ~poly(c_treattemp, degree=2, raw=TRUE), 
-                        random= list(~ 1|study_code,  ~1|obs), data= pest.only, method= "REML", test="t")
- 
- saveRDS(mlma_pest, here("output", "models", "reproduction", "mlma_pest.only.rds"))
-} else {
-  
-  mlma_pest.only <- readRDS(here("output", "models", "reproduction", "mlma_pest.only.rds"))
-}
-
-```
-
-
-```{r, pestfixedfactor}
-
-if(rerun){
-  
-  # initial categories
-  table(rdata$Agricultural.importance)
-  
-  ## Recode everything not pest as "Not Pest"
-  pestdata <- rdata
-  pestdata$Agricultural.importance[which(pestdata$Agricultural.importance != "Pest")] <- "Not Pest"
-  
-  # recoded counts of categories
-  table(pestdata$Agricultural.importance)
-  
-
-  V2 <- impute_covariance_matrix(vi=pestdata$v, cluster = pestdata$shared_control, r=0.5)
-  
-  mlma_pest.fixed <- rma.mv(es, V2,  mod = ~ -1 + Agricultural.importance + poly(c_treattemp, degree=2, raw=TRUE), 
-                        random= list(~ 1|study_code,  ~1|obs), data= pestdata, method= "REML", test="t")
- 
-  saveRDS(mlma_pest.fixed, here("output", "models", "reproduction", "mlma_pest.fixed.rds"))
-} else {
-  mlma_pest.fixed <- readRDS(here("output", "models", "reproduction", "mlma_pest.fixed.rds"))
-}
-
-```
-
-
-
 
 
