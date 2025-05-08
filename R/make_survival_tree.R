@@ -1,6 +1,7 @@
 
 rm(list=ls())
 
+
 library(rotl)
 library(tidyr)
 library(dplyr)
@@ -32,7 +33,7 @@ allsurv <- rbind(survdata_warm, survdata_cool)
 ### select data for tree
 rdata <- allsurv
 rdata <- subset(rdata, Paper.code != "HUM251")
-rdata <- subset(rdata, Paper.code != "OSM205")
+#rdata <- subset(rdata, Paper.code != "OSM205")
 
 #rdata <- subset(effectdata, warm.cool != "Reference")   #<<<<< select for all data
 ########### change species names in survival data
@@ -98,3 +99,6 @@ colnames(plot_data) <- c("species_latin", "class")
 ggtree(prune_tree, layout = "circular", lwd = 0.1) %<+% plot_data +
   geom_tiplab(size=2, offset=0.01) +
   aes(col = class) 
+
+
+write.nexus(prune_tree, file="all_surv_excHUM21_tree.nex")
