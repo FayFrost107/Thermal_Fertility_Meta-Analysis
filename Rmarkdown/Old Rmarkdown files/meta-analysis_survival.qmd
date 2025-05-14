@@ -163,6 +163,7 @@ ggtree(prune_tree, layout = "circular", lwd = 0.1) %<+% plot_data +
 #| echo: false
 #| warning: false
 #| include: false
+#| eval: true
 #| 
 # Simple model (no random effects)
 if(rerun){
@@ -174,6 +175,7 @@ summary(meta1)}
 #| echo: false
 #| warning: false
 #| include: false
+#| eval: true
 
 
 # Adding four random factors
@@ -194,6 +196,7 @@ The data has a nested structure. Each study (study_code) may have a number of ex
 #| echo: false
 #| warning: false
 #| include: false
+#| eval: true
 
 # Assumes a correlation of 0.5 between effect sizes from the same experiment 
 rdata$shared_control <- factor(rdata$Effect.size.code)
@@ -217,13 +220,13 @@ meta3 <- rma.mv(es, VCV_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1
 
 ### Intercept only model
 
-At 25C the mean effect size for survival was (non-significant) negative (est = `r meta3$b`, 95% CI: `r meta3$ci.lb` to `r meta3$ci.ub`, *p*-value = `r p_value(meta3$pval)`, k= 'r meta3$k'). Overall heterogeneity was very high (I2[Total] = `r i2_ml(meta3, method=c("ratio"))[1]`%), with almost all of this being attributable to between-study differences (I2[study]=`r i2_ml(meta3, method=c("ratio"))[4]`%) or observational-level differences (I2[obs]=`r i2_ml(meta3, method=c("ratio"))[5]`%). A negligible amount of heterogeneity was explained by species (I2[species]= `r i2_ml(meta3, method=c("ratio"))[3]`%) or phylogenetic history (I2[Phylogeny]= `r i2_ml(meta3, method=c("ratio"))[2]`%).
+At 25C the mean effect size for survival was (non-significant) negative (est = `r meta3$b`, 95% CI: `r meta3$ci.lb` to `r meta3$ci.ub`, *p*-value = `r p_value(meta3$pval)`, k= `r meta3$k`). Overall heterogeneity was very high (I2[Total] = `r i2_ml(meta3, method=c("ratio"))[1]`%), with almost all of this being attributable to between-study differences (I2[study]=`r i2_ml(meta3, method=c("ratio"))[4]`%) or observational-level differences (I2[obs]=`r i2_ml(meta3, method=c("ratio"))[5]`%). A negligible amount of heterogeneity was explained by species (I2[species]= `r i2_ml(meta3, method=c("ratio"))[3]`%) or phylogenetic history (I2[Phylogeny]= `r i2_ml(meta3, method=c("ratio"))[2]`%).
 
 ```{r}
-#| echo: false
+#| echo: true
 #| warning: false
 #| include: true
-#| eval: false
+#| eval: true
 summary(meta3)
 i2_ml(meta3, method=c("ratio"))
 ```
@@ -231,9 +234,10 @@ i2_ml(meta3, method=c("ratio"))
 
  
 ```{r, meta4-7}
-#| echo: false
+#| echo: true
 #| warning: false
 #| include: false
+#| eval: true
 #| 
 
 if(rerun){
@@ -269,16 +273,17 @@ Starting with the best fitting random-effect model from Section 3, "meta4" we no
 
 * **reftemp**: The experiment's control (reference) temperature.
 
-* **treattemp**: The treatment temperature, which we expect to have a non-linear relationship to survival.
+* **c_treattemp**: The treatment temperature centered around 25 degrees i.e. treattemp - 25, which we expect to have a non-linear relationship to survival.
 
 * **warm.cool** : A categorical variable indicating whether treatment is warmer or cooler than the reference temperature 
 
 * **diff**: The difference between the reference and treatment temperature.
 
 ```{r}
-#| echo: false
+#| echo: true
 #| warning: false
-#| include: false
+#| include: true
+#| eval: true
 #| 
 
 if(rerun){
@@ -351,7 +356,15 @@ meta_trait_bintemp <-  readRDS(here("Output", "models", "survival", "mv_surv_bin
 
 ```
 
+```{r}
+#| echo: false
+#| warning: false
+#| include: true
+#| eval: true
 
+summary(meta_trait_treat2)
+
+```
 
 ```{r, fig-treat2}
 #| label: fig-treat2
@@ -400,27 +413,10 @@ orchard_plot(meta_trait_bintemp, mod = "bin.temp", xlab = "Effect size", transfm
              cb=FALSE, group="obs", tree.order = c("<15", "15-20", "20-25", "25-30", "30-35", "35-40", ">40")) 
 
 ```
-The two extremely outlying points in the <15 category are both from the study OSM205. We will investigate the removal of these outlying points later. 
+The two extremely outlying points in the <15 category are both from the study OSM205. We will investigate the removal of these outlying points. 
 \newpage
 
-# Publication Bias.
 
-We fit meta-regression model with year as a moderator to see whether there is an publication bias. In other words, is effect size strongly correlated with publication year. We found now evidence to suggest that year has an effect on the report effect sizes. A summary of the model is given below. 
-
-```{r, eval=TRUE}
-meta_year <- rma.mv(es, VCV_shared,  mod= ~Publication.year,  random= list(~ 1|study_code,  ~1|obs), data= rdata, test = "t", dfs = "contain", method= "REML")
-```
-
-```{r, eval=TRUE}
-summary(meta_year)
-```
-
-\newpage
-
-```{r, eval=TRUE, echo=TRUE}
-q <- bubble_plot(meta_year, mod = "Publication.year", group="study_code")
-q+ coord_cartesian(ylim=c(-20,10))
-```
 
 
 # Sensitivity Analysis
@@ -436,7 +432,7 @@ new_vcv <- impute_covariance_matrix(vi=rdata_exc205$v, cluster = rdata_exc205$sh
 
 ## Treatment temperature
 ```{r, eval=TRUE}
-meta_trait_treattemp_sa <- rma.mv(es, new_vcv,  mod= ~treattemp, random= list(~ 1|study_code,  ~1|obs), test = "t", dfs = "contain", data= rdata_exc205, method= "REML")
+meta_trait_treattemp_sa <- rma.mv(es, new_vcv,  mod= ~c_treattemp, random= list(~ 1|study_code,  ~1|obs), test = "t", dfs = "contain", data= rdata_exc205, method= "REML")
 ```
 
 ```{r}
@@ -472,7 +468,7 @@ summary(meta_trait_diff_sa)
 
 
 ```{r, eval=TRUE}
-meta_trait_treat2_sa <- rma.mv(es, new_vcv,  mod= ~ poly(treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), test = "t", dfs = "contain", data= rdata_exc205, method= "REML")
+meta_trait_treat2_sa <- rma.mv(es, new_vcv,  mod= ~ poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), test = "t", dfs = "contain", data= rdata_exc205, method= "REML")
 ```
 
 ```{r}
@@ -481,7 +477,7 @@ summary(meta_trait_treat2_sa)
 
 
 ```{r, eval=TRUE, echo=TRUE}
-p <- bubble_plot(meta_trait_treat2_sa, mod = "treattemp", group="study_code")
+p <- bubble_plot(meta_trait_treat2_sa, mod = "c_treattemp", group="study_code")
 p+coord_cartesian(ylim=c(-10,10))
 ```
 
@@ -530,7 +526,7 @@ VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_con
 ```
 
 ```{r, eval=TRUE, echo=TRUE}
-meta_sa_treat2 <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), test = "t", dfs = "contain", data= sdata, method= "REML")
+meta_sa_treat2 <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), test = "t", dfs = "contain", data= sdata, method= "REML")
 ```
 
 ```{r}
@@ -543,7 +539,7 @@ summary(meta_sa_treat2)
 Below is a bubble plot of the fitted quadratic model to the subsetted data. 
 
 ```{r, eval=TRUE, echo=TRUE}
-p <- bubble_plot(meta_sa_treat2, mod = "treattemp", group="study_code")
+p <- bubble_plot(meta_sa_treat2, mod = "c_treattemp", group="study_code")
 p+coord_cartesian(ylim=c(-10,10))
 ```
 
@@ -553,7 +549,7 @@ p+coord_cartesian(ylim=c(-10,10))
 
 
 ```{r, eval=TRUE, echo=TRUE}
-meta_sa_treat <- rma.mv(es, VCV_shared_sa,  mod= ~treattemp, random= list(~ 1|study_code,  ~1|obs), test = "t", dfs = "contain", data= sdata, method= "REML")
+meta_sa_treat <- rma.mv(es, VCV_shared_sa,  mod= ~c_treattemp, random= list(~ 1|study_code,  ~1|obs), test = "t", dfs = "contain", data= sdata, method= "REML")
 ```
 
 ```{r}
@@ -566,7 +562,7 @@ summary(meta_sa_treat)
 Below is a bubble plot of the fitted linear model to the subsetted data. 
 
 ```{r, eval=TRUE, echo=TRUE}
-p <- bubble_plot(meta_sa_treat, mod = "treattemp", group="study_code")
+p <- bubble_plot(meta_sa_treat, mod = "c_treattemp", group="study_code")
 p+coord_cartesian(ylim=c(-10,10))
 ```
 
@@ -598,4 +594,26 @@ plot+ coord_cartesian(ylim=c(-8,8))
 ```
 
 
+# Publication Bias.
 
+We fit meta-regression model with year as a moderator to see whether there is an publication bias. In other words, is effect size strongly correlated with publication year. We found now evidence to suggest that year has an effect on the report effect sizes. A summary of the model is given below. 
+
+# Assumes a correlation of 0.5 between effect sizes from the same experiment 
+rdata_exc205$shared_control <- factor(rdata$Effect.size.code)
+VCV_shared <- impute_covariance_matrix(vi=rdata$v, cluster = rdata$shared_control, r=0.5)
+
+```{r, eval=TRUE}
+meta_year <- rma.mv(es, new_vcv,  mod= ~Publication.year,  random= list(~ 1|study_code,  ~1|obs), data= rdata_exc205, test = "t", dfs = "contain", method= "REML")
+```
+
+```{r, eval=TRUE}
+summary(meta_year)
+```
+
+
+```{r, eval=TRUE, echo=TRUE}
+q <- bubble_plot(meta_year, mod = "Publication.year", group="study_code")
+q+ coord_cartesian(ylim=c(-20,10))
+```
+
+\newpage
