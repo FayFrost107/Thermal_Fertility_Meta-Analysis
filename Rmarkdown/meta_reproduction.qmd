@@ -17,12 +17,12 @@ fig-prefix: "Figure"
 tbl-prefix: "Table"
 ---
 
-# Setup
+### Setup
 
 ```{r, packages}
-#| echo: false
+#| echo: true
 #| warning: false
-#| include: false
+#| include: true
 #| eval: true
 #install.packages("pacman")
 #devtools::install_github("daniel1noble/metaAidR", force=TRUE)
@@ -67,7 +67,7 @@ rdata$Species.latin[which(rdata$Species.latin == "Daphnia australis")]          
 rdata$obs <- factor(c(1:nrow(rdata)))                # Unique observation code
 rdata$study_code <- factor(rdata$Paper.code)         # Model requires column names study_code (this is biggest level of nested code structure)
 rdata$Species.phylo <- factor(rdata$Species.latin)   # Species names for phylo matrix
-rdata$species <- factor(rdata$Species.latin)         # Another species column for ranom factor 
+rdata$species <- factor(rdata$Species.latin)         # Another species column for random factor 
 
 precision <- sqrt(1/rdata$v)                         # inverse standard error 
 rdata[,"precision"] <- precision
@@ -90,7 +90,7 @@ saveRDS(rdata, here("Output", "Output data", "reproduction", "data_full_rep.rds"
 
 
 
-# Results   
+## Results   
 
 
 
@@ -143,9 +143,9 @@ meta3 <- rma.mv(es, VCV_shared, random= list(~ 1|Species.phylo, ~ 1|species, ~ 1
   }
 ```
 
-# Random effects models
+### Random effects models
 
-### Intercept only model
+#### Intercept only model
 
 At 25C the mean effect size for reproduction was significantly negative (est = `r meta3$b`, 95% CI: `r meta3$ci.lb` to `r meta3$ci.ub`, *p*-value = `r p_value(meta3$pval)`, k= 'r meta3$k'). Overall heterogeneity was very high (I2[Total] = `r i2_ml(meta3, method=c("ratio"))[1]`%), with almost all of this being attributable to between-study differences (I2[study]=`r i2_ml(meta3, method=c("ratio"))[4]`%) or observational-level differences (I2[obs]=`r i2_ml(meta3, method=c("ratio"))[5]`%). A negligible amount of heterogeneity was explained by species (I2[species]= `r i2_ml(meta3, method=c("ratio"))[3]`%) or phylogenetic history (I2[Phylogeny]= `r i2_ml(meta3, method=c("ratio"))[2]`%).
 
@@ -187,7 +187,7 @@ saveRDS(meta7, here("Output", "models", "reproduction", "mv_rep_7.rds"))
 
 ```
 
-### Random effects combinations
+#### Random effects combinations
 We then fit the models with different combinations of random effects. The best fitting model according to AIC used only study_ID and observation_ID as random effects with `r round(i2_ml(meta4)[2],2)`% and  `r round(i2_ml(meta4)[3],2)`% estimated heterogeneity respectively. We used this random effects model as a base for our meta-regression models. 
 
 
@@ -281,7 +281,13 @@ table <- data.frame(Parameters = c("Reproduction (mean)", "Linear Treatment Temp
                     `L 95% CI` = round(meta_trait_treat2$ci.lb, 4),
                     `U 95% CI` = round(meta_trait_treat2$ci.ub, 4),
                     `p-value` = sapply(round(meta_trait_treat2$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
-flextable(table)
+
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
 ```
 
 ```{r, fig-treat2}
@@ -384,7 +390,7 @@ meta_treat_sex_nointer <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, de
 
 saveRDS(meta_treat_sex, here("Output", "models", "reproduction", "meta_treat_rep_sex.rds"))
 saveRDS(meta_treat_sex_nointer, here("Output", "models", "reproduction", "meta_treat_rep_sex_nointer.rds"))
-saveRDS(new_data, here("Output", "Output data",  "data_rep_sex.rds"))
+saveRDS(new_data, here("Output", "Output data", "reproduction", "data_rep_sex.rds"))
 
 
 ## Life-stage
@@ -411,15 +417,15 @@ meta_treat_ls_nointer <- rma.mv(es, VCV_shared_life,  mod= ~ -1 + poly(c_treatte
 
 saveRDS(meta_treat_ls, here("Output", "models", "reproduction", "meta_treat_rep_ls.rds"))
 saveRDS(meta_treat_ls_nointer, here("Output", "models", "reproduction", "meta_treat_rep_ls_nointer.rds"))
-saveRDS(ls_data, here("Output", "Output data", "data_rep_ls.rds"))
+saveRDS(ls_data, here("Output", "Output data", "reproduction", "data_rep_ls.rds"))
 } else {
   meta_treat_sex <- readRDS(here("Output", "models", "reproduction", "meta_treat_rep_sex.rds"))
   meta_treat_sex_nointer <- readRDS(here("Output", "models", "reproduction", "meta_treat_rep_sex_nointer.rds"))
-  new_data <- readRDS(here("Output", "Output data", "data_rep_sex.rds"))
+  new_data <- readRDS(here("Output", "Output data", "reproduction", "data_rep_sex.rds"))
   
   meta_treat_ls <- readRDS(here("Output", "models", "reproduction", "meta_treat_rep_ls.rds"))
   meta_treat_ls_nointer <- readRDS(here("Output", "models", "reproduction", "meta_treat_rep_ls_nointer.rds"))
-  ls_data <- readRDS(here("Output", "Output data", "data_rep_ls.rds"))
+  ls_data <- readRDS(here("Output", "Output data", "reproduction", "data_rep_ls.rds"))
   }
 
 ```
@@ -436,7 +442,13 @@ table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Bo
                     `L 95% CI` = round(meta_treat_sex_nointer$ci.lb, 4),
                     `U 95% CI` = round(meta_treat_sex_nointer$ci.ub, 4),
                     `p-value` = sapply(round(meta_treat_sex_nointer$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
-flextable(table)
+
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
 ```
 ```{r, fig-figsex}
 #| label: fig-figsex
@@ -499,7 +511,13 @@ table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Ad
                     `L 95% CI` = round(meta_treat_ls_nointer$ci.lb, 4),
                     `U 95% CI` = round(meta_treat_ls_nointer$ci.ub, 4),
                     `p-value` = sapply(round(meta_treat_ls_nointer$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
-flextable(table)
+
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
 ```
 
 
@@ -637,7 +655,7 @@ ggplot(data = pest_rep_data, aes(x = c_treattemp, y = pred, col = Agricultural.i
 
 
 
-### Sensitivity Analysis (removing effect sizes below -10)
+### Sensitivity Analysis 
 
 ### Treatment temperature
 
@@ -646,9 +664,10 @@ ggplot(data = pest_rep_data, aes(x = c_treattemp, y = pred, col = Agricultural.i
 #| warning: false
 #| include: false
 
-if(rerun){
 sdata <- subset(rdata, es > -10 & es < 10) # Removes 61 (negative) data points
 saveRDS(sdata, here("Output", "Output data", "reproduction", "data_rep_sa.rds"))
+
+if(rerun){
 
 # re-compute the covariance matrix for subsetted data
 VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
@@ -660,7 +679,7 @@ meta_sa_treat2 <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=2, r
 saveRDS(meta_sa_treat2, here("Output", "models", "reproduction", "meta_sa_treat2.rds"))
 } else {
   meta_sa_treat2 <- readRDS(here("Output", "models", "reproduction", "meta_sa_treat2.rds"))
-  sa_data <- readRDS(here("Output", "Output data", "reproduction", "data_rep_sa.rds"))
+  
 }
 
 ```
@@ -674,7 +693,13 @@ table <- data.frame(Parameters = c("Reproduction (mean)", "Linear Treatment Temp
                     `L 95% CI` = round(meta_sa_treat2$ci.lb, 4),
                     `U 95% CI` = round(meta_sa_treat2$ci.ub, 4),
                     `p-value` = sapply(round(meta_sa_treat2$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
-flextable(table)
+
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
 ```
 
 ```{r}
@@ -739,19 +764,11 @@ p +
 #| include: false
 
 if(rerun){
-sdata <- subset(new_data, es > -10 & es < 10) # Removes 61 (negative) data points
-saveRDS(sdata, here("Output", "Output data", "reproduction", "data_rep_sa_sex.rds"))
-
-
-## Treatment temperature as a quadratic effect (sensitivity analysis)
-
-# re-compute the covariance matrix for subsetted data
-VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
-
 
 # re-run quadratic model
 meta_sa_sex <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(c_treattemp, degree=2, raw=TRUE) * Sex.exposed, 
                          random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
+
 meta_sa_sex_nointer <- rma.mv(es, VCV_shared_sa,  mod= ~ -1 + poly(c_treattemp, degree=2, raw=TRUE) * Sex.exposed, 
                          random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
 
@@ -761,7 +778,6 @@ saveRDS(meta_sa_sex_nointer, here("Output", "models", "reproduction", "meta_sa_r
 } else {
   meta_sa_sex <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
   meta_sa_sex_nointer <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_sex_nointer.rds"))
-  sa_rep_sexdata <- readRDS(here("Output", "Output data", "reproduction", "data_rep_sa_sex.rds"))
 }
 
 ```
@@ -770,13 +786,20 @@ The interaction between treatment temperature and sex exposed was no longer sign
 
 ```{r, tbl-sasex}
 #| label: tbl-sasex
-#| tbl-cap: Non-linear effects of temperature and sex exposed on mean effect size of reproduction with 5% most extreme effect sizes removed. 
+#| tbl-cap: Non-linear effects of temperature and sex exposed on mean effect size of reproduction with most extreme effect sizes removed. 
 table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Both","Quadratic Treatment Temperature (centered) - Both", "Both (mean)", "Females only (mean)", "Treatment Temperature (centered) - Females only","Quadratic Treatment Temperature (centered) - Females only"),
-                    Est. = round(meta_sa_sex_nointer$b, 4),
-                    `L 95% CI` = round(meta_sa_sex_nointer$ci.lb, 4),
-                    `U 95% CI` = round(meta_sa_sex_nointer$ci.ub, 4),
-                    `p-value` = sapply(round(meta_sa_sex_nointer$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
-flextable(table)
+                    Est. = round(meta_sa_sex$b, 4),
+                    `L 95% CI` = round(meta_sa_sex$ci.lb, 4),
+                    `U 95% CI` = round(meta_sa_sex$ci.ub, 4),
+                    `p-value` = sapply(round(meta_sa_sex$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+
+
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
 ```
 
 ```{r, fig-figsexsa1}
@@ -784,7 +807,7 @@ flextable(table)
 #| fig-cap: Predicted models of sex exposed and temperature effects on reproduction (after removing outliers).  
 
 preds.rep.sex <- predict(meta_sa_sex, addx=TRUE)
-sex_rep_data <- sa_rep_sexdata
+sa_rep_sexdata <- sdata
 
 sa_rep_sexdata$pred <- preds.rep.sex$pred  
 sa_rep_sexdata$pred.lb <- preds.rep.sex$pi.lb
@@ -900,6 +923,7 @@ if(rerun){
 sdata <- subset(rdata, es > -10 & es < 10) # Removes 61 (negative) data points
 sdata$Agricultural.importance[which(sdata$Agricultural.importance != "Pest")] <- "Not Pest"
 saveRDS(sdata, here("Output", "Output data", "reproduction", "data_rep_sa_pest.rds"))
+data_rep_sa_pest <- sdata 
 
 # re-compute the covariance matrix for subsetted data
 VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
@@ -912,7 +936,7 @@ saveRDS(mlma_sa_pest, here("output", "models", "reproduction", "mlma_sa_pest.rds
 saveRDS(sdata, here("output", "Output data", "reproduction", "data_rep_sa_pest.rds"))
 } else {
   mlma_sa_pest <- readRDS(here("output", "models", "reproduction", "mlma_sa_pest.rds"))
-  pest_rep_sa_data <- readRDS(here("Output", "Output data", "reproduction", "data_rep_sa_pest.rds"))
+  data_rep_sa_pest<- readRDS(here("Output", "Output data", "reproduction", "data_rep_sa_pest.rds"))
 }
 
 ```
@@ -920,17 +944,17 @@ saveRDS(sdata, here("output", "Output data", "reproduction", "data_rep_sa_pest.r
 ```{r, fig-figpestsa}
 #| label: fig-figpestsa
 #| fig-cap: Predicted Non-linear effects of temperature and pest status on mean effect size of reproduction (after removing outliers). 
-preds.rep.sa.pest <- predict(mlma_sa_pest.fixed, addx=TRUE)
+preds.rep.sa.pest <- predict(mlma_sa_pest, addx=TRUE)
 
-pest_rep_sa_data$pred <- preds.rep.sa.pest$pred  
-pest_rep_sa_data$pred.lb <- preds.rep.sa.pest$pi.lb
-pest_rep_sa_data$pred.ub <- preds.rep.sa.pest$pi.ub
-pest_rep_sa_data$c.lb <- preds.rep.sa.pest$ci.lb
-pest_rep_sa_data$c.ub <- preds.rep.sa.pest$ci.ub
+data_rep_sa_pest$pred <- preds.rep.sa.pest$pred  
+data_rep_sa_pest$pred.lb <- preds.rep.sa.pest$pi.lb
+data_rep_sa_pest$pred.ub <- preds.rep.sa.pest$pi.ub
+data_rep_sa_pest$c.lb <- preds.rep.sa.pest$ci.lb
+data_rep_sa_pest$c.ub <- preds.rep.sa.pest$ci.ub
 
 library(ggplot2)
 
-ggplot(data = pest_rep_sa_data, aes(x = c_treattemp, y = pred, col = Agricultural.importance, linetype = Agricultural.importance)) +
+ggplot(data = data_rep_sa_pest, aes(x = c_treattemp, y = pred, col = Agricultural.importance, linetype = Agricultural.importance)) +
   geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Agricultural.importance), alpha = 0.15) +
   geom_line() +
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
@@ -991,7 +1015,7 @@ saveRDS(meta_sa_exposure, here("Output", "models", "reproduction", "meta_sa_rep_
 
 ```{r}
 #| label: fig-short.exposureremoved
-#| fig-cap: Bubble plot of effect size of longevity when controlling for temperature with < 24 hour exposure observations removed. 
+#| fig-cap: Bubble plot of effect size of reproduction when controlling for temperature with < 24 hour exposure observations removed. 
 p <- bubble_plot(meta_sa_exposure, mod = "c_treattemp", group="study_code")
 p+coord_cartesian(ylim=c(-10,10)) + labs(x = "Temperature deviation from 25C")
 ```
@@ -1003,7 +1027,13 @@ table <- data.frame(Parameters = c("Reproduction (mean)", "Linear Treatment Temp
                     `L 95% CI` = round(meta_sa_exposure$ci.lb, 4),
                     `U 95% CI` = round(meta_sa_exposure$ci.ub, 4),
                     `p-value` = sapply(round(meta_sa_exposure$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
-flextable(table)
+
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
 ```
 
 
@@ -1035,11 +1065,11 @@ meta_sex_chronic <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2
                          random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML", test="t")
 
 saveRDS(meta_sex_chronic, here("Output", "models", "reproduction", "meta_sex_chronic.rds"))
-saveRDS(new_data, here("Output", "Output data",  "data_sex_chronic.rds"))
+saveRDS(new_data, here("Output", "Output data", "reproduction", "data_sex_chronic.rds"))
 
 } else {
   meta_sex_chronic <- readRDS(here("Output", "models", "reproduction", "meta_sex_chronic.rds"))
-  data_sex_chronic <- readRDS(here("Output", "Output data", "data_sex_chronic.rds"))
+  data_sex_chronic <- readRDS(here("Output", "Output data", "reproduction", "data_sex_chronic.rds"))
   }
 
 
@@ -1098,11 +1128,11 @@ meta_ls_chronic <- rma.mv(es, VCV_shared_ls,  mod= ~poly(c_treattemp, degree=2, 
                          random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML", test="t")
 
 saveRDS(meta_ls_chronic, here("Output", "models", "reproduction", "meta_ls_chronic.rds"))
-saveRDS(new_data, here("Output", "Output data",  "data_ls_chronic.rds"))
+saveRDS(new_data, here("Output", "Output data", "reproduction", "data_ls_chronic.rds"))
 
 } else {
   meta_ls_chronic <- readRDS(here("Output", "models", "reproduction", "meta_ls_chronic.rds"))
-  data_ls_chronic <- readRDS(here("Output", "Output data", "data_ls_chronic.rds"))
+  data_ls_chronic <- readRDS(here("Output", "Output data", "reproduction", "data_ls_chronic.rds"))
   }
 
 
@@ -1302,10 +1332,10 @@ cbp2 <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
     
 ggplot(ctemp_data, aes(x = c_treattemp)) +
   geom_point(aes(y = es, size = v), color="black", fill="white", alpha=1/5, size=2) +
-  geom_line(aes(y = preds.2, color = "2", linetype= "2"), size = 1.5) +
-  geom_line(aes(y = preds.3, color = "3", linetype= "3"), size = 1.5) +
-  geom_line(aes(y = preds.4, color = "4", linetype= "4"), size = 1.5) +
-  geom_line(aes(y = preds.5, color = "5", linetype= "5"), size = 1.5) +
+  geom_line(aes(y = preds.2, color = "2", linetype= "2"), linewidth = 1.5) +
+  geom_line(aes(y = preds.3, color = "3", linetype= "3"), linewidth = 1.5) +
+  geom_line(aes(y = preds.4, color = "4", linetype= "4"), linewidth = 1.5) +
+  geom_line(aes(y = preds.5, color = "5", linetype= "5"), linewidth = 1.5) +
   labs(title = "Predicted effect size curves for reproduction using different polynomials",
        x = "Temperature deviation from 25C",
        y = "Effect size") +
@@ -1318,5 +1348,106 @@ ggplot(ctemp_data, aes(x = c_treattemp)) +
 
 
 ```
+
+
+
+
+## Additional analyses
+
+This section details additional analyses based on reviewers comments.
+
+### Sensitivity analyses removing effect sizes with assumed rearing temperatures.
+
+@tbl-treat2_rearing_sa show no difference in results when papers with assumed rearing temperatures of species are removed. 
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+#| eval: true
+
+rep_data_removing_assumed_rearing_temp <- rdata[!is.na(rdata$Rearing.temperature),]
+
+if(rerun){
+VCV_shared <- impute_covariance_matrix(vi=rep_data_removing_assumed_rearing_temp$v, cluster = rep_data_removing_assumed_rearing_temp$shared_control, r=0.5)
+
+# treat temp^2 centered
+meta_trait_treat2_remove_rear <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rep_data_removing_assumed_rearing_temp, method= "REML")
+
+r2_ml(meta_trait_treat2_remove_rear)
+
+saveRDS(meta_trait_treat2_remove_rear, here("Output", "models", "reproduction",  "mv_rep_ctemp2_remove_rear.rds"))
+}else{
+  meta_trait_treat2_remove_rear  <- readRDS(here("Output", "models", "reproduction", "mv_rep_ctemp2_remove_rear.rds"))
+}
+```
+
+
+```{r, tbl-treat2_rearing_sa}
+#| label: tbl-treat2_rearing_sa
+#| tbl-cap: Non-linear effects of temperature on mean effect size of reproduction (Sensitivity analysis removing assumed rearing temperatures)
+table <- data.frame(Parameters = c("reproduction (mean)", "Linear Treatment Temperature (centered) - reproduction","Quadratic Treatment Temperature (centered) - reproduction"),
+                    Est. = round(meta_trait_treat2_remove_rear$b, 4),
+                    `L 95% CI` = round(meta_trait_treat2_remove_rear$ci.lb, 4),
+                    `U 95% CI` = round(meta_trait_treat2_remove_rear$ci.ub, 4),
+                    `p-value` = sapply(round(meta_trait_treat2_remove_rear$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+
+
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
+```
+
+
+### Sensitivity analyses removing aquatic species.
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+#| eval: true
+
+rep_data_removing_aquatic <- rdata[rdata$Habitat == "Terrestrial",]
+
+if(rerun){
+
+VCV_shared <- impute_covariance_matrix(vi=rep_data_removing_aquatic$v, cluster = rep_data_removing_aquatic$shared_control, r=0.5)
+
+# treat temp^2 centered
+meta_trait_treat2_remove_aquatic <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rep_data_removing_aquatic, method= "REML")
+
+r2_ml(meta_trait_treat2_remove_aquatic)
+
+saveRDS(meta_trait_treat2_remove_aquatic, here("Output", "models", "reproduction",  "mv_rep_ctemp2_remove_aquatic.rds"))
+}else{
+  meta_trait_treat2_remove_aquatic  <- readRDS(here("Output", "models", "reproduction", "mv_rep_ctemp2_remove_aquatic.rds"))
+}
+```
+
+
+@tbl-treat2_aquatic_sa shows no difference in results when papers with aquatic species are removed. 
+
+```{r, tbl-treat2_aquatic_sa}
+#| label: tbl-treat2_aquatic_sa
+#| tbl-cap: Non-linear effects of temperature on mean effect size of reproduction (Sensitivity analysis removing aquatic species)
+
+table <- data.frame(Parameters = c("reproduction (mean)", "Linear Treatment Temperature (centered) - reproduction","Quadratic Treatment Temperature (centered) - reproduction"),
+                    Est. = round(meta_trait_treat2_remove_aquatic$b, 4),
+                    `L 95% CI` = round(meta_trait_treat2_remove_aquatic$ci.lb, 4),
+                    `U 95% CI` = round(meta_trait_treat2_remove_aquatic$ci.ub, 4),
+                    `p-value` = sapply(round(meta_trait_treat2_remove_aquatic$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+
+
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
+```
+
 
 

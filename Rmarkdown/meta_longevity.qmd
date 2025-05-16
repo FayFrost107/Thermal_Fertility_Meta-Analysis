@@ -379,15 +379,16 @@ saveRDS(meta_trait_treat2_robust, here("Output", "models", "longevity", "meta_tr
 ## Sex exposed
 # We could lump categories so that we have cases where males are included (Both, Male), versus cases with just females (Female, Parthenogenetic), 
 # with Unsure removed. I would predict that the 'Both' category would show the biggest drop for longevity, but there will be no difference for lifespan
-
-if(rerun){
-  new_data <- rdata
+   new_data <- rdata
   
   new_data$Sex.exposed[which(new_data$Sex.exposed == "Male")] <- "Both"
   new_data$Sex.exposed[which(new_data$Sex.exposed == "Parthenogenetic")] <- "Female"
   
   new_data <- subset(new_data, Sex.exposed != "Unsure")
+   saveRDS(new_data, here("Output", "Output data", "longevity", "data_long_sex.rds"))
   
+if(rerun){
+ 
   VCV_shared_sex <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$shared_control, r=0.5)
   
   
@@ -399,7 +400,7 @@ if(rerun){
   
   saveRDS(meta_treat_sex, here("Output", "models", "longevity", "meta_treat_long_sex.rds"))
   saveRDS(meta_treat_sex_nointer, here("Output", "models", "longevity", "meta_treat_sex_nointer.rds"))
-  saveRDS(new_data, here("Output", "Output data",  "data_long_sex.rds"))
+ 
   
   
   ## Life-stage
@@ -428,15 +429,15 @@ if(rerun){
 
   saveRDS(meta_treat_ls, here("Output", "models", "longevity", "meta_treat_long_ls.rds"))
   saveRDS(meta_treat_ls_nointer, here("Output", "models", "longevity", "meta_treat_ls_nointer.rds"))
-  saveRDS(ls_data, here("Output", "Output data", "data_long_ls.rds"))
+  saveRDS(ls_data, here("Output", "Output data", "longevity", "data_long_ls.rds"))
 } else {
   meta_treat_sex <- readRDS(here("Output", "models", "longevity", "meta_treat_long_sex.rds"))
   meta_treat_sex_nointer <- readRDS(here("Output", "models", "longevity", "meta_treat_sex_nointer.rds"))
-  new_data <- readRDS(here("Output", "Output data", "data_long_sex.rds"))
+  
   
   meta_treat_ls <- readRDS(here("Output", "models", "longevity", "meta_treat_long_ls.rds"))
   meta_treat_ls_nointer <- readRDS(here("Output", "models", "longevity", "meta_treat_ls_nointer.rds"))
-  ls_data <- readRDS(here("Output", "Output data", "data_long_ls.rds"))
+  ls_data <- readRDS(here("Output", "Output data", "longevity", "data_long_ls.rds"))
 }
 
 ```
@@ -616,29 +617,23 @@ if(rerun){
 
 ```{r, pestfixedfactor}
 
-if(rerun){
-  
-  # initial categories
-  table(rdata$Agricultural.importance)
-  
   ## Recode everything not pest as "Not Pest"
   pestdata <- rdata
   pestdata$Agricultural.importance[which(pestdata$Agricultural.importance != "Pest")] <- "Not Pest"
-  
-  # recoded counts of categories
-  table(pestdata$Agricultural.importance)
-  
+  saveRDS(pestdata, here("Output", "Output data",  "longevity", "data_long_pest.rds"))
+ 
 
+if(rerun){
+  
   V2 <- impute_covariance_matrix(vi=pestdata$v, cluster = pestdata$shared_control, r=0.5)
   
   mlma_pest.fixed <- rma.mv(es, V2,  mod = ~poly(c_treattemp, degree=2, raw=TRUE)*Agricultural.importance, 
                         random= list(~ 1|study_code,  ~1|obs), data= pestdata, method= "REML", test="t")
  
   saveRDS(mlma_pest.fixed, here("output", "models", "longevity", "mlma_pest.fixed.rds"))
-  saveRDS(pestdata, here("Output", "Output data",  "longevity", "data_long_pest.rds"))
+  
 } else {
   mlma_pest.fixed <- readRDS(here("output", "models", "longevity", "mlma_pest.fixed.rds"))
-  pestdata <- readRDS(here("Output", "Output data", "longevity", "data_long_pest.rds"))
 }
 
 ```
@@ -704,16 +699,28 @@ ggplot(data = pest_long_data, aes(x = c_treattemp, y = pred, col = Agricultural.
 #| echo: false
 #| warning: false
 #| include: false
+#| eval: true
 
+# Remove outliers
 sdata <- subset(rdata, es > -10 & es < 10)
 
-if(rerun){
- # Removes 36 data points
+# Save data
 saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long.rds"))
 
 # re-compute the covariance matrix for subsetted data
 VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
 
+
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| include: false
+
+
+
+if(rerun){
 # Quadratic model
 meta_sa_treat2 <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), 
                          random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
@@ -807,22 +814,28 @@ p +
 #| warning: false
 #| include: false
 
+# As before, sex categories are lumped so that we have cases where males are included (Both, Male), versus cases with just females (Female, Parthenogenetic), with Unsure category removed.
+
+# Read in data with lumped sex categories 
+sexdata <- readRDS(here("Output", "Output data", "longevity",  "data_long_sex.rds"))
+
+# Remove outliers
+sa_long_sexdata <- subset(sexdata, es > -10 & es < 10) # Removes 36 data points
+saveRDS(sa_long_sexdata, here("Output", "Output data", "longevity", "sensitivity_data_long_sex.rds"))
+
 if(rerun){
-sexdata <- readRDS(here("Output", "Output data",  "data_long_sex.rds"))
-sdata <- subset(sexdata, es > -10 & es < 10) # Removes 36 data points
-saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long_sex.rds"))
 
 # re-compute the covariance matrix for subsetted data
-VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+VCV_shared_sa <- impute_covariance_matrix(vi=sa_long_sexdata$v, cluster = sa_long_sexdata$shared_control, r=0.5)
 
 # Quadratic model
 meta_sa_sex <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=2, raw=TRUE) * Sex.exposed, 
-                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+                         random= list(~ 1|study_code,  ~1|obs), data= sa_long_sexdata, method= "REML")
 
 saveRDS(meta_sa_sex, here("Output", "models", "longevity", "meta_sa_long_sex.rds"))
 } else {
   meta_sa_sex <- readRDS(here("Output", "models", "longevity", "meta_sa_long_sex.rds"))
-  sa_long_sexdata <- readRDS(here("Output", "Output data", "longevity", "sensitivity_data_long_sex.rds"))
+  
 }
 
 ```
@@ -854,17 +867,17 @@ ft
 #| fig-cap: Predicted models of sex exposed and temeprature effects on longevity.  
 
 preds.long.sex <- predict(meta_sa_sex, addx=TRUE)
-sex_long_data <- sa_long_sexdata
 
-sex_long_data$pred <- preds.long.sex$pred  
-sex_long_data$pred.lb <- preds.long.sex$pi.lb
-sex_long_data$pred.ub <- preds.long.sex$pi.ub
-sex_long_data$c.lb <- preds.long.sex$ci.lb
-sex_long_data$c.ub <- preds.long.sex$ci.ub
+
+sa_long_sexdata$pred <- preds.long.sex$pred  
+sa_long_sexdata$pred.lb <- preds.long.sex$pi.lb
+sa_long_sexdata$pred.ub <- preds.long.sex$pi.ub
+sa_long_sexdata$c.lb <- preds.long.sex$ci.lb
+sa_long_sexdata$c.ub <- preds.long.sex$ci.ub
 
 library(ggplot2)
 
-ggplot(data = sex_long_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, linetype = Sex.exposed)) +
+ggplot(data = sa_long_sexdata, aes(x = c_treattemp, y = pred, col = Sex.exposed, linetype = Sex.exposed)) +
   geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Sex.exposed), alpha = 0.15) +
   geom_line() +
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
@@ -891,17 +904,22 @@ ggplot(data = sex_long_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, l
 #| warning: false
 #| include: false
 
+# Read in data with lumped life-stage categories
+ls_data <- readRDS(here("Output", "Output data", "longevity", "data_long_ls.rds"))
+
+# Remove outliers
+sa_long_lsdata  <- subset(ls_data, es > -10 & es < 10) # Removes 36 data points
+saveRDS(sa_long_lsdata , here("Output", "Output data", "longevity", "sensitivity_data_long_ls.rds"))
+
+
 if(rerun){
-ls_data <- readRDS(here("Output", "Output data", "data_long_ls.rds"))
-sdata <- subset(ls_data, es > -10 & es < 10) # Removes 36 data points
-saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long_ls.rds"))
 
 # re-compute the covariance matrix for subsetted data
-VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+VCV_shared_sa <- impute_covariance_matrix(vi=sa_long_lsdata$v, cluster = sa_long_lsdata$shared_control, r=0.5)
 
 # Quadratic model
 meta_sa_ls <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=2, raw=TRUE) * Life.stage.of.animal, 
-                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+                         random= list(~ 1|study_code,  ~1|obs), data= sa_long_lsdata, method= "REML")
 
 saveRDS(meta_sa_ls, here("Output", "models", "longevity", "meta_sa_long_ls.rds"))
 } else {
@@ -935,17 +953,17 @@ ft
 #| fig-cap: Predicted models of life stage and temeprature effects on longevity.  
 
 preds.long.ls <- predict(meta_sa_ls, addx=TRUE)
-ls_long_data <- sa_long_lsdata
 
-ls_long_data$pred <- preds.long.ls$pred  
-ls_long_data$pred.lb <- preds.long.ls$pi.lb
-ls_long_data$pred.ub <- preds.long.ls$pi.ub
-ls_long_data$c.lb <- preds.long.ls$ci.lb
-ls_long_data$c.ub <- preds.long.ls$ci.ub
+
+sa_long_lsdata$pred <- preds.long.ls$pred  
+sa_long_lsdata$pred.lb <- preds.long.ls$pi.lb
+sa_long_lsdata$pred.ub <- preds.long.ls$pi.ub
+sa_long_lsdata$c.lb <- preds.long.ls$ci.lb
+sa_long_lsdata$c.ub <- preds.long.ls$ci.ub
 
 library(ggplot2)
 
-ggplot(data = ls_long_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.animal, linetype = Life.stage.of.animal)) +
+ggplot(data = sa_long_lsdata, aes(x = c_treattemp, y = pred, col = Life.stage.of.animal, linetype = Life.stage.of.animal)) +
   geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Life.stage.of.animal), alpha = 0.15) +
   geom_line() +
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
@@ -972,25 +990,28 @@ ggplot(data = ls_long_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.a
 #| warning: false
 #| include: false
 
+# Read in pest data with lumped categories, Pest/Not Pest
+pestdata <- readRDS(here("Output", "Output data",  "longevity", "data_long_pest.rds"))
+
+sa_pestdata <- subset(pestdata, es > -10 & es < 10) # Removes 36 data points
+saveRDS(sa_pestdata, here("output", "Output data", "longevity", "pest_long_sa_data.rds"))
+
+
 if(rerun){
-sdata <- subset(rdata, es > -10 & es < 10) # Removes 36 data points
-sdata$Agricultural.importance[which(sdata$Agricultural.importance != "Pest")] <- "Not Pest"
-saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_pest.rds"))
 
 # re-compute the covariance matrix for subsetted data
-VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+VCV_shared_sa <- impute_covariance_matrix(vi=sa_pestdata$v, cluster = sa_pestdata$shared_control, r=0.5)
 
 # Quadratic model
 
 mlma_sa_pest.fixed <- rma.mv(es, VCV_shared_sa,  mod = ~poly(c_treattemp, degree=2, raw=TRUE)*Agricultural.importance, 
-                          random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
+                          random= list(~ 1|study_code,  ~1|obs), data= sa_pestdata, method= "REML", test="t")
 
-pest_sa_data <- sdata 
+
 saveRDS(mlma_sa_pest.fixed, here("output", "models", "longevity", "mlma_sa_pest.fixed.rds"))
-saveRDS(sdata, here("output", "Output data", "longevity", "pest_long_sa_data.rds"))
+
 } else {
   mlma_sa_pest.fixed <- readRDS(here("output", "models", "longevity", "mlma_sa_pest.fixed.rds"))
-  pest_sa_data <- readRDS(here("Output", "Output data", "longevity", "sensitivity_data_pest.rds"))
 }
 
 ```
@@ -1002,15 +1023,15 @@ saveRDS(sdata, here("output", "Output data", "longevity", "pest_long_sa_data.rds
 preds.long.pest <- predict(mlma_sa_pest.fixed, addx=TRUE)
 
 
-pest_sa_data$pred <- preds.long.pest$pred  
-pest_sa_data$pred.lb <- preds.long.pest$pi.lb
-pest_sa_data$pred.ub <- preds.long.pest$pi.ub
-pest_sa_data$c.lb <- preds.long.pest$ci.lb
-pest_sa_data$c.ub <- preds.long.pest$ci.ub
+sa_pestdata$pred <- preds.long.pest$pred  
+sa_pestdata$pred.lb <- preds.long.pest$pi.lb
+sa_pestdata$pred.ub <- preds.long.pest$pi.ub
+sa_pestdata$c.lb <- preds.long.pest$ci.lb
+sa_pestdata$c.ub <- preds.long.pest$ci.ub
 
 library(ggplot2)
 
-ggplot(data = pest_sa_data, aes(x = c_treattemp, y = pred, col = Agricultural.importance, linetype = Agricultural.importance)) +
+ggplot(data = sa_pestdata, aes(x = c_treattemp, y = pred, col = Agricultural.importance, linetype = Agricultural.importance)) +
   geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Agricultural.importance), alpha = 0.15) +
   geom_line() +
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
@@ -1040,19 +1061,21 @@ ggplot(data = pest_sa_data, aes(x = c_treattemp, y = pred, col = Agricultural.im
 #| warning: false
 #| include: false
 
-if(rerun){
+# Lump exposure categories
 expose.data <- subset(rdata, Exposure.duration != "< 24 hours")
 expose.data <- subset(expose.data, Exposure.duration != "1 to 5 days")
 
-sdata <- expose.data
-saveRDS(sdata, here("Output", "Output data", "longevity", "sensitivity_data_long_exposure.rds"))
+saveRDS(expose.data, here("Output", "Output data", "longevity", "sensitivity_data_long_exposure.rds"))
+
+
+if(rerun){
 
 # re-compute the covariance matrix for subsetted data
-VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+VCV_shared_sa <- impute_covariance_matrix(vi=expose.data$v, cluster = expose.data$shared_control, r=0.5)
 
 # Quadratic
 meta_sa_exposure <- rma.mv(es, VCV_shared_sa,  mod= ~poly(c_treattemp, degree=2, raw=TRUE), 
-                           random=list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
+                           random=list(~ 1|study_code,  ~1|obs), data= expose.data, method= "REML")
 
 saveRDS(meta_sa_exposure, here("Output", "models", "longevity", "meta_sa_long_exposure.rds"))
 } else {
@@ -1091,7 +1114,6 @@ flextable(table)
 
 ## Remove acute temperature effect sizes
 
-if(rerun){
 ls_data <- rdata
   
 ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Juvenile")] <- "Immature"
@@ -1104,17 +1126,19 @@ ls_data <- subset(ls_data, Life.stage.of.animal != "Embryo")
 ls_data_chronic <- subset(ls_data, Exposure.duration != "< 24 hours")
 ls_data_chronic <- subset(ls_data_chronic, Exposure.duration != "1 to 5 days")
 
+saveRDS(ls_data_chronic, here("Output", "Output data", "longevity", "ls_data_chronic.rds"))
+
+if(rerun){
+
 VCV_shared_ls <- impute_covariance_matrix(vi=ls_data_chronic$v, cluster = ls_data_chronic$shared_control, r=0.5)
 
 meta_ls_chronic <- rma.mv(es, VCV_shared_ls,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Life.stage.of.animal, 
                          random= list(~ 1|study_code,  ~1|obs), data= ls_data_chronic, method= "REML", test="t")
 
 saveRDS(meta_ls_chronic, here("Output", "models", "longevity", "meta_ls_chronic.rds"))
-saveRDS(ls_data_chronic, here("Output", "Output data", "longevity", "ls_data_chronic.rds"))
 
 } else {
   meta_ls_chronic <- readRDS(here("Output", "models", "longevity", "meta_ls_chronic.rds"))
-  ls_data_chronic <- readRDS(here("Output", "Output data", "longevity", "ls_data_chronic.rds"))
   }
 
 
@@ -1156,9 +1180,8 @@ ggplot(data = ls_data_chronic, aes(x = c_treattemp, y = pred, col = Life.stage.o
 
 ```{r}
 # Pest status and long exporsure
-if(rerun){
 
-  ## Recode everything not pest as "Not Pest"
+## Recode everything not pest as "Not Pest"
   pestdata <- rdata
   pestdata$shared_control <- factor(pestdata$Effect.size.code)
   pestdata$study_code <- factor(pestdata$Paper.code)  
@@ -1168,16 +1191,21 @@ if(rerun){
   pestdata_chronic <- subset(pestdata, Exposure.duration != "< 24 hours")
   pestdata_chronic <- subset(pestdata_chronic, Exposure.duration != "1 to 5 days")
   
+  
+  saveRDS(pestdata_chronic, here("Output", "Output data", "longevity", "data_pest_chronic.rds"))
+  
+if(rerun){
+
+  
+  
   V2 <- impute_covariance_matrix(vi=pestdata_chronic$v, cluster = pestdata_chronic$shared_control, r=0.5)
   
   meta_pest_chronic <- rma.mv(es, V2,  mod = ~poly(c_treattemp, degree=2, raw=TRUE)*Agricultural.importance, 
                           random= list(~ 1|study_code,  ~1|obs), data= pestdata_chronic, method= "REML", test="t")
  
   saveRDS(meta_pest_chronic, here("output", "models", "longevity", "meta_pest_chronic.rds"))
-  saveRDS(pestdata_chronic, here("Output", "Output data", "longevity", "data_pest_chronic.rds"))
 } else {
   meta_pest_chronic <- readRDS(here("output", "models", "longevity", "meta_pest_chronic.rds"))
-  pestdata_chronic <- readRDS(here("Output", "Output data", "longevity", "data_pest_chronic.rds"))
 }
 
 ```
@@ -1282,15 +1310,6 @@ saveRDS(meta_trait_treat5, here("Output", "models", "longevity", "mv_long_ctemp5
 meta_trait_treat6 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=6, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 saveRDS(meta_trait_treat6, here("Output", "models", "longevity", "mv_long_ctemp6.rds"))
 
-
-  # treat temp^7 centered (fails to converge)
-meta_trait_treat7 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=7, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
-saveRDS(meta_trait_treat7, here("Output", "models", "longevity", "mv_long_ctemp7.rds"))
-
-
-  # treat temp^8 centered (fails to converge)
-meta_trait_treat8 <- rma.mv(es, VCV_shared,  mod= ~poly(c_treattemp, degree=8, raw=TRUE), random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
-saveRDS(meta_trait_treat8, here("Output", "models", "longevity", "mv_long_ctemp8.rds"))
 
 } else {
   meta_trait_treat4  <- readRDS(here("Output", "models",  "longevity", "mv_long_ctemp4.rds"))
