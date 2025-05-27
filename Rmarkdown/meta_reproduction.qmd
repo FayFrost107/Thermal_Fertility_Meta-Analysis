@@ -769,7 +769,7 @@ sex_data <- readRDS(here("Output", "Output data", "reproduction",  "data_rep_sex
 sa_rep_sexdata <- subset(sex_data, es > -10 & es < 10) 
 saveRDS(sa_rep_sexdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep_sex.rds"))
 
-if(TRUE){
+if(rerun){
 
   
 # re-compute the covariance matrix for subsetted data
@@ -780,7 +780,7 @@ meta_sa_sex <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(c_treattemp, degree=2, raw
                          random= list(~ 1|study_code,  ~1|obs), data= sa_rep_sexdata, method= "REML", test="t")
 
 meta_sa_sex_nointer <- rma.mv(es, VCV_shared_sa,  mod= ~ -1 + poly(c_treattemp, degree=2, raw=TRUE) * Sex.exposed, 
-                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
+                         random= list(~ 1|study_code,  ~1|obs), data= sa_rep_sexdata, method= "REML", test="t")
 
 saveRDS(meta_sa_sex, here("Output", "models", "reproduction", "meta_sa_rep_sex.rds"))
 saveRDS(meta_sa_sex_nointer, here("Output", "models", "reproduction", "meta_sa_rep_sex_nointer.rds"))
@@ -852,26 +852,26 @@ ggplot(data = sa_rep_sexdata, aes(x = c_treattemp, y = pred, col = Sex.exposed, 
 #| warning: false
 #| include: false
 
-if(rerun){
-sdata <- subset(ls_data, es > -10 & es < 10) # Removes 58 (negative) data points
-saveRDS(sdata, here("Output", "Output data", "reproduction", "data_rep_sa_ls.rds"))
+sa_rep_ls_data <- subset(ls_data, es > -10 & es < 10) # Removes 58 (negative) data points
+saveRDS(sa_rep_ls_data, here("Output", "Output data", "reproduction", "sa_rep_ls_data.rds"))
 
+
+if(rerun){
 
 # re-compute the covariance matrix for subsetted data
-VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+VCV_shared_sa <- impute_covariance_matrix(vi=sa_rep_ls_data$v, cluster = sa_rep_ls_data$shared_control, r=0.5)
 
 # re-run quadratic model
 meta_sa_ls <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(c_treattemp, degree=2, raw=TRUE) * Life.stage.of.animal, 
-                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
+                         random= list(~ 1|study_code,  ~1|obs), data= sa_rep_ls_data, method= "REML", test="t")
 meta_sa_ls_nointer <- rma.mv(es, VCV_shared_sa,  mod= ~ -1 + poly(c_treattemp, degree=2, raw=TRUE) * Life.stage.of.animal, 
-                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
+                         random= list(~ 1|study_code,  ~1|obs), data= sa_rep_ls_data, method= "REML", test="t")
 
 saveRDS(meta_sa_ls, here("Output", "models", "reproduction", "meta_sa_rep_ls.rds"))
 saveRDS(meta_sa_ls_nointer, here("Output", "models", "reproduction", "meta_sa_rep_ls_nointer.rds"))
 } else {
   meta_sa_ls <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_ls.rds"))
   meta_sa_ls_nointer <- readRDS(here("Output", "models", "reproduction", "meta_sa_rep_ls_nointer.rds"))
-  sa_rep_lsdata <- readRDS(here("Output", "Output data", "reproduction", "data_rep_sa_ls.rds"))
 }
 
 ```
@@ -881,7 +881,7 @@ There was a significant interaction between treatment temperature and life stage
 
 ```{r, tbl-sals}
 #| label: tbl-sals
-#| tbl-cap: Non-linear effects of temperature and life stageo animal on mean effect size of reproduction after removing the 10% most extreme effect sizes.
+#| tbl-cap: Non-linear effects of temperature and life stage of animal on mean effect size of reproduction after removing the 10% most extreme effect sizes.
 table <- data.frame(Parameters = c("Linear Treatment Temperature (centered) - Adult","Quadratic Treatment Temperature (centered) - Adult", "Adult (mean)", "Immature (mean)", "Treatment Temperature (centered) - Immature","Quadratic Treatment Temperature (centered) - Immature"),
                     Est. = round(meta_sa_ls$b, 4),
                     `L 95% CI` = round(meta_sa_ls$ci.lb, 4),
@@ -895,17 +895,17 @@ flextable(table)
 #| fig-cap: Predicted models of sex exposed and temeprature effects on reproduction (after removing outliers).  
 
 preds.rep.ls <- predict(meta_sa_ls, addx=TRUE)
-ls_rep_data <- sa_rep_lsdata
 
-ls_rep_data$pred <- preds.rep.ls$pred  
-ls_rep_data$pred.lb <- preds.rep.ls$pi.lb
-ls_rep_data$pred.ub <- preds.rep.ls$pi.ub
-ls_rep_data$c.lb <- preds.rep.ls$ci.lb
-ls_rep_data$c.ub <- preds.rep.ls$ci.ub
+
+sa_rep_ls_data$pred <- preds.rep.ls$pred  
+sa_rep_ls_data$pred.lb <- preds.rep.ls$pi.lb
+sa_rep_ls_data$pred.ub <- preds.rep.ls$pi.ub
+sa_rep_ls_data$c.lb <- preds.rep.ls$ci.lb
+sa_rep_ls_data$c.ub <- preds.rep.ls$ci.ub
 
 library(ggplot2)
 
-ggplot(data = ls_rep_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.animal, linetype = Life.stage.of.animal)) +
+ggplot(data = sa_rep_ls_data, aes(x = c_treattemp, y = pred, col = Life.stage.of.animal, linetype = Life.stage.of.animal)) +
   geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Life.stage.of.animal), alpha = 0.15) +
   geom_line() +
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
@@ -1055,31 +1055,25 @@ ft
 #| include: false
 
 ## Remove acute temperature effect sizes
+sex_data <- readRDS(here("Output", "Output data", "reproduction", "data_rep_sex.rds"))
+chronic_exposure_data <- sex_data
+
+chronic_exposure_data <- subset(chronic_exposure_data, Exposure.duration != "< 24 hours")
+chronic_exposure_data <- subset(chronic_exposure_data, Exposure.duration != "1 to 5 days")
+
 
 if(rerun){
-new_data <- rdata
 
-new_data$shared_control <- factor(new_data$Effect.size.code)
-new_data$study_code <- factor(new_data$Paper.code)  
-new_data$obs <- factor(c(1:nrow(new_data))) 
-
-new_data$Sex.exposed[which(new_data$Sex.exposed == "Parthenogenetic")] <- "Female"
-new_data <- subset(new_data, Sex.exposed != "Male")
-new_data <- subset(new_data, Sex.exposed != "Unsure")
-new_data <- subset(new_data, Exposure.duration != "< 24 hours")
-new_data <- subset(new_data, Exposure.duration != "1 to 5 days")
-
-VCV_shared_sex <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$shared_control, r=0.5)
+VCV_shared_sex <- impute_covariance_matrix(vi=chronic_exposure_data$v, cluster = chronic_exposure_data$shared_control, r=0.5)
 
 meta_sex_chronic <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed, 
-                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML", test="t")
+                         random= list(~ 1|study_code,  ~1|obs), data= chronic_exposure_data, method= "REML", test="t")
 
 saveRDS(meta_sex_chronic, here("Output", "models", "reproduction", "meta_sex_chronic.rds"))
-saveRDS(new_data, here("Output", "Output data", "reproduction", "data_sex_chronic.rds"))
+saveRDS(chronic_exposure_data, here("Output", "Output data", "reproduction", "chronic_exposure_data.rds"))
 
 } else {
   meta_sex_chronic <- readRDS(here("Output", "models", "reproduction", "meta_sex_chronic.rds"))
-  data_sex_chronic <- readRDS(here("Output", "Output data", "reproduction", "data_sex_chronic.rds"))
   }
 
 
@@ -1087,20 +1081,20 @@ saveRDS(new_data, here("Output", "Output data", "reproduction", "data_sex_chroni
 
 ```{r, fig-figsexsa2}
 #| label: fig-figsexsa2
-#| fig-cap: Predicted models of sex exposed and temperature effects on reproduction (after removing outliers).  
+#| fig-cap: Predicted models of sex exposed and temperature effects on reproduction (chronic exposure only).  
 
 preds.rep.sex <- predict(meta_sex_chronic, addx=TRUE)
-chronic_rep_sexdata <- new_data
 
-chronic_rep_sexdata$pred <- preds.rep.sex$pred  
-chronic_rep_sexdata$pred.lb <- preds.rep.sex$pi.lb
-chronic_rep_sexdata$pred.ub <- preds.rep.sex$pi.ub
-chronic_rep_sexdata$c.lb <- preds.rep.sex$ci.lb
-chronic_rep_sexdata$c.ub <- preds.rep.sex$ci.ub
+
+chronic_exposure_data$pred <- preds.rep.sex$pred  
+chronic_exposure_data$pred.lb <- preds.rep.sex$pi.lb
+chronic_exposure_data$pred.ub <- preds.rep.sex$pi.ub
+chronic_exposure_data$c.lb <- preds.rep.sex$ci.lb
+chronic_exposure_data$c.ub <- preds.rep.sex$ci.ub
 
 library(ggplot2)
 
-ggplot(data = chronic_rep_sexdata, aes(x = c_treattemp, y = pred, col = Sex.exposed, linetype = Sex.exposed)) +
+ggplot(data = chronic_exposure_data, aes(x = c_treattemp, y = pred, col = Sex.exposed, linetype = Sex.exposed)) +
   geom_ribbon(aes(ymin = c.lb, ymax = c.ub, fill = Sex.exposed), alpha = 0.15) +
   geom_line() +
   scale_color_manual(values = c("purple", "orange")) +  # Set colors for the points and lines
@@ -1109,7 +1103,7 @@ ggplot(data = chronic_rep_sexdata, aes(x = c_treattemp, y = pred, col = Sex.expo
   scale_x_continuous(breaks=c(-25, -15, -5, 5, 15), labels=c("0", "10", "20", "30", "40")) +
   coord_cartesian(ylim = c(-10,1)) +
   theme_bw() + 
-  labs(title = "Predicted temperature effect on reproduction",
+  labs(title = "Predicted temperature effect on reproduction for chronic exposure",
        x = "Experimental temperature (°C)",
        y = "Standardised change in reproduction",
        color = "Sex exposed",  # Set the title of the color legend
@@ -1124,25 +1118,25 @@ ggplot(data = chronic_rep_sexdata, aes(x = c_treattemp, y = pred, col = Sex.expo
 #| warning: false
 #| include: false
 
-## Remove acute temperature effect sizes
+## Chronic exposure only SA with lifestage of animal grouped into 2 categories (adult and immature)
+
+chronic_exposure_ls_data <- ls_data
+
+chronic_exposure_ls_data <- subset(chronic_exposure_ls_data, Exposure.duration != "< 24 hours")
+chronic_exposure_ls_data <- subset(chronic_exposure_ls_data, Exposure.duration != "1 to 5 days")
 
 if(rerun){
-new_data <- ls_data
 
-new_data <- subset(new_data, Exposure.duration != "< 24 hours")
-new_data <- subset(new_data, Exposure.duration != "1 to 5 days")
-
-VCV_shared_ls <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$shared_control, r=0.5)
+VCV_shared_ls <- impute_covariance_matrix(vi=chronic_exposure_ls_data$v, cluster = chronic_exposure_ls_data$shared_control, r=0.5)
 
 meta_ls_chronic <- rma.mv(es, VCV_shared_ls,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Life.stage.of.animal, 
-                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML", test="t")
+                         random= list(~ 1|study_code,  ~1|obs), data= chronic_exposure_ls_data, method= "REML", test="t")
 
 saveRDS(meta_ls_chronic, here("Output", "models", "reproduction", "meta_ls_chronic.rds"))
-saveRDS(new_data, here("Output", "Output data", "reproduction", "data_ls_chronic.rds"))
+saveRDS(chronic_exposure_ls_data, here("Output", "Output data", "reproduction", "chronic_exposure_ls_data.rds"))
 
 } else {
   meta_ls_chronic <- readRDS(here("Output", "models", "reproduction", "meta_ls_chronic.rds"))
-  data_ls_chronic <- readRDS(here("Output", "Output data", "reproduction", "data_ls_chronic.rds"))
   }
 
 
@@ -1222,14 +1216,19 @@ ggplot(data = pestdata_chronic, aes(x = c_treattemp, y = pred, col = Agricultura
 
 ### Effect of year
 
+## data with removed outlying es
+sdata <- readRDS(here("Output", "Output data", "reproduction", "data_rep_sa.rds"))
+VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+
+## full data
+VCV_shared <- impute_covariance_matrix(vi=rdata$v, cluster = rdata$shared_control, r=0.5)
+
 if(rerun){
 meta_year <- rma.mv(es, VCV_shared,  mod= ~Publication.year,  
                     random= list(~ 1|study_code,  ~1|obs), data= rdata, method= "REML")
 saveRDS(meta_year, here("Output", "models", "reproduction", "meta_rep_year.rds"))
 
-# After removing outliers
-sdata <- subset(rdata, es > -10 & es < 10) # Removes 61 (negative) data points
-VCV_shared_sa <- impute_covariance_matrix(vi=sdata$v, cluster = sdata$shared_control, r=0.5)
+
 
 meta_sa_year <- rma.mv(es, VCV_shared_sa,  mod= ~Publication.year,  
                     random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML")
@@ -1237,7 +1236,6 @@ saveRDS(meta_sa_year, here("Output", "models", "reproduction", "meta_rep_sa_year
 
 } else {
   meta_year <- readRDS(here("Output", "models", "reproduction", "meta_rep_year.rds"))
-  sdata <- readRDS(here("Output", "Output data", "reproduction", "sensitivity_data_rep.rds"))
   meta_sa_year <- readRDS(here("Output", "models", "reproduction", "meta_rep_sa_year.rds"))
 }
 
