@@ -370,33 +370,18 @@ saveRDS(meta_trait_treat2_robust, here("Output", "models", "reproduction", "meta
 ## Sex exposed
 # We could lump categories so that we have cases where males are included (Both, Male), versus cases with just females (Female, Parthenogenetic), 
 # with Unsure removed. I would predict that the 'Both' category would show the biggest drop for reproduction, but there will be no difference for lifespan
+sex_data <- rdata
 
-if(rerun){
-new_data <- rdata
+sex_data$Sex.exposed[which(sex_data$Sex.exposed == "Parthenogenetic")] <- "Female"
 
-new_data$Sex.exposed[which(new_data$Sex.exposed == "Parthenogenetic")] <- "Female"
+sex_data <- subset(sex_data, Sex.exposed != "Male")
+sex_data <- subset(sex_data, Sex.exposed != "Unsure")
 
-new_data <- subset(new_data, Sex.exposed != "Male")
-new_data <- subset(new_data, Sex.exposed != "Unsure")
+# Save lumped sex category data
+saveRDS(sex_data, here("Output", "Output data", "reproduction", "data_rep_sex.rds"))
 
-VCV_shared_sex <- impute_covariance_matrix(vi=new_data$v, cluster = new_data$shared_control, r=0.5)
-
-
-meta_treat_sex <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed, 
-                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML", test="t")
-
-meta_treat_sex_nointer <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed-1, 
-                         random= list(~ 1|study_code,  ~1|obs), data= new_data, method= "REML", test="t")
-
-saveRDS(meta_treat_sex, here("Output", "models", "reproduction", "meta_treat_rep_sex.rds"))
-saveRDS(meta_treat_sex_nointer, here("Output", "models", "reproduction", "meta_treat_rep_sex_nointer.rds"))
-saveRDS(new_data, here("Output", "Output data", "reproduction", "data_rep_sex.rds"))
-
-
-## Life-stage
-# We could lump categories so that we have cases where only adults were exposed (Adult), 
+# Lump life stage categories so that we have cases where only adults were exposed (Adult), 
 # versus cases where immature stages were exposed (Juvenile, Larvae, Pupae, Mix)- perhaps after excluding 'Egg' and 'Embryo' because these categories are a bit weird
-
 ls_data <- rdata
 
 ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Juvenile")] <- "Immature"
@@ -406,6 +391,24 @@ ls_data$Life.stage.of.animal[which(ls_data$Life.stage.of.animal == "Pupae")] <- 
 
 ls_data <- subset(ls_data, Life.stage.of.animal != "Egg")
 ls_data <- subset(ls_data, Life.stage.of.animal != "Embryo")
+
+# Save lumped life stage data
+saveRDS(ls_data, here("Output", "Output data", "reproduction", "data_rep_ls.rds"))
+
+if(rerun){
+VCV_shared_sex <- impute_covariance_matrix(vi=sex_data$v, cluster = sex_data$shared_control, r=0.5)
+
+
+meta_treat_sex <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed, 
+                         random= list(~ 1|study_code,  ~1|obs), data= sex_data, method= "REML", test="t")
+
+meta_treat_sex_nointer <- rma.mv(es, VCV_shared_sex,  mod= ~poly(c_treattemp, degree=2, raw=TRUE)*Sex.exposed-1, 
+                         random= list(~ 1|study_code,  ~1|obs), data= sex_data, method= "REML", test="t")
+
+saveRDS(meta_treat_sex, here("Output", "models", "reproduction", "meta_treat_rep_sex.rds"))
+saveRDS(meta_treat_sex_nointer, here("Output", "models", "reproduction", "meta_treat_rep_sex_nointer.rds"))
+
+
 
 VCV_shared_life <- impute_covariance_matrix(vi=ls_data$v, cluster = ls_data$shared_control, r=0.5)
 
@@ -417,11 +420,11 @@ meta_treat_ls_nointer <- rma.mv(es, VCV_shared_life,  mod= ~ -1 + poly(c_treatte
 
 saveRDS(meta_treat_ls, here("Output", "models", "reproduction", "meta_treat_rep_ls.rds"))
 saveRDS(meta_treat_ls_nointer, here("Output", "models", "reproduction", "meta_treat_rep_ls_nointer.rds"))
-saveRDS(ls_data, here("Output", "Output data", "reproduction", "data_rep_ls.rds"))
+
 } else {
   meta_treat_sex <- readRDS(here("Output", "models", "reproduction", "meta_treat_rep_sex.rds"))
   meta_treat_sex_nointer <- readRDS(here("Output", "models", "reproduction", "meta_treat_rep_sex_nointer.rds"))
-  new_data <- readRDS(here("Output", "Output data", "reproduction", "data_rep_sex.rds"))
+  sex_data <- readRDS(here("Output", "Output data", "reproduction", "data_rep_sex.rds"))
   
   meta_treat_ls <- readRDS(here("Output", "models", "reproduction", "meta_treat_rep_ls.rds"))
   meta_treat_ls_nointer <- readRDS(here("Output", "models", "reproduction", "meta_treat_rep_ls_nointer.rds"))
@@ -432,7 +435,7 @@ saveRDS(ls_data, here("Output", "Output data", "reproduction", "data_rep_ls.rds"
 
 ### sex exposed
 
-The relationship between reproduction and temperature depended on whether both males and females were exposed to experimental temperatures (N= `r length(which(new_data$Sex.exposed == "Both"))` effect sizes), or whether just females were exposed to experimental temperatures (N= `r length(which(new_data$Sex.exposed == "Female"))` effect sizes) (Interaction between the quadratic effect of (centered) temperature and sex exposed category, z=`r meta_treat_sex$zval[6]`, *p*-value = `r p_value(meta_treat_sex$pval[6])`) (@tbl-sex). 
+The relationship between reproduction and temperature depended on whether both males and females were exposed to experimental temperatures (N= `r length(which(sex_data$Sex.exposed == "Both"))` effect sizes), or whether just females were exposed to experimental temperatures (N= `r length(which(sex_data$Sex.exposed == "Female"))` effect sizes) (Interaction between the quadratic effect of (centered) temperature and sex exposed category, z=`r meta_treat_sex$zval[6]`, *p*-value = `r p_value(meta_treat_sex$pval[6])`) (@tbl-sex). 
 
 ```{r, tbl-sex}
 #| label: tbl-sex
@@ -455,7 +458,7 @@ ft
 #| fig-cap: Non-linear effects of temperature and sex exposed on mean effect size of reproduction.   
 
 preds.rep.sex <- predict(meta_treat_sex, addx=TRUE)
-sex_rep_data <- new_data
+sex_rep_data <- sex_data
 
 sex_rep_data$pred <- preds.rep.sex$pred  
 sex_rep_data$pred.lb <- preds.rep.sex$pi.lb
@@ -595,26 +598,20 @@ if(rerun){
 
 ```{r, pestfixedfactor}
 
-if(rerun){
-  
-  # initial categories
-  table(rdata$Agricultural.importance)
-  
-  ## Recode everything not pest as "Not Pest"
+## Recode everything not pest as "Not Pest"
   pestdata <- rdata
   pestdata$Agricultural.importance[which(pestdata$Agricultural.importance != "Pest")] <- "Not Pest"
+  saveRDS(pestdata, here("Output", "Output data",  "reproduction", "data_rep_pest.rds"))
   
-  # recoded counts of categories
-  table(pestdata$Agricultural.importance)
+if(rerun){
   
-
   V2 <- impute_covariance_matrix(vi=pestdata$v, cluster = pestdata$shared_control, r=0.5)
   
   mlma_pest.fixed <- rma.mv(es, V2,  mod = ~poly(c_treattemp, degree=2, raw=TRUE)*Agricultural.importance, 
                           random= list(~ 1|study_code,  ~1|obs), data= pestdata, method= "REML", test="t")
  
   saveRDS(mlma_pest.fixed, here("output", "models", "reproduction", "mlma_pest.fixed.rds"))
-  saveRDS(pestdata, here("Output", "Output data",  "reproduction", "data_rep_pest.rds"))
+  
 } else {
   mlma_pest.fixed <- readRDS(here("output", "models", "reproduction", "mlma_pest.fixed.rds"))
   pestdata <- readRDS(here("Output", "Output data", "reproduction", "data_rep_pest.rds"))
@@ -763,11 +760,24 @@ p +
 #| warning: false
 #| include: false
 
-if(rerun){
+# As before, sex categories are lumped so that we have cases where males are included (Both, Male), versus cases with just females (Female, Parthenogenetic), with Unsure category removed.
+
+# Read in data with lumped sex categories 
+sex_data <- readRDS(here("Output", "Output data", "reproduction",  "data_rep_sex.rds"))
+
+# Remove outliers
+sa_rep_sexdata <- subset(sex_data, es > -10 & es < 10) 
+saveRDS(sa_rep_sexdata, here("Output", "Output data", "reproduction", "sensitivity_data_rep_sex.rds"))
+
+if(TRUE){
+
+  
+# re-compute the covariance matrix for subsetted data
+VCV_shared_sa <- impute_covariance_matrix(vi=sa_rep_sexdata$v, cluster = sa_rep_sexdata$shared_control, r=0.5)
 
 # re-run quadratic model
 meta_sa_sex <- rma.mv(es, VCV_shared_sa,  mod= ~ poly(c_treattemp, degree=2, raw=TRUE) * Sex.exposed, 
-                         random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
+                         random= list(~ 1|study_code,  ~1|obs), data= sa_rep_sexdata, method= "REML", test="t")
 
 meta_sa_sex_nointer <- rma.mv(es, VCV_shared_sa,  mod= ~ -1 + poly(c_treattemp, degree=2, raw=TRUE) * Sex.exposed, 
                          random= list(~ 1|study_code,  ~1|obs), data= sdata, method= "REML", test="t")
@@ -807,7 +817,7 @@ ft
 #| fig-cap: Predicted models of sex exposed and temperature effects on reproduction (after removing outliers).  
 
 preds.rep.sex <- predict(meta_sa_sex, addx=TRUE)
-sa_rep_sexdata <- sdata
+
 
 sa_rep_sexdata$pred <- preds.rep.sex$pred  
 sa_rep_sexdata$pred.lb <- preds.rep.sex$pi.lb
