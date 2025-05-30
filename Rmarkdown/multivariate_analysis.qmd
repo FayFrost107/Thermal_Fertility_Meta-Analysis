@@ -130,9 +130,9 @@ if(rerun){
                 random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
                               ~outcome - 1 | Paper.code),  # This should estimate a study level random effect for each outcome.
                 struc = "UN", data = data_long_final, test = "t", dfs = "contain")  # struc = "UN" means we estimate the correlation between the two outcomes for each study and obs level random effect. Could also give it c("UN", "UN") to estimate the correlation for each outcome separately but this should take it as UN for both anyway.
-  saveRDS(mv_mlma_1, here("output", "models", "mv_mlma_1.rds"))
+  saveRDS(mv_mlma_1, here("output", "models", "multivariate",  "mv_mlma_1.rds"))
 } else {
-  mv_mlma_1 <- readRDS(here("output", "models", "mv_mlma_1.rds"))
+  mv_mlma_1 <- readRDS(here("output", "models", "multivariate", "mv_mlma_1.rds"))
 }
 
 mv_mlma_1
@@ -145,9 +145,9 @@ mv_mlma_2 <- rma.mv(es ~ outcome*c_treattemp, V = V,    # This should compare wh
                              ~outcome - 1 | Paper.code),  # This should estimate a study level random effect for each outcome.
                struc = "UN", data = data_long_final, test = "t", dfs = "contain")  
 
-saveRDS(mv_mlma_2, here("output", "models", "mv_mlma_2.rds"))
+saveRDS(mv_mlma_2, here("output", "models", "multivariate", "mv_mlma_2.rds"))
 } else {
-  mv_mlma_2 <- readRDS(here("output", "models", "mv_mlma_2.rds"))
+  mv_mlma_2 <- readRDS(here("output", "models", "multivariate", "mv_mlma_2.rds"))
 }
 # Now lets try suppressing the intercept. This should now estimate the linear effect of temp on each outcome
 mv_mlma_2
@@ -158,9 +158,9 @@ mv_mlma_3 <- rma.mv(es ~ -1 + outcome + outcome:c_treattemp, V = V,    # This sh
                random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
                              ~outcome - 1 | Paper.code),  # This should estimate a study level random effect for each outcome.
                struc = "UN", data = data_long_final, test = "t", dfs = "contain")
-saveRDS(mv_mlma_3, here("output", "models", "mv_mlma_3.rds"))
+saveRDS(mv_mlma_3, here("output", "models", "multivariate", "mv_mlma_3.rds"))
 } else {
-  mv_mlma_3 <- readRDS(here("output", "models", "mv_mlma_3.rds"))
+  mv_mlma_3 <- readRDS(here("output", "models", "multivariate", "mv_mlma_3.rds"))
 }
 mv_mlma_3
 ```
@@ -176,9 +176,9 @@ if(rerun2){
                random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
                              ~outcome - 1 | Paper.code),  # This should estimate a study level random effect for each outcome.
                struc = "UN", data = data_long_final, test = "t", dfs = "contain")
-  saveRDS(mv_mlma_4, here("output", "models", "mv_mlma_4.rds"))
+  saveRDS(mv_mlma_4, here("output", "models", "multivariate", "mv_mlma_4.rds"))
 } else {
-  mv_mlma_4 <- readRDS(here("output", "models", "mv_mlma_4.rds"))
+  mv_mlma_4 <- readRDS(here("output", "models", "multivariate", "mv_mlma_4.rds"))
 }
   mv_mlma_4
 
@@ -252,7 +252,7 @@ data  %>%  group_by(Experiment.code)  %>% summarise(es_repro = mean(es_reproduct
 
 This removes any effect sizes above 10 or below -10. The plot above shows only the experiments that have outlying effect sizes not the specific effect size itself.
 
-```{r, sa_multivariate}
+```{r sa_multivariate}
 #| echo: false
 #| warning: false
 #| include: false
@@ -279,11 +279,11 @@ sdata <- subset(data_long_final, es > -10 & es < 10) # Removes 44 effect sizes
                random = list(~outcome - 1 | trial,   ~outcome - 1 | Paper.code),  
                struc = "UN", data = sdata, test = "t", dfs = "contain")
   
-  saveRDS(mlma_sa, here("output", "models", "mlma_sa.rds"))
-  saveRDS(sdata, here("output", "Output data", "mlma_sa_data.rds"))
+  saveRDS(mlma_sa, here("output", "models", "multivariate", "mlma_sa.rds"))
+  saveRDS(sdata, here("output", "Output data", "multivariate", "mlma_sa_data.rds"))
 } else {
-  mlma_sa <- readRDS(here("output", "models", "mlma_sa.rds"))
-  sdata <- readRDS(here("output", "Output data", "mlma_sa_data.rds"))
+  mlma_sa <- readRDS(here("output", "models", "multivariate", "mlma_sa.rds"))
+  sdata <- readRDS(here("output", "Output data", "multivariate",  "mlma_sa_data.rds"))
 }
 ```
 
@@ -444,32 +444,32 @@ mv_mlma_split.cool_4 <- rma.mv(es ~ outcome*poly(c_treattemp, degree=4, raw=TRUE
   
    
 
-saveRDS(mv_mlma_split.warm, here("output", "models", "mv_mlma_split.warm.rds"))
-saveRDS(mv_mlma_split.warm.inter, here("output", "models", "mv_mlma_split.warm.inter.rds"))
-saveRDS(mv_mlma_split.warm.report, here("output", "models", "mv_mlma_split.warm.report.rds"))
-saveRDS(mv_mlma_split.cool, here("output", "models", "mv_mlma_split.cool.rds"))
-saveRDS(mv_mlma_split.cool_quad.inter, here("output", "models", "mv_mlma_split.cool_quad.inter.rds"))
-saveRDS(mv_mlma_split.cool_quad.report, here("output", "models", "mv_mlma_split.cool_quad.report.rds"))
-saveRDS(mv_mlma_split.warm_quad, here("output", "models", "mv_mlma_split.warm_quad.rds"))
-saveRDS(mv_mlma_split.cool_quad, here("output", "models", "mv_mlma_split.cool_quad.rds"))
-saveRDS(mv_mlma_split.warm_cubic, here("output", "models", "mv_mlma_split.warm_cubic.rds"))
-saveRDS(mv_mlma_split.cool_cubic, here("output", "models", "mv_mlma_split.cool_cubic.rds"))
-saveRDS(mv_mlma_split.warm_4, here("output", "models", "mv_mlma_split.warm_4.rds"))
-saveRDS(mv_mlma_split.cool_4, here("output", "models", "mv_mlma_split.cool_4.rds"))
+saveRDS(mv_mlma_split.warm, here("output", "models", "multivariate", "mv_mlma_split.warm.rds"))
+saveRDS(mv_mlma_split.warm.inter, here("output", "models", "multivariate", "mv_mlma_split.warm.inter.rds"))
+saveRDS(mv_mlma_split.warm.report, here("output", "models", "multivariate", "mv_mlma_split.warm.report.rds"))
+saveRDS(mv_mlma_split.cool, here("output", "models", "multivariate", "mv_mlma_split.cool.rds"))
+saveRDS(mv_mlma_split.cool_quad.inter, here("output", "models", "multivariate", "mv_mlma_split.cool_quad.inter.rds"))
+saveRDS(mv_mlma_split.cool_quad.report, here("output", "models", "multivariate", "mv_mlma_split.cool_quad.report.rds"))
+saveRDS(mv_mlma_split.warm_quad, here("output", "models", "multivariate", "mv_mlma_split.warm_quad.rds"))
+saveRDS(mv_mlma_split.cool_quad, here("output", "models", "multivariate", "mv_mlma_split.cool_quad.rds"))
+saveRDS(mv_mlma_split.warm_cubic, here("output", "models", "multivariate", "mv_mlma_split.warm_cubic.rds"))
+saveRDS(mv_mlma_split.cool_cubic, here("output", "models", "multivariate", "mv_mlma_split.cool_cubic.rds"))
+saveRDS(mv_mlma_split.warm_4, here("output", "models", "multivariate", "mv_mlma_split.warm_4.rds"))
+saveRDS(mv_mlma_split.cool_4, here("output", "models", "multivariate", "mv_mlma_split.cool_4.rds"))
 } else {
   #read in models
-  mv_mlma_split.warm <- readRDS(here("output", "models", "mv_mlma_split.warm.rds"))
-  mv_mlma_split.warm.inter <- readRDS(here("output", "models", "mv_mlma_split.warm.inter.rds")) 
-  mv_mlma_split.warm.report <- readRDS(here("output", "models", "mv_mlma_split.warm.report.rds")) ## reported table
-  mv_mlma_split.cool <- readRDS(here("output", "models", "mv_mlma_split.cool.rds"))
-  mv_mlma_split.cool_quad.inter <- readRDS(here("output", "models", "mv_mlma_split.cool_quad.inter.rds")) 
-  mv_mlma_split.warm_quad <- readRDS(here("output", "models", "mv_mlma_split.warm_quad.rds"))
-  mv_mlma_split.cool_quad <- readRDS(here("output", "models", "mv_mlma_split.cool_quad.rds"))
-  mv_mlma_split.cool_quad.report <- readRDS(here("output", "models", "mv_mlma_split.cool_quad.report.rds"))
-  mv_mlma_split.warm_cubic <- readRDS(here("output", "models", "mv_mlma_split.warm_cubic.rds"))
-  mv_mlma_split.cool_cubic <- readRDS(here("output", "models", "mv_mlma_split.cool_cubic.rds"))
-  mv_mlma_split.warm_4 <- readRDS(here("output", "models", "mv_mlma_split.warm_4.rds"))
-  mv_mlma_split.cool_4 <- readRDS(here("output", "models", "mv_mlma_split.cool_4.rds"))
+  mv_mlma_split.warm <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.warm.rds"))
+  mv_mlma_split.warm.inter <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.warm.inter.rds")) 
+  mv_mlma_split.warm.report <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.warm.report.rds")) ## reported table
+  mv_mlma_split.cool <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.cool.rds"))
+  mv_mlma_split.cool_quad.inter <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.cool_quad.inter.rds")) 
+  mv_mlma_split.warm_quad <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.warm_quad.rds"))
+  mv_mlma_split.cool_quad <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.cool_quad.rds"))
+  mv_mlma_split.cool_quad.report <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.cool_quad.report.rds"))
+  mv_mlma_split.warm_cubic <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.warm_cubic.rds"))
+  mv_mlma_split.cool_cubic <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.cool_cubic.rds"))
+  mv_mlma_split.warm_4 <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.warm_4.rds"))
+  mv_mlma_split.cool_4 <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.cool_4.rds"))
   
   
   # read confidence intervals
@@ -733,10 +733,12 @@ ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred.3, col = outcome, li
   mv_mlma_split.cool_quad_rbust <- robust(mv_mlma_split.cool_quad, cluster = data_cool$Paper.code, clubSandwich = TRUE)
   
 
-saveRDS(meta_trait_treat2_robust, here("Output", "models", "longevity", "meta_trait_treat2_robust.rds"))
+saveRDS(mv_mlma_split.warm_rbust, here("Output", "models", "multivariate", "mv_mlma_split.warm_rbust.rds"))
+saveRDS(mv_mlma_split.cool_quad_rbust, here("Output", "models", "multivariate", "mv_mlma_split.cool_quad_rbust.rds"))
 
 } else {
-  meta_trait_treat2_robust <- readRDS(here("Output", "models", "longevity", "meta_trait_treat2_robust.rds"))
+ mv_mlma_split.warm_rbust <- readRDS(here("Output", "models", "multivariate",  "mv_mlma_split.warm_rbust.rds"))
+ mv_mlma_split.cool_quad_rbust <- readRDS(here("Output", "models", "multivariate",  "mv_mlma_split.cool_quad_rbust.rds"))
 }
 
 ```
@@ -778,9 +780,9 @@ sdata <- subset(data_warm, es > -10 & es < 10) # 763 obs
                                    random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
                                    struc = "UN", data = sdata, test = "t", dfs = "contain")
   
-  saveRDS(mlma_sa_warm, here("output", "models", "mlma_sa_warm.rds"))
-  saveRDS(mlma_sa_warm.report, here("output", "models", "mlma_sa_warm.report.rds"))
-  saveRDS(sdata, here("output", "Output data", "mlma_sa_warm.data.rds"))
+  saveRDS(mlma_sa_warm, here("output", "models", "multivariate", "mlma_sa_warm.rds"))
+  saveRDS(mlma_sa_warm.report, here("output", "models", "multivariate", "mlma_sa_warm.report.rds"))
+  saveRDS(sdata, here("output", "Output data", "multivariate", "mlma_sa_warm.data.rds"))
   
   cis_phi_warm.sa <- as.data.frame(confint(mlma_sa_warm, phi = 1))
   cis_rho_warm.sa <- as.data.frame(confint(mlma_sa_warm, rho = 1))
@@ -790,9 +792,9 @@ sdata <- subset(data_warm, es > -10 & es < 10) # 763 obs
   
 
 } else {
-  mlma_sa_warm <- readRDS(here("output", "models", "mlma_sa_warm.rds"))
-  mlma_sa_warmdata <- readRDS(here("output", "Output data", "mlma_sa_warm.data.rds"))
-  mlma_sa_warm.report <-  readRDS(here("output", "models", "mlma_sa_warm.report.rds"))
+  mlma_sa_warm <- readRDS(here("output", "models", "multivariate", "mlma_sa_warm.rds"))
+  mlma_sa_warmdata <- readRDS(here("output", "Output data", "multivariate", "mlma_sa_warm.data.rds"))
+  mlma_sa_warm.report <-  readRDS(here("output", "models", "multivariate", "mlma_sa_warm.report.rds"))
   cis_warm.sa <- read.csv(here("output", "tables", "mlma_sa.warm_cis.csv"))
 }
 ```
@@ -854,10 +856,10 @@ mlma_sa_cool.report <- rma.mv(es ~ -1 + outcome:poly(c_treattemp, degree=2, raw=
                                    struc = "UN", data = sdata, test = "t", dfs = "contain")
 
 
-  saveRDS(mlma_sa_cool, here("output", "models", "mlma_sa_cool.rds"))
-  saveRDS(mlma_sa_cool.inter, here("output", "models", "mlma_sa_cool.inter.rds"))
-  saveRDS(mlma_sa_cool.report, here("output", "models", "mlma_sa_cool.report.rds"))
-  saveRDS(sdata, here("output", "Output data", "mlma_sa_cool.data.rds"))
+  saveRDS(mlma_sa_cool, here("output", "models", "multivariate", "mlma_sa_cool.rds"))
+  saveRDS(mlma_sa_cool.inter, here("output", "models", "multivariate", "mlma_sa_cool.inter.rds"))
+  saveRDS(mlma_sa_cool.report, here("output", "models", "multivariate", "mlma_sa_cool.report.rds"))
+  saveRDS(sdata, here("output", "Output data", "multivariate", "mlma_sa_cool.data.rds"))
   
 
   cis_phi_cool.sa <- as.data.frame(confint(mlma_sa_cool, phi = 1))
@@ -869,10 +871,10 @@ mlma_sa_cool.report <- rma.mv(es ~ -1 + outcome:poly(c_treattemp, degree=2, raw=
 
   
 } else {
-  mlma_sa_cool <- readRDS(here("output", "models", "mlma_sa_cool.rds"))
-  mlma_sa_cool.report <- readRDS(here("output", "models", "mlma_sa_cool.report.rds"))
-  mlma_sa_cool.inter <- readRDS(here("output", "models", "mlma_sa_cool.inter.rds"))
-  mlma_sa_cooldata <- readRDS(here("output", "Output data", "mlma_sa_cool.data.rds"))
+  mlma_sa_cool <- readRDS(here("output", "models", "multivariate", "mlma_sa_cool.rds"))
+  mlma_sa_cool.report <- readRDS(here("output", "models", "multivariate", "mlma_sa_cool.report.rds"))
+  mlma_sa_cool.inter <- readRDS(here("output", "models", "multivariate", "mlma_sa_cool.inter.rds"))
+  mlma_sa_cooldata <- readRDS(here("output", "Output data", "multivariate", "mlma_sa_cool.data.rds"))
  
   cis_cool.sa <- read.csv(here("output", "tables", "mlma_sa.cool_cis.csv"))
 }
@@ -930,9 +932,9 @@ if(rerun3){
                                    random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
                                    struc = "UN", data = expose.data, test = "t", dfs = "contain")
   
-  saveRDS(mlma_sa_chronic_warm, here("output", "models", "mlma_sa_chronic_warm.rds"))
-  saveRDS(mlma_sa_chronic_warm.report, here("output", "models", "mlma_sa_chronic_warm.report.rds"))
-  saveRDS(expose.data, here("output", "Output data", "mlma_sa_chronic_warm.data.rds"))
+  saveRDS(mlma_sa_chronic_warm, here("output", "models", "multivariate", "mlma_sa_chronic_warm.rds"))
+  saveRDS(mlma_sa_chronic_warm.report, here("output", "models", "multivariate", "mlma_sa_chronic_warm.report.rds"))
+  saveRDS(expose.data, here("output", "Output data", "multivariate", "mlma_sa_chronic_warm.data.rds"))
   
   cis_phi_warm.sa_chronic <- as.data.frame(confint(mlma_sa_chronic_warm, phi = 1))
   cis_rho_warm.sa_chronic <- as.data.frame(confint(mlma_sa_chronic_warm, rho = 1))
@@ -942,9 +944,9 @@ if(rerun3){
   
 
 } else {
-  mlma_sa_chronic_warm <- readRDS(here("output", "models", "mlma_sa_chronic_warm.rds"))
-  mlma_sa_chronic_warmdata <- readRDS(here("output", "Output data", "mlma_sa_chronic_warm.data.rds"))
-  mlma_sa_chronic_warm.report <-  readRDS(here("output", "models", "mlma_sa_chronic_warm.report.rds"))
+  mlma_sa_chronic_warm <- readRDS(here("output", "models", "multivariate", "mlma_sa_chronic_warm.rds"))
+  mlma_sa_chronic_warmdata <- readRDS(here("output", "Output data", "multivariate", "mlma_sa_chronic_warm.data.rds"))
+  mlma_sa_chronic_warm.report <-  readRDS(here("output", "models", "multivariate", "mlma_sa_chronic_warm.report.rds"))
   cis_warm.sa_chronic <- read.csv(here("output", "tables", "mlma_sa_chronic.warm_cis.csv"))
 }
 ```
@@ -983,9 +985,9 @@ if(rerun3){
                                    random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
                                    struc = "UN", data = expose.data, test = "t", dfs = "contain")
   
-  saveRDS(mlma_sa_chronic_cool, here("output", "models", "mlma_sa_chronic_cool.rds"))
-  saveRDS(mlma_sa_chronic_cool.report, here("output", "models", "mlma_sa_chronic_cool.report.rds"))
-  saveRDS(expose.data, here("output", "Output data", "mlma_sa_chronic_cool.data.rds"))
+  saveRDS(mlma_sa_chronic_cool, here("output", "models", "multivariate", "mlma_sa_chronic_cool.rds"))
+  saveRDS(mlma_sa_chronic_cool.report, here("output", "models", "multivariate", "mlma_sa_chronic_cool.report.rds"))
+  saveRDS(expose.data, here("output", "Output data", "multivariate", "mlma_sa_chronic_cool.data.rds"))
   
   cis_phi_cool.sa_chronic <- as.data.frame(confint(mlma_sa_chronic_cool, phi = 1))
   cis_rho_cool.sa_chronic <- as.data.frame(confint(mlma_sa_chronic_cool, rho = 1))
@@ -995,9 +997,9 @@ if(rerun3){
   
 
 } else {
-  mlma_sa_chronic_cool <- readRDS(here("output", "models", "mlma_sa_chronic_cool.rds"))
-  mlma_sa_chronic_cooldata <- readRDS(here("output", "Output data", "mlma_sa_chronic_cool.data.rds"))
-  mlma_sa_chronic_cool.report <-  readRDS(here("output", "models", "mlma_sa_chronic_cool.report.rds"))
+  mlma_sa_chronic_cool <- readRDS(here("output", "models", "multivariate", "mlma_sa_chronic_cool.rds"))
+  mlma_sa_chronic_cooldata <- readRDS(here("output", "Output data", "multivariate", "mlma_sa_chronic_cool.data.rds"))
+  mlma_sa_chronic_cool.report <-  readRDS(here("output", "models", "multivariate", "mlma_sa_chronic_cool.report.rds"))
   cis_cool.sa_chronic <- read.csv(here("output", "tables", "mlma_sa_chronic.cool_cis.csv"))
 }
 ```
@@ -1179,9 +1181,9 @@ if(rerun){
                random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),  
                struc = "UN", data = pest.only, test = "t", dfs = "contain")
  
- saveRDS(mv_mlma_pest.only, here("output", "models", "mv_mlma_pest.only.rds"))
+ saveRDS(mv_mlma_pest.only, here("output", "models", "multivariate", "mv_mlma_pest.only.rds"))
 } else {
-  mv_mlma_pest.only <- readRDS(here("output", "models", "mv_mlma_pest.only.rds"))
+  mv_mlma_pest.only <- readRDS(here("output", "models", "multivariate", "mv_mlma_pest.only.rds"))
 }
 ```
 
@@ -1217,8 +1219,119 @@ if(rerun){
                random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),  
                struc = "UN", data = pestdata, test = "t", dfs = "contain")
  
- saveRDS(mv_mlma_pest.fixed, here("output", "models", "mv_mlma_pest.fixed.rds"))
+ saveRDS(mv_mlma_pest.fixed, here("output", "models", "multivariate", "mv_mlma_pest.fixed.rds"))
 } else {
-  mv_mlma_pest.fixed <- readRDS(here("output", "models", "mv_mlma_pest.fixed.rds")
+  mv_mlma_pest.fixed <- readRDS(here("output", "models", "multivariate", "mv_mlma_pest.fixed.rds")
 }
 ```
+
+```{r, remove_auqatic}
+
+## Remove 'Aquatic' (and 'Both') species form data 
+terrestrial_species_df_warm <- data_warm[data_warm$Habitat == 'Terrestrial',]
+terrestrial_species_df_cool <- data_cool[data_cool$Habitat == 'Terrestrial',]
+
+V_warm_rm_aq <- make_VCV_matrix(data = terrestrial_species_df_warm, cluster = "trial",  V = "v", rho = 0.5)
+V2_warm_rm_aq <- metaAidR::make_VCV_matrix(data = terrestrial_species_df_warm, matrix = V_warm_rm_aq, cluster = "shared_control",  V = "v", rho = 0.5)
+V2_warm_rm_aq <- Matrix::nearPD(V2_warm_rm_aq)$mat
+
+
+V_cool_rm_aq <- make_VCV_matrix(data = terrestrial_species_df_cool, cluster = "trial",  V = "v", rho = 0.5)
+V2_cool_rm_aq  <- metaAidR::make_VCV_matrix(data = terrestrial_species_df_cool, matrix = V_cool_rm_aq, cluster = "shared_control",  V = "v", rho = 0.5)
+V2_cool_rm_aq <- Matrix::nearPD(V2_cool_rm_aq)$mat
+  
+if(rerun){
+## Rerun warm analysis without aquatic species
+mv_mlma_split.warm.report_remove_aquatic <- rma.mv(es ~ -1 + outcome + outcome:c_treattemp, V = V2_warm_rm_aq,   
+                                   random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
+                                   struc = "UN", data = terrestrial_species_df_warm, test = "t", dfs = "contain")
+## warm with intercept
+mv_mlma_split.warm.report_remove_aquatic.inter <- rma.mv(es ~ outcome:poly(c_treattemp, degree=2, raw=TRUE), V = V2_warm_rm_aq,   
+                                   random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
+                                   struc = "UN", data = terrestrial_species_df_warm, test = "t", dfs = "contain")
+
+## Rerun cool analysis without aquatic species
+mv_mlma_split.cool_quad.report_remove_aquatic <- rma.mv(es ~ -1 + outcome:poly(c_treattemp, degree=2, raw=TRUE), V = V2_cool_rm_aq,   
+                                   random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
+                                   struc = "UN", data = terrestrial_species_df_cool, test = "t", dfs = "contain")
+## cool with intercept
+mv_mlma_split.cool_quad.report_remove_aquatic.inter <- rma.mv(es ~ outcome:poly(c_treattemp, degree=2, raw=TRUE), V = V2_cool_rm_aq,   
+                                   random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
+                                   struc = "UN", data = terrestrial_species_df_cool, test = "t", dfs = "contain")
+
+saveRDS(mv_mlma_split.warm.report_remove_aquatic, here("output", "models", "multivariate", "mv_mlma_split.warm.report_remove_aquatic.rds"))
+saveRDS(mv_mlma_split.warm.report_remove_aquatic.inter, here("output", "models", "multivariate", "mv_mlma_split.warm.report_remove_aquatic.inter.rds"))
+saveRDS(mv_mlma_split.cool_quad.report_remove_aquatic, here("output", "models", "multivariate", "mv_mlma_split.cool_quad.report_remove_aquatic.rds"))
+saveRDS(mv_mlma_split.cool_quad.report_remove_aquatic.inter, here("output", "models", "multivariate", "mv_mlma_split.cool_quad.report_remove_aquatic.inter.rds"))
+} else {
+  mv_mlma_split.warm.report_remove_aquatic <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.warm.report_remove_aquatic.rds"))
+  mv_mlma_split.warm.report_remove_aquatic.inter <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.warm.report_remove_aquatic.inter.rds"))
+  mv_mlma_split.cool_quad.report_remove_aquatic <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.cool_quad.report_remove_aquatic.rds"))
+  mv_mlma_split.cool_quad.report_remove_aquatic.inter <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.cool_quad.report_remove_aquatic.inter.rds"))
+}
+```
+
+```{r, tbl-warm_rm_aq}
+#| label: tbl-warm-rm-aq
+#| tbl-cap: Sensitivity Analysis: Effects of temperature on mean effect size for longevity and reproduction when treatment temperatures are warmer than reference temperatures (with Aquatic species removed).
+table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", 
+                                   "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction",  
+                                   "Quadratic Treatment Temperature (centered) - Longevity",   "Quadratic Treatment Temperature (centered) - Reproduction"),
+                    Est. = round(c(mv_mlma_split.warm.report_remove_aquatic.inter$b[1:2],mv_mlma_split.warm.report_remove_aquatic$b[1:4]), 4),
+                    `L 95% CI` = round(c(mv_mlma_split.warm.report_remove_aquatic.inter$ci.lb[1:2],mv_mlma_split.warm.report_remove_aquatic$ci.lb[1:4]), 4),
+                    `U 95% CI` = round(c(mv_mlma_split.warm.report_remove_aquatic.inter$ci.ub[1:2],mv_mlma_split.warm.report_remove_aquatic$ci.ub[1:4]), 4),
+                    `df` = round(c(mv_mlma_split.warm.report_remove_aquatic.inter$ddf[1:2],mv_mlma_split.warm.report_remove_aquatic$ddf[1:4]),2),
+                    `p-value` = sapply(round(c(mv_mlma_split.warm.report_remove_aquatic.inter$pval[1:2],mv_mlma_split.warm.report_remove_aquatic$pval[1:4]),4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
+```
+
+```{r, tbl-cool-quad_rm_aq}
+#| label: tbl-cool-quad-rm-aq
+#| tbl-cap: Sensitivity Analysis: Quadratic effects of temperature on mean effect size for longevity and reproduction when treatment temperatures are cooler than reference temperatures (with Aquatic species removed).
+table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", 
+                                   "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction",  
+                                   "Quadratic Treatment Temperature (centered) - Longevity",   "Quadratic Treatment Temperature (centered) - Reproduction"),
+                    Est. = round(c(mv_mlma_split.cool_quad.report_remove_aquatic.inter$b[1:2],mv_mlma_split.cool_quad.report_remove_aquatic$b[1:4]), 4),
+                    `L 95% CI` = round(c(mv_mlma_split.cool_quad.report_remove_aquatic.inter$ci.lb[1:2],mv_mlma_split.cool_quad.report_remove_aquatic$ci.lb[1:4]), 4),
+                    `U 95% CI` = round(c(mv_mlma_split.cool_quad.report_remove_aquatic.inter$ci.ub[1:2],mv_mlma_split.cool_quad.report_remove_aquatic$ci.ub[1:4]), 4),
+                    `df` = round(c(mv_mlma_split.cool_quad.report_remove_aquatic.inter$ddf[1:2],mv_mlma_split.cool_quad.report_remove_aquatic$ddf[1:4]),2),
+                    `p-value` = sapply(round(c(mv_mlma_split.cool_quad.report_remove_aquatic.inter$pval[1:2],mv_mlma_split.cool_quad.report_remove_aquatic$pval[1:4]),4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+flextable(table)
+```
+
+```{r, remove_rearing}
+
+## Remove 'Aquatic' (and 'Both') species form data 
+rearing_species_df_warm <- data_warm[!is.na(data_warm$Rearing.temperature),]
+rearing_species_df_cool <- data_cool[!is.na(data_cool$Rearing.temperature),]
+
+V_warm_rm_rear <- make_VCV_matrix(data = rearing_species_df_warm, cluster = "trial",  V = "v", rho = 0.5)
+V2_warm_rm_rear <- metaAidR::make_VCV_matrix(data = rearing_species_df_warm, matrix = V_warm_rm_rear, cluster = "shared_control",  V = "v", rho = 0.5)
+V2_warm_rm_rear <- Matrix::nearPD(V2_warm_rm_rear)$mat
+
+
+V_cool_rm_rear <- make_VCV_matrix(data = rearing_species_df_cool, cluster = "trial",  V = "v", rho = 0.5)
+V2_cool_rm_rear  <- metaAidR::make_VCV_matrix(data = rearing_species_df_cool, matrix = V_cool_rm_rear, cluster = "shared_control",  V = "v", rho = 0.5)
+V2_cool_rm_rear <- Matrix::nearPD(V2_cool_rm_rear)$mat
+  
+if(rerun){
+## Rerun warm analysis without aquatic species
+mv_mlma_split.warm.report_remove_rear <- rma.mv(es ~ -1 + outcome + outcome:c_treattemp, V = V2_warm_rm_rear,   
+                                   random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
+                                   struc = "UN", data = rearing_species_df_warm, test = "t", dfs = "contain")
+
+## Rerun cool analysis without aquatic species
+# for reported table (absolute values), for absolute values of nonlinear terms
+mv_mlma_split.cool_quad.report_remove_rear <- rma.mv(es ~ -1 + outcome:poly(c_treattemp, degree=2, raw=TRUE), V = V2_cool_rm_rear,   
+                                   random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
+                                   struc = "UN", data = rearing_species_df_cool, test = "t", dfs = "contain")
+
+saveRDS(mv_mlma_split.warm.report_remove_rear, here("output", "models", "multivariate", "mv_mlma_split.warm.report_remove_rear.rds"))
+saveRDS(mv_mlma_split.cool_quad.report_remove_rear, here("output", "models", "multivariate", "mv_mlma_split.cool_quad.report_remove_rear.rds"))
+} else {
+  mv_mlma_split.warm.report_remove_rear <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.warm.report_remove_rear.rds"))
+  mv_mlma_split.cool_quad.report_remove_rear <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.cool_quad.report_remove_rear.rds"))
+}
+```
+
+
