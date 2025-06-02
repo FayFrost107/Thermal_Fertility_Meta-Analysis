@@ -210,7 +210,7 @@ samples <- mv_pi$data  %>% group_by(moderator)  %>% summarise(n = length(unique(
 p <- orchard_plot(mv_mlma_3, mod = "outcome", group = "Paper.code", xlab = "SMD", angle = 45) + ylim(-6.5, 6.5) +
       annotate("text", x = 1.5, y = 3, label = paste0("k = ", samples$k[1], " (", samples$n[1], ")"), size = 5) + 
       annotate("text", x = 1.5, y = -3, label = TeX("Mean at 25$^o$C"), size = 5) + scale_x_discrete(labels=c("Es_reproduction"  ="Reproduction", "Es_longevity" = "Longevity")) + theme(axis.text = element_text(size = 12), axis.title = element_text(size = 18), legend.text = element_text(size = 12), legend.title = element_text(size = 14))
-ggsave(p, filename = "Output/Figures/fig_orchard.png", width = 6.617284, height = 5.851852)
+ggsave(p, filename = "../Output/Figures/Multivariate/fig_orchard.png", width = 6.617284, height = 5.851852, create.dir = TRUE)
 p
 ```
 
@@ -223,7 +223,12 @@ table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "L
                     `U 95% CI` = round(mv_mlma_4$ci.ub, 4),
                     `df` = round(mv_mlma_4$ddf,2),
                     `p-value` = sapply(round(mv_mlma_4$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
-flextable(table)
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
 ```
 
 ```{r, fig-fig2}
@@ -497,7 +502,12 @@ table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "L
                     `U 95% CI` = round(mv_mlma_split.warm.report$ci.ub, 4),
                     `df` = round(mv_mlma_split.warm.report$ddf,2),
                     `p-value` = sapply(round(mv_mlma_split.warm.report$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
-flextable(table)
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
 ```
 
 # cool analysis
@@ -517,7 +527,12 @@ table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)",
                     `U 95% CI` = round(c(mv_mlma_split.cool_quad.inter$ci.ub[1:2],mv_mlma_split.cool_quad.report$ci.ub[1:4]), 4),
                     `df` = round(c(mv_mlma_split.cool_quad.inter$ddf[1:2],mv_mlma_split.cool_quad.report$ddf[1:4]),2),
                     `p-value` = sapply(round(c(mv_mlma_split.cool_quad.inter$pval[1:2],mv_mlma_split.cool_quad.report$pval[1:4]),4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
-flextable(table)
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
 ```
 
 ```{r, fig- between-study correlation for reproduction and longevity- split into warm and cool}
@@ -808,7 +823,13 @@ table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "L
                     `U 95% CI` = round(mlma_sa_warm.report$ci.ub, 4),
                     `df` = round(mlma_sa_warm.report$ddf,2),
                     `p-value` = sapply(round(mlma_sa_warm.report$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
-flextable(table)
+
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
 ```
 
 We found weaker, but qualitatively similar correlations, after removing outliers (between-study correlation = `r mlma_sa_warm$phi`, 95% CI: `r cis_warm.sa$ci.lb[1]` to `r cis_warm.sa$ci.ub[1]` within-study correlation= `r mlma_sa_warm$rho`, 95% CI: `r cis_warm.sa$ci.lb[2]` to `r cis_warm.sa$ci.ub[2]`)
@@ -891,7 +912,13 @@ table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)",
                     `U 95% CI` = round(c(mlma_sa_cool.inter$ci.ub[1:2], mlma_sa_cool.report$ci.ub[1:4]), 4),
                     `df` = round(c(mlma_sa_cool.inter$ddf[1:2], mlma_sa_cool.report$ddf[1:4]),2),
                     `p-value` = sapply(round(c(mlma_sa_cool.inter$pval[1:2], mlma_sa_cool.report$pval[1:4]),4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
-flextable(table)
+
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
 ```
 
 We found qualitatively similar correlations, after removing outliers (between-study correlation = `r mlma_sa_cool$phi`, 95% CI: `r cis_cool.sa$ci.lb[1]` to `r cis_cool.sa$ci.ub[1]` within-study correlation= `r mlma_sa_cool$rho`, 95% CI: `r cis_cool.sa$ci.lb[2]` to `r cis_cool.sa$ci.ub[2]`)
@@ -1273,7 +1300,9 @@ saveRDS(mv_mlma_split.cool_quad.report_remove_aquatic.inter, here("output", "mod
 
 ```{r, tbl-warm_rm_aq}
 #| label: tbl-warm-rm-aq
-#| tbl-cap: Sensitivity Analysis: Effects of temperature on mean effect size for longevity and reproduction when treatment temperatures are warmer than reference temperatures (with Aquatic species removed).
+#| tbl-cap: >
+#|   Sensitivity Analysis: Effects of temperature on mean effect size for longevity and reproduction
+#|   when treatment temperatures are warmer than reference temperatures (with Aquatic species removed).
 table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", 
                                    "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction",  
                                    "Quadratic Treatment Temperature (centered) - Longevity",   "Quadratic Treatment Temperature (centered) - Reproduction"),
@@ -1282,12 +1311,20 @@ table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)",
                     `U 95% CI` = round(c(mv_mlma_split.warm.report_remove_aquatic.inter$ci.ub[1:2],mv_mlma_split.warm.report_remove_aquatic$ci.ub[1:4]), 4),
                     `df` = round(c(mv_mlma_split.warm.report_remove_aquatic.inter$ddf[1:2],mv_mlma_split.warm.report_remove_aquatic$ddf[1:4]),2),
                     `p-value` = sapply(round(c(mv_mlma_split.warm.report_remove_aquatic.inter$pval[1:2],mv_mlma_split.warm.report_remove_aquatic$pval[1:4]),4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
-flextable(table)
+
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
 ```
 
 ```{r, tbl-cool-quad_rm_aq}
-#| label: tbl-cool-quad-rm-aq
-#| tbl-cap: Sensitivity Analysis: Quadratic effects of temperature on mean effect size for longevity and reproduction when treatment temperatures are cooler than reference temperatures (with Aquatic species removed).
+#| label: tbl-cool-rm-aq
+#| tbl-cap: >
+#|   Sensitivity Analysis: Effects of temperature on mean effect size for longevity and reproduction
+#|   when treatment temperatures are cooler than reference temperatures (with Aquatic species removed).
 table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", 
                                    "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction",  
                                    "Quadratic Treatment Temperature (centered) - Longevity",   "Quadratic Treatment Temperature (centered) - Reproduction"),
@@ -1296,12 +1333,18 @@ table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)",
                     `U 95% CI` = round(c(mv_mlma_split.cool_quad.report_remove_aquatic.inter$ci.ub[1:2],mv_mlma_split.cool_quad.report_remove_aquatic$ci.ub[1:4]), 4),
                     `df` = round(c(mv_mlma_split.cool_quad.report_remove_aquatic.inter$ddf[1:2],mv_mlma_split.cool_quad.report_remove_aquatic$ddf[1:4]),2),
                     `p-value` = sapply(round(c(mv_mlma_split.cool_quad.report_remove_aquatic.inter$pval[1:2],mv_mlma_split.cool_quad.report_remove_aquatic$pval[1:4]),4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
-flextable(table)
+
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
 ```
 
 ```{r, remove_rearing}
 
-## Remove 'Aquatic' (and 'Both') species form data 
+## Remove studies with assumed rearing temp from data 
 rearing_species_df_warm <- data_warm[!is.na(data_warm$Rearing.temperature),]
 rearing_species_df_cool <- data_cool[!is.na(data_cool$Rearing.temperature),]
 
@@ -1313,25 +1356,77 @@ V2_warm_rm_rear <- Matrix::nearPD(V2_warm_rm_rear)$mat
 V_cool_rm_rear <- make_VCV_matrix(data = rearing_species_df_cool, cluster = "trial",  V = "v", rho = 0.5)
 V2_cool_rm_rear  <- metaAidR::make_VCV_matrix(data = rearing_species_df_cool, matrix = V_cool_rm_rear, cluster = "shared_control",  V = "v", rho = 0.5)
 V2_cool_rm_rear <- Matrix::nearPD(V2_cool_rm_rear)$mat
+
+if(FALSE){
+  ## Rerun warm analysis without assumed rearing temp studies
+  mv_mlma_split.warm.report_remove_rear <- rma.mv(es ~ -1 + outcome + outcome:c_treattemp, V = V2_warm_rm_rear,   
+                                                  random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
+                                                  struc = "UN", data = rearing_species_df_warm, test = "t", dfs = "contain")
   
-if(rerun){
-## Rerun warm analysis without aquatic species
-mv_mlma_split.warm.report_remove_rear <- rma.mv(es ~ -1 + outcome + outcome:c_treattemp, V = V2_warm_rm_rear,   
-                                   random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
-                                   struc = "UN", data = rearing_species_df_warm, test = "t", dfs = "contain")
-
-## Rerun cool analysis without aquatic species
-# for reported table (absolute values), for absolute values of nonlinear terms
-mv_mlma_split.cool_quad.report_remove_rear <- rma.mv(es ~ -1 + outcome:poly(c_treattemp, degree=2, raw=TRUE), V = V2_cool_rm_rear,   
-                                   random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
-                                   struc = "UN", data = rearing_species_df_cool, test = "t", dfs = "contain")
-
-saveRDS(mv_mlma_split.warm.report_remove_rear, here("output", "models", "multivariate", "mv_mlma_split.warm.report_remove_rear.rds"))
-saveRDS(mv_mlma_split.cool_quad.report_remove_rear, here("output", "models", "multivariate", "mv_mlma_split.cool_quad.report_remove_rear.rds"))
-} else {
-  mv_mlma_split.warm.report_remove_rear <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.warm.report_remove_rear.rds"))
-  mv_mlma_split.cool_quad.report_remove_rear <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.cool_quad.report_remove_rear.rds"))
+  mv_mlma_split.warm.report_remove_rear.inter <- rma.mv(es ~ outcome + outcome:c_treattemp, V = V2_warm_rm_rear,   
+                                                        random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
+                                                        struc = "UN", data = rearing_species_df_warm, test = "t", dfs = "contain")
+  
+  ## Rerun cool analysis without assumed rearing temp studies
+  mv_mlma_split.cool_quad.report_remove_rear <- rma.mv(es ~ -1 + outcome:poly(c_treattemp, degree=2, raw=TRUE), V = V2_cool_rm_rear,                                     random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
+                                                       struc = "UN", data = rearing_species_df_cool, test = "t", dfs = "contain")
+  
+  mv_mlma_split.cool_quad.report_remove_rear.inter <- rma.mv(es ~ outcome:poly(c_treattemp, degree=2, raw=TRUE), V = V2_cool_rm_rear,                                    random = list(~outcome - 1 | trial,  ~outcome - 1 | Paper.code),
+                                                             struc = "UN", data = rearing_species_df_cool, test = "t", dfs = "contain")
+  
+  saveRDS(mv_mlma_split.warm.report_remove_rear, here("output", "models", "multivariate", "mv_mlma_split.warm.report_remove_rear.rds"))
+  saveRDS(mv_mlma_split.warm.report_remove_rear.inter, here("output", "models", "multivariate", "mv_mlma_split.warm.report_remove_rear.inter.rds"))
+  saveRDS(mv_mlma_split.cool_quad.report_remove_rear, here("output", "models", "multivariate", "mv_mlma_split.cool_quad.report_remove_rear.rds"))
+  saveRDS(mv_mlma_split.cool_quad.report_remove_rear.inter, here("output", "models", "multivariate", "mv_mlma_split.cool_quad.report_remove_rear.inter.rds"))
+}else{
+   mv_mlma_split.warm.report_remove_rear <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.warm.report_remove_rear.rds"))
+   mv_mlma_split.warm.report_remove_rear.inter <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.warm.report_remove_rear.inter.rds"))
+   mv_mlma_split.cool_quad.report_remove_rear <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.cool_quad.report_remove_rear.rds"))
+   mv_mlma_split.cool_quad.report_remove_rear.inter <- readRDS(here("output", "models", "multivariate", "mv_mlma_split.cool_quad.report_remove_rear.inter.rds"))
 }
 ```
 
+```{r, tbl-warm_rm_rear}
+#| label: tbl-warm-rm-rear
+#| tbl-cap: >
+#|   Sensitivity Analysis: Effects of temperature on mean effect size for longevity and reproduction
+#|   when treatment temperatures are warmer than reference temperatures (with assuemd rearing temp studies removed).
+table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", 
+                                   "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction",  
+                                   "Quadratic Treatment Temperature (centered) - Longevity",   "Quadratic Treatment Temperature (centered) - Reproduction"),
+                    Est. = round(c(mv_mlma_split.warm.report_remove_rear.inter$b[1:2],mv_mlma_split.warm.report_remove_rear$b[1:4]), 4),
+                    `L 95% CI` = round(c(mv_mlma_split.warm.report_remove_rear.inter$ci.lb[1:2],mv_mlma_split.warm.report_remove_rear$ci.lb[1:4]), 4),
+                    `U 95% CI` = round(c(mv_mlma_split.warm.report_remove_rear.inter$ci.ub[1:2],mv_mlma_split.warm.report_remove_rear$ci.ub[1:4]), 4),
+                    `df` = round(c(mv_mlma_split.warm.report_remove_rear.inter$ddf[1:2],mv_mlma_split.warm.report_remove_rear$ddf[1:4]),2),
+                    `p-value` = sapply(round(c(mv_mlma_split.warm.report_remove_rear.inter$pval[1:2],mv_mlma_split.warm.report_remove_rear$pval[1:4]),4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
 
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
+```
+
+
+```{r, tbl-cool-quad_rm_rear}
+#| label: tbl-cool-rm-rear
+#| tbl-cap: >
+#|   Sensitivity Analysis: Effects of temperature on mean effect size for longevity and reproduction
+#|   when treatment temperatures are cooler than reference temperatures (with assumed rearing temp studies removed).
+table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", 
+                                   "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction",  
+                                   "Quadratic Treatment Temperature (centered) - Longevity",   "Quadratic Treatment Temperature (centered) - Reproduction"),
+                    Est. = round(c(mv_mlma_split.cool_quad.report_remove_rear.inter$b[1:2],mv_mlma_split.cool_quad.report_remove_rear$b[1:4]), 4),
+                    `L 95% CI` = round(c(mv_mlma_split.cool_quad.report_remove_rear.inter$ci.lb[1:2],mv_mlma_split.cool_quad.report_remove_rear$ci.lb[1:4]), 4),
+                    `U 95% CI` = round(c(mv_mlma_split.cool_quad.report_remove_rear.inter$ci.ub[1:2],mv_mlma_split.cool_quad.report_remove_rear$ci.ub[1:4]), 4),
+                    `df` = round(c(mv_mlma_split.cool_quad.report_remove_rear.inter$ddf[1:2],mv_mlma_split.cool_quad.report_remove_rear$ddf[1:4]),2),
+                    `p-value` = sapply(round(c(mv_mlma_split.cool_quad.report_remove_rear.inter$pval[1:2],mv_mlma_split.cool_quad.report_remove_rear$pval[1:4]),4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
+```
