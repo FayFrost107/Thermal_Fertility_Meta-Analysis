@@ -34,6 +34,10 @@ pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR, orch
 #| echo: false
 #| warning: false
 #| include: false
+
+# Rerun all analyses?
+rerun = FALSE
+
 ## Load in the finalised data
   data <- read.csv(here("data", "cleaned_unique_combo.csv"))
 
@@ -124,7 +128,8 @@ pacman::p_load(tidyverse, here, metafor, ape, phytools, corrplot, metaAidR, orch
 #| warning: false
 #| include: false
 ## Univariate models were found to only need two random effects, obs and study. This greatly simplifies the multivariate model, which can only have two levels anyway. We will save these models because they take quite some time to estimate given how much data is available
-rerun = FALSE
+
+
 if(rerun){
   mv_mlma_1 <- rma.mv(es ~ outcome - 1, V = V, 
                 random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
@@ -135,7 +140,6 @@ if(rerun){
   mv_mlma_1 <- readRDS(here("output", "models", "multivariate", "mv_mlma_1.rds"))
 }
 
-mv_mlma_1
 
 
 # Now that we have the MLMA model we can start to estimate different fixed effects and ask if these fixed effects that impact ES for longevity and reproduction differ between the two. 
@@ -150,7 +154,7 @@ saveRDS(mv_mlma_2, here("output", "models", "multivariate", "mv_mlma_2.rds"))
   mv_mlma_2 <- readRDS(here("output", "models", "multivariate", "mv_mlma_2.rds"))
 }
 # Now lets try suppressing the intercept. This should now estimate the linear effect of temp on each outcome
-mv_mlma_2
+
 ## OUTCOME: This model tells us that: 1) the overall effects on reproduction vs longevity are significantly different from each other when controlling for treattemp; 2) that the treatment temp effect on longevity is significant and that 3) the treattemp effect on reproduction is significantly different than its effect on longevity.
 
 if(rerun){
@@ -162,7 +166,6 @@ saveRDS(mv_mlma_3, here("output", "models", "multivariate", "mv_mlma_3.rds"))
 } else {
   mv_mlma_3 <- readRDS(here("output", "models", "multivariate", "mv_mlma_3.rds"))
 }
-mv_mlma_3
 ```
 
 ```{r, nonlin_multivariatefinal}
@@ -170,27 +173,24 @@ mv_mlma_3
 #| warning: false
 #| include: false
 # We'll now run the multivariate model with non-linear terms as was done in the univariate cases.
-rerun2=FALSE
-if(rerun2){
+
+if(rerun){
   mv_mlma_4 <- rma.mv(es ~ -1 + outcome + outcome:poly(c_treattemp, degree=3, raw=TRUE), V = V,    
                random = list(~outcome - 1 | trial,        # This would be equivalent to an obs level random effect bc trial is unique to each two effects
                              ~outcome - 1 | Paper.code),  # This should estimate a study level random effect for each outcome.
                struc = "UN", data = data_long_final, test = "t", dfs = "contain")
+  
+  # confidence intervals
+#  cis_phi <- confint(mv_mlma_3, phi = 1)
+#  cis_rho <- confint(mv_mlma_3, rho = 1)
+  
+  # Save models
+#  write.csv(cis, here("output", "tables", "mv_mlma_4_cis.csv"))
   saveRDS(mv_mlma_4, here("output", "models", "multivariate", "mv_mlma_4.rds"))
 } else {
   mv_mlma_4 <- readRDS(here("output", "models", "multivariate", "mv_mlma_4.rds"))
+#  cis <- read.csv(here("output", "tables", "mv_mlma_4_cis.csv"))
 }
-  mv_mlma_4
-
-# We can get confidence intervals by profiling the likelihood
-  if(rerun2){
-  cis_phi <- confint(mv_mlma_3, phi = 1)
-  cis_rho <- confint(mv_mlma_3, rho = 1)
-  write.csv(cis, here("output", "tables", "mv_mlma_4_cis.csv"))
-  } else {
-    cis <- read.csv(here("output", "tables", "mv_mlma_4_cis.csv"))
-  }
- cis
 
 mv_pi <- mod_results(mv_mlma_3, mod = "outcome", group = "Paper.code")
 ```
@@ -262,8 +262,6 @@ This removes any effect sizes above 10 or below -10. The plot above shows only t
 #| warning: false
 #| include: false
 
-rerun3=FALSE
-if(rerun3){
 sdata <- subset(data_long_final, es > -10 & es < 10) # Removes 44 effect sizes
 
 ## make V matrix for sensitivity data
@@ -271,24 +269,21 @@ sdata <- subset(data_long_final, es > -10 & es < 10) # Removes 44 effect sizes
 
  V2 <- metaAidR::make_VCV_matrix(data = sdata, matrix = V_2, cluster = "shared_control",  V = "v", rho = 0.5)
 
- # Check of PD
-  corpcor::is.positive.definite(V2) # FALSE
-
 # Can bend it to make it PD
   V2 <- Matrix::nearPD(V2)$mat
-
-# Check of PD
-  corpcor::is.positive.definite(V2) # TRUE
+  
+saveRDS(sdata, here("output", "Output data", "multivariate", "mlma_sa_data.rds"))
+  
+if(rerun){
   
   mlma_sa <- rma.mv(es ~ -1 + outcome + outcome:poly(c_treattemp, degree=3, raw=TRUE), V = V2,    
                random = list(~outcome - 1 | trial,   ~outcome - 1 | Paper.code),  
                struc = "UN", data = sdata, test = "t", dfs = "contain")
   
   saveRDS(mlma_sa, here("output", "models", "multivariate", "mlma_sa.rds"))
-  saveRDS(sdata, here("output", "Output data", "multivariate", "mlma_sa_data.rds"))
+  
 } else {
   mlma_sa <- readRDS(here("output", "models", "multivariate", "mlma_sa.rds"))
-  sdata <- readRDS(here("output", "Output data", "multivariate",  "mlma_sa_data.rds"))
 }
 ```
 
@@ -767,8 +762,8 @@ saveRDS(mv_mlma_split.cool_quad_rbust, here("Output", "models", "multivariate", 
 #| warning: false
 #| include: false
 
-rerun3=FALSE
-if(rerun3){
+
+if(rerun){
 
 data_warm <- subset(data_long_final, warm.cool == "Warm") # 790 obs
 sdata <- subset(data_warm, es > -10 & es < 10) # 763 obs
@@ -841,8 +836,8 @@ We found weaker, but qualitatively similar correlations, after removing outliers
 #| warning: false
 #| include: false
 
-rerun3=FALSE
-if(rerun3){
+
+if(rerun){
   
 data_cool <- subset(data_long_final, warm.cool == "Cool") # 794 obs
 sdata <- subset(data_cool, es > -10 & es < 10) # 777 obs
@@ -932,8 +927,8 @@ We found qualitatively similar correlations, after removing outliers (between-st
 #| warning: false
 #| include: false
 
-rerun3=FALSE
-if(rerun3){
+
+if(rerun){
   expose.data <- subset(data_warm, Exposure.duration != "< 24 hours")
   expose.data <- subset(expose.data, Exposure.duration != "1 to 5 days") # 82 datapoints removed
 
@@ -985,8 +980,8 @@ if(rerun3){
 #| warning: false
 #| include: false
 
-rerun3=FALSE
-if(rerun3){
+
+if(rerun){
   expose.data <- subset(data_cool, Exposure.duration != "< 24 hours")
   expose.data <- subset(expose.data, Exposure.duration != "1 to 5 days") # 40 datapoints removed
 
@@ -1357,7 +1352,7 @@ V_cool_rm_rear <- make_VCV_matrix(data = rearing_species_df_cool, cluster = "tri
 V2_cool_rm_rear  <- metaAidR::make_VCV_matrix(data = rearing_species_df_cool, matrix = V_cool_rm_rear, cluster = "shared_control",  V = "v", rho = 0.5)
 V2_cool_rm_rear <- Matrix::nearPD(V2_cool_rm_rear)$mat
 
-if(FALSE){
+if(rerun){
   ## Rerun warm analysis without assumed rearing temp studies
   mv_mlma_split.warm.report_remove_rear <- rma.mv(es ~ -1 + outcome + outcome:c_treattemp, V = V2_warm_rm_rear,   
                                                   random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
