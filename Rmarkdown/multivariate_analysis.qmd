@@ -15,6 +15,7 @@ crossref:
   title-delim: "-"
   fig-prefix: "Figure"
   tbl-prefix: "Table"
+  
 ---
 
 This documents the exploratory multivariate meta-analysis for the effects of temperature on the longevity and reproduction of species.
@@ -204,7 +205,6 @@ Reproductive traits were more strongly impacted by temperature changes than long
 Mean effects changed in complicated ways with changes in temperaure, with significant non-linear patterns that depended on the effect outcome (@tbl-tbl1), with effect magnitude and direction changing non-linearly with temperature increases. Interestingly, studies that observed larger changes in reprodcution also observed correlated changes in longevity (between study correlation = `r mv_mlma_3$phi`), however, at the within study-level there was a much weaker correlation (within-study correlation = `r mv_mlma_3$rho`, @fig-study-correlation).
 
 ```{r, fig-fig1}
-#| label: fig-fig1
 #| fig-cap: Orchard plot with the overall meta-analytic mean (central dots) for reproduction and longevity traits. Thick bars are the 95 confidence intervals and thin bars are the 95 prediction intervals. Data are weighted by their precision (inverse sampling error). Plot is truncated for ease of visualisation. k is the number of effect sizes and n the number of studies. Given we limited our analysis to studies with both reproduction and longevity the samples sizes are the same for both trait types.
 
 samples <- mv_pi$data  %>% group_by(moderator)  %>% summarise(n = length(unique(stdy)), k = n())
@@ -217,7 +217,7 @@ p
 ```
 
 ```{r, tbl-tbl1}
-#| label: tbl-tbl1
+#| tbl-cap-location: bottom
 #| tbl-cap: Non-linear effects of temperature on mean effect size for longevity and reproduction
 table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction", "Quadratic Treatment Temperature (centered) - Longevity", "Quadratic Treatment Temperature (centered) - Reproduction", "Cubic Treatment Temperature (centered) - Longevity", "Cubic Treatment Temperature (centered) - Reproduction"),
                     Est. = round(mv_mlma_4$b, 4),
@@ -236,9 +236,8 @@ ft
 ```{r, fig-study-correlation}
 
 #| label: fig-study-correlation
-#| fig-width: 35
+#| fig-width: 70
 #| fig-height: 6
-#| out-width: 100%
 
 library(ggplot2)
 library(dplyr)
@@ -275,9 +274,9 @@ p2 <- ggplot(summary_data, aes(x = es_repro, y = es_long, size = mean_v)) +
 
 ## Sensitivity Analysis
 
-In this analysis we remove any effect sizes above 10 or below -10. When removing the 10% largest and smallest effect sizes, the following effect sizes are removed.
+In this analysis we remove any effect sizes above 10 or below -10. When removing the 10% largest and smallest effect sizes, the following effect sizes are removed. We found very little signigificant differeces uon removing outlying effect size studies (@tbl-tbl_sa). 
 
-```{r sa_multivariate}
+```{r, sa_multivariate}
 #| echo: false
 #| warning: false
 #| include: false
@@ -315,6 +314,23 @@ if(rerun){
 
 sort(setdiff(data_long_final$trial, sdata$trial))
 
+```
+
+```{r, tbl-tbl_sa}
+#| tbl-cap-location: bottom
+#| tbl-cap: Non-linear effects of temperature on mean effect size for longevity and reproduction after removing outlying effect sizes.
+table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction", "Quadratic Treatment Temperature (centered) - Longevity", "Quadratic Treatment Temperature (centered) - Reproduction", "Cubic Treatment Temperature (centered) - Longevity", "Cubic Treatment Temperature (centered) - Reproduction"),
+                    Est. = round(mlma_sa$b, 4),
+                    `L 95% CI` = round(mlma_sa$ci.lb, 4),
+                    `U 95% CI` = round(mlma_sa$ci.ub, 4),
+                    `df` = round(mlma_sa$ddf,2),
+                    `p-value` = sapply(round(mlma_sa$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
+ft <- flextable(table) %>%
+  set_table_properties(width = 1, layout = "autofit") %>%
+  width(j = 1, width = 3.5) %>%  # Parameters column
+  width(j = 2:5, width = 1.2)    # Other columns
+
+ft
 ```
 
 # Splitting analysis: warm versus cool
@@ -502,14 +518,17 @@ saveRDS(mv_mlma_split.cool_4, here("output", "models", "multivariate", "mv_mlma_
 }
 ```
 
-# 
+In this analysis we split the dataset into studies warmer and cooler than the reference temperature of 25 degrees C. Here we explored non-linear effects up to degree 4. We found that there was a significant and negative linear effect of temperature on both reproduction and adult lifespan at warmer temperatures (`r mv_mlma_split.warm.report$b[3]` and `r mv_mlma_split.warm.report$b[4]` respectively, (@tbl-warm-lin ). However, reproductive traits were more strongly impacted by increased temperature changes than adult lifespan (contrast = `r mv_mlma_split.warm$b[4]`, 95% CI: `r mv_mlma_split.warm$ci.lb[4]` to `r mv_mlma_split.warm$ci.ub[4]`, df = `r mv_mlma_split.warm$ddf[4]`, *t*-value = `r mv_mlma_split.warm$zval[4]`, *p*-value = `r p_value(mv_mlma_split.warm$pval[4])`). 
 
-In this analysis we split the dataset into studies warmer and cooler than the reference temperature of 25 degrees C. Here we explored non-linear effects up to degree 4. We found that there was a significant and negative linear effect of temperature on both reproduction and adult lifespan at warmer temperatures (`r mv_mlma_split.warm.report$b[3]` and `r mv_mlma_split.warm.report$b[4]` respectively, (Table @tbl-warm-lin ). However, reproductive traits were more strongly impacted by increased temperature changes than adult lifespan (contrast = `r mv_mlma_split.warm$b[4]`, 95% CI: `r mv_mlma_split.warm$ci.lb[4]` to `r mv_mlma_split.warm$ci.ub[4]`, df = `r mv_mlma_split.warm$ddf[4]`, *t*-value = `r mv_mlma_split.warm$zval[4]`, *p*-value = `r p_value(mv_mlma_split.warm$pval[4])`). Figure @fig-prediction-ints-mv_mlma-warmcool-linear models models shows the predicted linear effects of temperature on reproduction and adult lifespan for observed treatment temperatures warmer than their reference temperature.
+For treatment temperatures that were cooler than the reference we found a significant and negative quadratic relationship between temperature and lifespan (est. `r mv_mlma_split.cool_quad.report$b[3]`, 95% CI: `r mv_mlma_split.cool_quad.report$ci.lb[3]` to `r mv_mlma_split.cool_quad.report$ci.ub[3]`). Adult lifespan is estimated to increase with cooler temperatures with the optimum predicted lifespan to be approximately 12$^o$C cooler than the reference temperature. In contrast, we found a significant linear relationship between temperature and reproduction (est. `r mv_mlma_split.cool_quad.report$b[2]`, 95% CI: `r mv_mlma_split.cool_quad.report$ci.lb[2]` to `r mv_mlma_split.cool_quad.report$ci.ub[2]`). However, we found no significant quadratic relationship between temperature and reproduction (see @tbl-cool-quad for estimates). @fig-prediction-ints-mv_mlma-warmcool-linear shows the predicted relationship between temperature and reproduction and adult lifespan for observed treatment temperatures warmer (plot A) and cooler (plot B) than their reference temperature.
 
-Interestingly, Figure @fig-between-study-correlation-warm-cool shows that studies which observed larger changes in reproduction also observed correlated changes in longevity (between study correlation = `r mv_mlma_split.warm$phi`, 95% CI: `r cis_warm$ci.lb[1]` to `r cis_warm$ci.ub[1]`), however, at the within study-level there was a much weaker correlation (within-study correlation = `r mv_mlma_split.warm$rho`, 95% CI: `r cis_warm$ci.lb[2]` to `r cis_warm$ci.ub[2]`)
+Interestingly, @fig-between-study-correlation-warm-cool shows that studies which observed larger changes in reproduction also observed correlated changes in longevity (between study correlation = `r mv_mlma_split.warm$phi`, 95% CI: `r cis_warm$ci.lb[1]` to `r cis_warm$ci.ub[1]`), however, at the within study-level there was a much weaker correlation (within-study correlation = `r mv_mlma_split.warm$rho`, 95% CI: `r cis_warm$ci.lb[2]` to `r cis_warm$ci.ub[2]`).
+
+We found that studies that observed larger changes in reproduction also observed correlated changes in longevity (between study correlation = `r mv_mlma_split.cool$phi`, 95% CI: `r cis_cool.q$ci.lb[1]` to `r cis_cool.q$ci.ub[1]`), however, at the within study-level there was a much weaker correlation (within-study correlation = `r mv_mlma_split.cool_quad$rho`, 95% CI: `r cis_cool.q$ci.lb[2]` to `r cis_cool.q$ci.ub[2]`)
+
 
 ```{r, tbl-warm-lin}
-
+#| tbl-cap-location: bottom
 #| tbl-cap: Linear effects of temperature on mean effect size for longevity and reproduction when treatment temperatures are warmer than reference temperatures.
 table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction"),
                     Est. = round(mv_mlma_split.warm.report$b, 4),
@@ -528,8 +547,9 @@ ft
 ```{r, fig-prediction-ints-mv_mlma-warmcool-linear}
 
 #| fig-cap-location: bottom
+#| fig-cap: Predicted relationship between temperature and reproduction and adult lifespan for observed treatment temperatures warmer (plot a) and cooler (plot b) than their reference temperature.
 #| fig-width: 15
-#| fig-height: 6
+#| fig-height: 8
 
 library(ggplot2)
 library(patchwork)
@@ -580,12 +600,14 @@ plot_cool <- ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred, col = 
        x = "Experimental temperature (°C)",
        y = "Standardised change in life history trait")
 
+plot_warm <- plot_warm + coord_cartesian(xlim = c(-5, 20))  # Set meaningful limits for visual balance
+plot_cool <- plot_cool + coord_cartesian(xlim = c(-25, 5))
+
 # Combine plots
 plot_warm + plot_cool + plot_layout(guides = "collect") & theme(legend.position = "bottom")
 ```
 
 ```{r, fig-between-study-correlation-warm-cool}
-#| label: fig-between-study-correlation-warm-cool
 #| fig-cap-location: bottom
 #| fig-width: 15
 #| fig-height: 6
@@ -633,14 +655,8 @@ plot_warm_corr + plot_cool_corr
 
 ```
 
-# cool analysis
-
-For treatment temperatures that were cooler than the reference we found a significant and negative quadratic relationship between temperature and lifespan (est. `r mv_mlma_split.cool_quad.report$b[3]`, 95% CI: `r mv_mlma_split.cool_quad.report$ci.lb[3]` to `r mv_mlma_split.cool_quad.report$ci.ub[3]`). Adult lifespan is estimated to increase with cooler temperatures with the optimum predicted lifespan to be approximately 12$^o$C cooler than the reference temperature. In contrast, we found a significant linear relationship between temperature and reproduction (est. `r mv_mlma_split.cool_quad.report$b[2]`, 95% CI: `r mv_mlma_split.cool_quad.report$ci.lb[2]` to `r mv_mlma_split.cool_quad.report$ci.ub[2]`). However, we found no significant quadratic relationship between temperature and reproduction (see Table 4 for estimates). Figure 7 shows the predicted relationship between temperature and reproduction and adult lifespan for observed treatment temperatures cooler than their reference temperature.
-
-We found that studies that observed larger changes in reproduction also observed correlated changes in longevity (between study correlation = `r mv_mlma_split.cool$phi`, 95% CI: `r cis_cool.q$ci.lb[1]` to `r cis_cool.q$ci.ub[1]`), however, at the within study-level there was a much weaker correlation (within-study correlation = `r mv_mlma_split.cool_quad$rho`, 95% CI: `r cis_cool.q$ci.lb[2]` to `r cis_cool.q$ci.ub[2]`)
-
 ```{r, tbl-cool-quad}
-
+#| tbl-cap-location: bottom
 #| tbl-cap: Quadratic effects of temperature on mean effect size for longevity and reproduction when treatment temperatures are cooler than reference temperatures.
 table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", 
                                    "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction",  
@@ -658,68 +674,75 @@ ft <- flextable(table) %>%
 ft
 ```
 
-```{r, fig- prediction intervals for mv_mlma split by warm.cool- cubic models}
 
-# Warm
+```{r, fig-prediction-warm.cool-cubic}
+#| fig-cap-location: bottom
+#| fig-width: 15
+#| fig-height: 8
+
+library(ggplot2)
+library(patchwork)  # install.packages("patchwork") if not installed
+
+# Warm cubic predictions
 preds.mlma.warm.3 <- predict(mv_mlma_split.warm_cubic, addx=TRUE)
-
-
 mlma_warm_data$pred.3 <- preds.mlma.warm.3$pred  
 mlma_warm_data$pred.lb.3 <- preds.mlma.warm.3$pi.lb
 mlma_warm_data$pred.ub.3 <- preds.mlma.warm.3$pi.ub
 mlma_warm_data$c.lb.3 <- preds.mlma.warm.3$ci.lb
 mlma_warm_data$c.ub.3 <- preds.mlma.warm.3$ci.ub
 
-ggplot(data = mlma_warm_data, aes(x = c_treattemp, y = pred.3, col = outcome, linetype = outcome)) +
-  geom_ribbon(aes(ymin = c.lb.3, ymax = c.ub.3, fill = outcome), alpha = 0.15) +
-  geom_line() +
-  scale_color_manual(values = c("purple", "orange")) +  
-  scale_fill_manual(values = c("purple", "orange")) +    
-  scale_linetype_manual(values = c("solid", "dashed")) +
-  theme_bw() + 
-  labs(title = "Predicted temperature effect- warm",
-       x = "Temperature deviation from 25C",
-       y = "Effect size",
-       color = "outcome",
-       fill = "outcome",
-       linetype = "outcome")
-
 # Cool
 preds.mlma.cool.3 <- predict(mv_mlma_split.cool_cubic, addx=TRUE)
-
-
 mlma_cool_data$pred.3 <- preds.mlma.cool.3$pred  
 mlma_cool_data$pred.lb.3 <- preds.mlma.cool.3$pi.lb
 mlma_cool_data$pred.ub.3 <- preds.mlma.cool.3$pi.ub
 mlma_cool_data$c.lb.3 <- preds.mlma.cool.3$ci.lb
 mlma_cool_data$c.ub.3 <- preds.mlma.cool.3$ci.ub
 
-ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred.3, col = outcome, linetype = outcome)) +
-  geom_ribbon(aes(ymin = c.lb.3, ymax = c.ub.3, fill = outcome), alpha = 0.15) +
+# Prepare Warm plot
+plot_warm <- ggplot(mlma_warm_data, aes(x = c_treattemp, y = pred.3, col = outcome, linetype = outcome, fill = outcome)) +
+  geom_ribbon(aes(ymin = c.lb.3, ymax = c.ub.3), alpha = 0.15) +
   geom_line() +
-  scale_color_manual(values = c("purple", "orange")) +
-  scale_fill_manual(values = c("purple", "orange")) + 
-  scale_linetype_manual(values = c("solid", "dashed")) +
-  theme_bw() + 
-  labs(title = "Predicted temperature effect- cool",
-       x = "Temperature deviation from 25C",
+  scale_color_manual(values = c("purple", "orange"), name = "Trait", labels = c("Longevity", "Reproduction")) +  
+  scale_fill_manual(values = c( "purple","orange"), name = "Trait", labels = c("Longevity", "Reproduction")) +    
+  scale_linetype_manual(values = c("solid", "dashed"), name = "Trait", labels = c("Longevity", "Reproduction")) +
+  labs(title = "Predicted temperature effect - warm",
+       x = "Temperature deviation from 25°C",
        y = "Effect size",
-       color = "outcome", 
-       fill = "outcome",
-       linetype = "outcome") 
+       color = NULL,
+       fill = NULL,
+       linetype = NULL) +
+  theme_bw()
+
+# Prepare Cool plot
+plot_cool <- ggplot(mlma_cool_data, aes(x = c_treattemp, y = pred.3, col = outcome, linetype = outcome, fill = outcome)) +
+  geom_ribbon(aes(ymin = c.lb.3, ymax = c.ub.3), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c( "purple", "orange"), name = "Trait", labels = c("Longevity", "Reproduction")) +
+  scale_fill_manual(values = c("purple", "orange"), name = "Trait", labels = c("Longevity", "Reproduction")) + 
+  scale_linetype_manual(values = c( "solid", "dashed"), name = "Trait", labels = c("Longevity", "Reproduction")) +
+  labs(title = "Predicted temperature effect - cool",
+       x = "Temperature deviation from 25°C",
+       y = "Effect size",
+       color = NULL,
+       fill = NULL,
+       linetype = NULL) +
+  theme_bw()
+
+# Combine using patchwork
+(plot_warm | plot_cool) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
 ```
 
-```{r, fig-prediction-intervals-warm-cool}
 
+```{r, fig-prediction-warm.cool-quad}
 #| fig-cap-location: bottom
 #| fig-width: 15
-#| fig-height: 6
-
+#| fig-height: 8
 
 library(ggplot2)
 library(patchwork)
 
-# Warm
+# Warm quadratic predictions
 preds.mlma.warm.2 <- predict(mv_mlma_split.warm_quad, addx=TRUE)
 mlma_warm_data$pred.2 <- preds.mlma.warm.2$pred  
 mlma_warm_data$pred.lb.2 <- preds.mlma.warm.2$pi.lb
@@ -727,19 +750,7 @@ mlma_warm_data$pred.ub.2 <- preds.mlma.warm.2$pi.ub
 mlma_warm_data$c.lb.2 <- preds.mlma.warm.2$ci.lb
 mlma_warm_data$c.ub.2 <- preds.mlma.warm.2$ci.ub
 
-p_warm <- ggplot(data = mlma_warm_data, aes(x = c_treattemp, y = pred.2, col = outcome, linetype = outcome)) +
-  geom_ribbon(aes(ymin = c.lb.2, ymax = c.ub.2, fill = outcome), alpha = 0.15) +
-  geom_line() +
-  scale_color_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduction")) +
-  scale_fill_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduction")) + 
-  scale_linetype_manual(values = c("solid", "dashed"), labels = c("Longevity", "Reproduction"), name="Trait") +
-  scale_x_continuous(breaks=c(-5, 0, 5, 10, 15, 20), labels=c("20", "25", "30", "35", "40", "45")) +
-  theme_bw() + 
-  labs(title = "Predicted temperature effects on warm studies",
-       x = "Experimental temperature (°C)",
-       y = "Standardised change in life history trait")
-
-# Cool
+# Cool quadratic predictions
 preds.mlma.cool.2 <- predict(mv_mlma_split.cool_quad, addx=TRUE)
 mlma_cool_data$pred.2 <- preds.mlma.cool.2$pred  
 mlma_cool_data$pred.lb.2 <- preds.mlma.cool.2$pi.lb
@@ -747,28 +758,50 @@ mlma_cool_data$pred.ub.2 <- preds.mlma.cool.2$pi.ub
 mlma_cool_data$c.lb.2 <- preds.mlma.cool.2$ci.lb
 mlma_cool_data$c.ub.2 <- preds.mlma.cool.2$ci.ub
 
-p_cool <- ggplot(data = mlma_cool_data, aes(x = c_treattemp, y = pred.2, col = outcome, linetype = outcome)) +
-  geom_ribbon(aes(ymin = c.lb.2, ymax = c.ub.2, fill = outcome), alpha = 0.15) +
+# Warm plot
+plot_warm <- ggplot(mlma_warm_data, aes(x = c_treattemp, y = pred.2, col = outcome, linetype = outcome, fill = outcome)) +
+  geom_ribbon(aes(ymin = c.lb.2, ymax = c.ub.2), alpha = 0.15) +
   geom_line() +
-  scale_color_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduction")) +
-  scale_fill_manual(values = c("red", "blue"), name = "Trait", labels = c("Longevity", "Reproduction")) + 
-  scale_linetype_manual(values = c("solid", "dashed"), labels = c("Longevity", "Reproduction"), name="Trait") +
-  scale_x_continuous(breaks=c(-25, -20, -15, -10, -5, 0), labels=c("0", "5", "10", "15", "20", "25")) +
-  theme_bw() + 
-  labs(title = "Predicted temperature effects on cool studies",
-       x = "Experimental temperature (°C)",
-       y = "Standardised change in life history trait")
+  scale_color_manual(values = c("purple", "orange"), name = "Trait", labels = c("Longevity", "Reproduction")) +
+  scale_fill_manual(values = c("purple", "orange"), name = "Trait", labels = c("Longevity", "Reproduction")) +    
+  scale_linetype_manual(values = c("solid", "dashed"), name = "Trait", labels = c("Longevity", "Reproduction")) +
+  labs(title = "Predicted temperature effect - warm (quadratic)",
+       x = "Temperature deviation from 25°C",
+       y = "Effect size",
+       color = NULL,
+       fill = NULL,
+       linetype = NULL) +
+  theme_bw()
 
-# Combine plots
-p_cool + p_warm
+# Cool plot
+plot_cool <- ggplot(mlma_cool_data, aes(x = c_treattemp, y = pred.2, col = outcome, linetype = outcome, fill = outcome)) +
+  geom_ribbon(aes(ymin = c.lb.2, ymax = c.ub.2), alpha = 0.15) +
+  geom_line() +
+  scale_color_manual(values = c("purple", "orange"), name = "Trait", labels = c("Longevity", "Reproduction")) +
+  scale_fill_manual(values = c("purple", "orange"), name = "Trait", labels = c("Longevity", "Reproduction")) + 
+  scale_linetype_manual(values = c("solid", "dashed"), name = "Trait", labels = c("Longevity", "Reproduction")) +
+  labs(title = "Predicted temperature effect - cool (quadratic)",
+       x = "Temperature deviation from 25°C",
+       y = "Effect size",
+       color = NULL,
+       fill = NULL,
+       linetype = NULL) +
+  theme_bw()
+
+# Combine with patchwork
+(plot_warm | plot_cool) + plot_layout(guides = "collect") & theme(legend.position = "bottom")
 ```
 
-# Sensitivity analysis- Robust variance estimation
+
 
 ```{r}
 #| echo: false
 #| warning: false
 #| include: false
+
+
+# Sensitivity analysis- Robust variance estimation
+
 
 # Check robustness of the results.
 
@@ -793,81 +826,6 @@ saveRDS(mv_mlma_split.cool_quad_rbust, here("Output", "models", "multivariate", 
 
 ### Sensitivity analysis- removing outliers
 
-### Warm subset
-
-```{r, sa_multivariate_warm}
-#| echo: false
-#| warning: false
-#| include: false
-
-
-if(rerun){
-
-data_warm <- subset(data_long_final, warm.cool == "Warm") # 790 obs
-sdata <- subset(data_warm, es > -10 & es < 10) # 763 obs
-
-## make V matrix for sensitivity data
- V_2 <- make_VCV_matrix(data = sdata, cluster = "trial",  V = "v", rho = 0.5)
-
- V2 <- metaAidR::make_VCV_matrix(data = sdata, matrix = V_2, cluster = "shared_control",  V = "v", rho = 0.5)
-
- # Check of PD
-  corpcor::is.positive.definite(V2) # FALSE
-
-# Can bend it to make it PD
-  V2 <- Matrix::nearPD(V2)$mat
-
-# Check of PD
-  corpcor::is.positive.definite(V2) # TRUE
-  
-  mlma_sa_warm <-  rma.mv(es ~ outcome*c_treattemp, V = V2,   
-                             random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
-                             struc = "UN", data = sdata, test = "t", dfs = "contain")
-
-  mlma_sa_warm.report <- rma.mv(es ~ -1 + outcome + outcome:c_treattemp, V = V2,   
-                                   random = list(~outcome - 1 | trial, ~outcome - 1 | Paper.code),
-                                   struc = "UN", data = sdata, test = "t", dfs = "contain")
-  
-  saveRDS(mlma_sa_warm, here("output", "models", "multivariate", "mlma_sa_warm.rds"))
-  saveRDS(mlma_sa_warm.report, here("output", "models", "multivariate", "mlma_sa_warm.report.rds"))
-  saveRDS(sdata, here("output", "Output data", "multivariate", "mlma_sa_warm.data.rds"))
-  
-  cis_phi_warm.sa <- as.data.frame(confint(mlma_sa_warm, phi = 1))
-  cis_rho_warm.sa <- as.data.frame(confint(mlma_sa_warm, rho = 1))
-  cis_warm.sa <- rbind(cis_phi_warm.sa, cis_rho_warm.sa)
-  
-  write.csv(cis_warm.sa, here("output", "tables", "mlma_sa.warm_cis.csv"))
-  
-
-} else {
-  mlma_sa_warm <- readRDS(here("output", "models", "multivariate", "mlma_sa_warm.rds"))
-  mlma_sa_warmdata <- readRDS(here("output", "Output data", "multivariate", "mlma_sa_warm.data.rds"))
-  mlma_sa_warm.report <-  readRDS(here("output", "models", "multivariate", "mlma_sa_warm.report.rds"))
-  cis_warm.sa <- read.csv(here("output", "tables", "mlma_sa.warm_cis.csv"))
-}
-```
-
-```{r, tbl-warm-lin-sa}
-#| label: tbl-warm-lin-sa
-#| tbl-cap: Linear effects of temperature on mean effect size for longevity and reproduction when treatment temperatures are warmer than reference temperatures (sensitivity analysis with 10% outliers removed).
-table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction"),
-                    Est. = round(mlma_sa_warm.report$b, 4),
-                    `L 95% CI` = round(mlma_sa_warm.report$ci.lb, 4),
-                    `U 95% CI` = round(mlma_sa_warm.report$ci.ub, 4),
-                    `df` = round(mlma_sa_warm.report$ddf,2),
-                    `p-value` = sapply(round(mlma_sa_warm.report$pval,4), function(x) p_value(x)), row.names = NULL, check.names = FALSE)
-
-ft <- flextable(table) %>%
-  set_table_properties(width = 1, layout = "autofit") %>%
-  width(j = 1, width = 3.5) %>%  # Parameters column
-  width(j = 2:5, width = 1.2)    # Other columns
-
-ft
-```
-
-We found weaker, but qualitatively similar correlations, after removing outliers (between-study correlation = `r mlma_sa_warm$phi`, 95% CI: `r cis_warm.sa$ci.lb[1]` to `r cis_warm.sa$ci.ub[1]` within-study correlation= `r mlma_sa_warm$rho`, 95% CI: `r cis_warm.sa$ci.lb[2]` to `r cis_warm.sa$ci.ub[2]`)
-
-### Cool subset
 
 ```{r, sa_multivariate_cool}
 #| echo: false
@@ -935,7 +893,6 @@ mlma_sa_cool.report <- rma.mv(es ~ -1 + outcome:poly(c_treattemp, degree=2, raw=
 ```
 
 ```{r, tbl-cool-quad-sa}
-#| label: tbl-cool-quad-sa
 #| tbl-cap: quadratic effects of temperature on mean effect size for longevity and reproduction when treatment temperatures are cooler than reference temperatures (sensitivity analysis with 10% outliers removed).
 table <- data.frame(Parameters = c("Longevity (mean)", "Reproduction (mean)", 
                                    "Linear Treatment Temperature (centered) - Longevity", "Linear Treatment Temperature (centered) - Reproduction",  
@@ -954,17 +911,14 @@ ft <- flextable(table) %>%
 ft
 ```
 
-We found qualitatively similar correlations, after removing outliers (between-study correlation = `r mlma_sa_cool$phi`, 95% CI: `r cis_cool.sa$ci.lb[1]` to `r cis_cool.sa$ci.ub[1]` within-study correlation= `r mlma_sa_cool$rho`, 95% CI: `r cis_cool.sa$ci.lb[2]` to `r cis_cool.sa$ci.ub[2]`)
-
-### Sensitivity analysis- chronic exposure only
-
-# Warm subset
 
 ```{r, sa_chronic_multivariate_warm}
 #| echo: false
 #| warning: false
 #| include: false
 
+
+### Sensitivity analysis- chronic exposure only
 
 if(rerun){
   expose.data <- subset(data_warm, Exposure.duration != "< 24 hours")
@@ -1011,7 +965,6 @@ if(rerun){
 }
 ```
 
-# Cool subset
 
 ```{r, sa_chronic_multivariate_cool}
 #| echo: false
@@ -1064,10 +1017,13 @@ if(rerun){
 }
 ```
 
-### Higher-order polynomials
+
+We found qualitatively similar correlations, after removing outliers (between-study correlation = `r mlma_sa_cool$phi`, 95% CI: `r cis_cool.sa$ci.lb[1]` to `r cis_cool.sa$ci.ub[1]` within-study correlation= `r mlma_sa_cool$rho`, 95% CI: `r cis_cool.sa$ci.lb[2]` to `r cis_cool.sa$ci.ub[2]`)
 
 ```{r, plot-highorder-polynomials}
-
+#| echo: false
+#| warning: false
+#| include: false
 # predicitons for higher order polys (>3)
 
 
@@ -1216,10 +1172,12 @@ ggplot(data = mlma_cool_long, aes(x = c_treattemp)) +
 
 ```
 
-### Pest sub-analysis
+
 
 ```{r,pestonly}
-
+#| echo: false
+#| warning: false
+#| include: false
 if(rerun){
  
  pest.only <- subset(data_long_final, Agricultural.importance == "Pest")
@@ -1248,7 +1206,9 @@ if(rerun){
 ```
 
 ```{r, eval=FALSE, pestonly.fixed}
-
+#| echo: false
+#| warning: false
+#| include: false
 if(rerun){
 # initial categories
   table(data_long_final$Agricultural.importance)
@@ -1285,6 +1245,7 @@ if(rerun){
 }
 ```
 
+## Additonal analyses
 ```{r, remove_auqatic}
 
 ## Remove 'Aquatic' (and 'Both') species form data 
@@ -1332,7 +1293,7 @@ saveRDS(mv_mlma_split.cool_quad.report_remove_aquatic.inter, here("output", "mod
 ```
 
 ```{r, tbl-warm_rm_aq}
-#| label: tbl-warm-rm-aq
+#| tbl-cap-location: bottom
 #| tbl-cap: >
 #|   Sensitivity Analysis: Effects of temperature on mean effect size for longevity and reproduction
 #|   when treatment temperatures are warmer than reference temperatures (with Aquatic species removed).
@@ -1354,7 +1315,7 @@ ft
 ```
 
 ```{r, tbl-cool-quad_rm_aq}
-#| label: tbl-cool-rm-aq
+#| tbl-cap-location: bottom
 #| tbl-cap: >
 #|   Sensitivity Analysis: Effects of temperature on mean effect size for longevity and reproduction
 #|   when treatment temperatures are cooler than reference temperatures (with Aquatic species removed).
@@ -1420,7 +1381,7 @@ if(rerun){
 ```
 
 ```{r, tbl-warm_rm_rear}
-#| label: tbl-warm-rm-rear
+#| tbl-cap-location: bottom
 #| tbl-cap: >
 #|   Sensitivity Analysis: Effects of temperature on mean effect size for longevity and reproduction
 #|   when treatment temperatures are warmer than reference temperatures (with assuemd rearing temp studies removed).
@@ -1442,7 +1403,7 @@ ft
 ```
 
 ```{r, tbl-cool-quad_rm_rear}
-#| label: tbl-cool-rm-rear
+#| tbl-cap-location: bottom
 #| tbl-cap: >
 #|   Sensitivity Analysis: Effects of temperature on mean effect size for longevity and reproduction
 #|   when treatment temperatures are cooler than reference temperatures (with assumed rearing temp studies removed).
